@@ -14,6 +14,8 @@ import {
   VerifyOtpRequestSchema,
   type JwtPayload,
 } from '@synchem-sfa/shared-types';
+import type { AppLanguage, MessageKey } from '@synchem-sfa/shared-i18n';
+import { apiTranslate } from '../../common/i18n/language.util';
 import { RedisService } from '../../infrastructure/cache/redis.module';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -75,11 +77,11 @@ export class AuthService {
     private readonly redis: RedisService,
   ) {}
 
-  async login(usernameField: string, password: string): Promise<TokenResult> {
+  async login(usernameField: string, password: string, language: AppLanguage = 'en'): Promise<TokenResult> {
     const [userName, compCode] = usernameField.split(',').map((s) => s.trim());
 
     if (!userName || !compCode) {
-      throw new UnauthorizedException('Invalid username format. Use userName,compCode');
+      throw new UnauthorizedException(this.msg('auth.login.invalidUsernameFormat', language));
     }
 
     const employee = await this.employeeAuthRepo.findByUserNameAndCompCode(
@@ -89,13 +91,13 @@ export class AuthService {
 
     if (!employee) {
       this.logger.warn({ compCode, userName, module: 'auth', action: 'loginFailed' });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(this.msg('auth.login.invalidCredentials', language));
     }
 
     const passwordValid = await bcrypt.compare(password, employee.passwordHash);
     if (!passwordValid) {
       this.logger.warn({ compCode, userName, module: 'auth', action: 'loginFailed' });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(this.msg('auth.login.invalidCredentials', language));
     }
 
     const result = await this.issueTenantTokens(employee);
@@ -140,7 +142,7 @@ export class AuthService {
     return this.issueTenantTokens(employee);
   }
 
-  async forgotPassword(body: unknown) {
+  async forgotPassword(body: unknown, language: AppLanguage = 'en') {
     const parsed = ForgotPasswordRequestSchema.safeParse(body);
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.message);
@@ -166,11 +168,11 @@ export class AuthService {
     }
 
     return apiSuccess({
-      message: 'If the account exists, an OTP has been sent.',
+      message: this.msg('auth.forgot.otpSent', language),
     });
   }
 
-  async verifyOtp(body: unknown) {
+  async verifyOtp(body: unknown, language: AppLanguage = 'en') {
     const parsed = VerifyOtpRequestSchema.safeParse(body);
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.message);
@@ -179,13 +181,13 @@ export class AuthService {
     const { userName, compCode, otp } = parsed.data;
     const valid = await this.validateOtp(compCode.toUpperCase(), userName, otp);
     if (!valid) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      throw new UnauthorizedException(this.msg('auth.forgot.otpInvalid', language));
     }
 
     return apiSuccess({ verified: true });
   }
 
-  async resetPassword(body: unknown) {
+  async resetPassword(body: unknown, language: AppLanguage = 'en') {
     const parsed = ResetPasswordRequestSchema.safeParse(body);
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.message);
@@ -195,7 +197,7 @@ export class AuthService {
     const normalizedCompCode = compCode.toUpperCase();
     const valid = await this.validateOtp(normalizedCompCode, userName, otp);
     if (!valid) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      throw new UnauthorizedException(this.msg('auth.forgot.otpInvalid', language));
     }
 
     const employee = await this.employeeAuthRepo.findByUserNameAndCompCode(
@@ -204,7 +206,7 @@ export class AuthService {
     );
 
     if (!employee) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      throw new UnauthorizedException(this.msg('auth.forgot.otpInvalid', language));
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -219,7 +221,11 @@ export class AuthService {
       action: 'PASSWORD_RESET',
     });
 
-    return apiSuccess({ message: 'Password updated successfully' });
+    return apiSuccess({ message: this.msg('auth.forgot.passwordUpdated', language) });
+  }
+
+  private msg(key: MessageKey, language: AppLanguage): string {
+    return apiTranslate(key, language);
   }
 
   private async issueTenantTokens(employee: AuthEmployeeRecord): Promise<TokenResult> {

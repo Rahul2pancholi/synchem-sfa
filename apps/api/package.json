@@ -26,6 +26,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^6.9.0",
+    "@synchem-sfa/shared-i18n": "workspace:*",
     "@synchem-sfa/shared-types": "workspace:*",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

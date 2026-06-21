@@ -65,6 +65,11 @@ describe('AuthService', () => {
     await expect(service.login('admin,SYN', 'pass')).rejects.toThrow(UnauthorizedException);
   });
 
+  it('returns localized Hindi auth error when requested', async () => {
+    repo.findByUserNameAndCompCode.mockResolvedValue(null);
+    await expect(service.login('admin,SYN', 'pass', 'hi')).rejects.toThrow('गलत');
+  });
+
   it('should return token for valid credentials', async () => {
     const hash = await bcrypt.hash('Admin@123', 10);
     repo.findByUserNameAndCompCode.mockResolvedValue({

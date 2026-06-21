@@ -27,10 +27,10 @@ export function App() {
           </RequireTenantToken>
         }
       >
-        <Route path="management/dashboard" element={<DashboardHome title="Management Dashboard" />} />
-        <Route path="manager/dashboard" element={<DashboardHome title="Manager Dashboard" />} />
-        <Route path="fieldStaff/dashboard" element={<DashboardHome title="Field Staff Dashboard" />} />
-        <Route path="*" element={<DashboardHome title="Dashboard" />} />
+        <Route path="management/dashboard" element={<DashboardHome titleKey="dashboard.management" />} />
+        <Route path="manager/dashboard" element={<DashboardHome titleKey="dashboard.manager" />} />
+        <Route path="fieldStaff/dashboard" element={<DashboardHome titleKey="dashboard.fieldStaff" />} />
+        <Route path="*" element={<DashboardHome titleKey="dashboard.default" />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

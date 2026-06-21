@@ -1,4 +1,6 @@
 import { Outlet } from 'react-router-dom';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nProvider';
 
 interface LegacyMenuItem {
   MenuId: string;
@@ -23,6 +25,7 @@ function flattenMenus(items: LegacyMenuItem[], depth = 0): Array<{ item: LegacyM
 }
 
 export function DashboardShell() {
+  const { t } = useI18n();
   const compCode = localStorage.getItem('compCode') ?? '';
   const compName = localStorage.getItem('compName') ?? compCode;
   const employeeRaw = localStorage.getItem('employeeObj');
@@ -32,19 +35,23 @@ export function DashboardShell() {
   const navItems = flattenMenus(menus);
 
   function logout() {
+    const language = localStorage.getItem('appLanguage');
     localStorage.clear();
+    if (language) {
+      localStorage.setItem('appLanguage', language);
+    }
     window.location.href = '/login';
   }
 
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand">Synchem SFA</div>
+        <div className="brand">{t('shell.brand')}</div>
         <div className="tenant">{compName}</div>
         <div className="tenant-code">{compCode}</div>
         <nav>
           {navItems.length === 0 ? (
-            <div className="nav-item muted">No menus assigned</div>
+            <div className="nav-item muted">{t('shell.noMenus')}</div>
           ) : (
             navItems.map(({ item, depth }) => (
               <div
@@ -66,9 +73,12 @@ export function DashboardShell() {
               {employee?.firstName} {employee?.lastName ?? ''} · {employee?.roleName}
             </p>
           </div>
-          <button type="button" onClick={logout}>
-            Logout
-          </button>
+          <div className="header-actions">
+            <LanguageSwitcher />
+            <button type="button" onClick={logout}>
+              {t('common.logout')}
+            </button>
+          </div>
         </header>
         <Outlet />
       </main>

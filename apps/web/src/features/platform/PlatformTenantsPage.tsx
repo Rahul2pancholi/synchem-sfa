@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nProvider';
 
 interface Company {
   compCode: string;
@@ -12,6 +14,7 @@ interface Company {
 
 export function PlatformTenantsPage() {
   const navigate = useNavigate();
+  const { t, languageHeader } = useI18n();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [compCode, setCompCode] = useState('');
   const [compName, setCompName] = useState('');
@@ -33,7 +36,7 @@ export function PlatformTenantsPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/v1/platform/companies', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, ...languageHeader },
       });
       if (res.status === 401 || res.status === 403) {
         localStorage.removeItem('platform_token');
@@ -43,7 +46,7 @@ export function PlatformTenantsPage() {
       const data = await res.json();
       setCompanies(data.data.items ?? []);
     } catch {
-      setError('Failed to load tenants');
+      setError(t('platform.tenants.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -58,13 +61,13 @@ export function PlatformTenantsPage() {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
+        ...languageHeader,
       },
       body: JSON.stringify({ compCode, compName }),
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.message ?? 'Unable to create tenant');
+      setError(t('platform.tenants.createFailed'));
       return;
     }
 
@@ -81,47 +84,48 @@ export function PlatformTenantsPage() {
   return (
     <div className="platform-page">
       <header className="platform-header">
-        <h1>Tenant Management</h1>
-        <div>
+        <h1>{t('platform.tenants.title')}</h1>
+        <div className="header-actions">
+          <LanguageSwitcher />
           <Link to="/login" className="muted-link">
-            Tenant login
+            {t('platform.tenants.tenantLogin')}
           </Link>
           <button type="button" onClick={logout}>
-            Logout
+            {t('common.logout')}
           </button>
         </div>
       </header>
 
       <section className="platform-card">
-        <h2>Create tenant</h2>
+        <h2>{t('platform.tenants.createTitle')}</h2>
         <form className="inline-form" onSubmit={createTenant}>
           <input
-            placeholder="Comp code (e.g. ACME)"
+            placeholder={t('platform.tenants.compCodePlaceholder')}
             value={compCode}
             onChange={(e) => setCompCode(e.target.value.toUpperCase())}
           />
           <input
-            placeholder="Company name"
+            placeholder={t('platform.tenants.compNamePlaceholder')}
             value={compName}
             onChange={(e) => setCompName(e.target.value)}
           />
-          <button type="submit">Create</button>
+          <button type="submit">{t('common.create')}</button>
         </form>
         {error && <p className="error">{error}</p>}
       </section>
 
       <section className="platform-card">
-        <h2>Existing tenants</h2>
+        <h2>{t('platform.tenants.existingTitle')}</h2>
         {loading ? (
-          <p>Loading…</p>
+          <p>{t('common.loading')}</p>
         ) : (
           <table className="tenant-table">
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Timezone</th>
-                <th>Status</th>
+                <th>{t('platform.tenants.code')}</th>
+                <th>{t('platform.tenants.name')}</th>
+                <th>{t('platform.tenants.timezone')}</th>
+                <th>{t('platform.tenants.status')}</th>
               </tr>
             </thead>
             <tbody>
@@ -130,7 +134,7 @@ export function PlatformTenantsPage() {
                   <td>{company.compCode}</td>
                   <td>{company.compName}</td>
                   <td>{company.timezone}</td>
-                  <td>{company.active ? 'Active' : 'Inactive'}</td>
+                  <td>{company.active ? t('platform.tenants.active') : t('platform.tenants.inactive')}</td>
                 </tr>
               ))}
             </tbody>

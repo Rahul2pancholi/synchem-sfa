@@ -1,0 +1,32 @@
+---
+description: Trilingual UI rules — English, Hindi, Hinglish
+alwaysApply: true
+---
+
+# SFA i18n (English · Hindi · Hinglish)
+
+## Supported languages
+| Code | Language |
+|------|----------|
+| `en` | English |
+| `hi` | Hindi (Devanagari) |
+| `hinglish` | Hinglish (Roman script mix) |
+
+## MUST
+- Add user-visible strings to `packages/shared-i18n` — **all 3 languages in the same PR**
+- Web: use `useI18n()` from `apps/web/src/i18n/I18nProvider.tsx` — never inline labels in JSX
+- API user-facing errors: `apiTranslate(key, language)` via `X-App-Language` header
+- Include i18n parity tests (`shared-i18n`) and feature tests when adding strings
+- Show `LanguageSwitcher` on auth/shell screens (already wired in Phase 0)
+
+## MUST NOT
+- Hardcode English-only copy in React components or NestJS exceptions
+- Add a string to only one language file
+- Bypass `MessageKey` typing with raw strings in `t()`
+
+## New feature checklist
+1. Define keys in `packages/shared-i18n/src/messages/`
+2. Add en + hi + hinglish translations
+3. Wire web with `t('your.key')`
+4. Wire API errors with language param where users see the message
+5. Run `pnpm --filter @synchem-sfa/shared-i18n test`

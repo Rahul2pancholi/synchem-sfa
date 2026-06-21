@@ -896,19 +896,41 @@ Run restore drill once before go-live.
 
 ---
 
-## 18. Localization & Timezone
+## 18. Localization & Languages
+
+### Supported UI languages (mandatory)
+
+| Code | Language | Script |
+|------|----------|--------|
+| `en` | English | Latin |
+| `hi` | Hindi | Devanagari |
+| `hinglish` | Hinglish | Roman (mixed) |
+
+**All user-facing web labels, buttons, validation toasts, and auth error messages** must ship in all three languages.
+
+### Implementation
+
+| Layer | Rule |
+|-------|------|
+| Catalog | `packages/shared-i18n` — typed `MessageKey`, `translate(key, lang)` |
+| Web | `I18nProvider` + `LanguageSwitcher`; `localStorage.appLanguage` |
+| API | Header `X-App-Language: en\|hi\|hinglish` (fallback: `Accept-Language`) |
+| Tests | `shared-i18n` parity test — every key exists in all languages |
+
+### Locale & timezone
 
 | Setting | Value |
 |---------|-------|
 | Default timezone | `Asia/Kolkata` |
-| Default locale | `en-IN` |
+| Default language | `en` |
+| Company locale field | `en-IN` (reports/formatting — separate from UI language) |
 | Date display | `DD-MM-YYYY` (Salestrip parity) |
 | API timestamps | ISO 8601 with offset |
 | DB storage | UTC (`timestamptz`) |
 
-**MVP UI:** English + Hindi labels for mobile field app (critical labels: DCR, Submit, Sync, Pending).
-
 Use `company.timezone` for report date boundaries — never hardcode IST in queries.
+
+**Phase 1+:** master screens and mobile field labels follow the same trilingual rule; menu names from DB may stay English until master i18n table is introduced.
 
 ---
 

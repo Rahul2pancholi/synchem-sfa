@@ -138,5 +138,6 @@ apps/api/prisma/       Canonical DB schema + migrations
 | Web: login, forgot password, shell, platform tenants | Done |
 | Worker skeleton (`pnpm dev:worker`) | Done |
 | Health `/health` + `/ready` (DB + Redis) | Done |
+| Trilingual UI (English, Hindi, Hinglish) | Done — `packages/shared-i18n` |
 
 **Next:** Phase 1 — Master data (Employee, Hierarchy, City, HQ, Route, Doctor, …)

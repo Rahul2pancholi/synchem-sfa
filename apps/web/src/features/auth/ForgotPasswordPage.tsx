@@ -1,12 +1,12 @@
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const PASSWORD_POLICY_MESSAGE =
-  'Password must be 8–15 characters and include a number and special character (!@#$%^&*).';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Step = 'request' | 'verify' | 'reset' | 'done';
 
 export function ForgotPasswordPage() {
+  const { t, languageHeader } = useI18n();
   const [step, setStep] = useState<Step>('request');
   const [userName, setUserName] = useState('');
   const [compCode, setCompCode] = useState('SYN');
@@ -25,18 +25,18 @@ export function ForgotPasswordPage() {
     try {
       const res = await fetch('/api/v1/auth/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...languageHeader },
         body: JSON.stringify({ userName, compCode }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message ?? 'Unable to request OTP');
+        setError(data.message ?? t('auth.forgot.otpRequestFailed'));
         return;
       }
-      setMessage(data.data.message);
+      setMessage(t('auth.forgot.otpSent'));
       setStep('verify');
     } catch {
-      setError('Unable to connect to API');
+      setError(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -50,16 +50,16 @@ export function ForgotPasswordPage() {
     try {
       const res = await fetch('/api/v1/auth/verify-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...languageHeader },
         body: JSON.stringify({ userName, compCode, otp }),
       });
       if (!res.ok) {
-        setError('Invalid or expired OTP');
+        setError(t('auth.forgot.otpInvalid'));
         return;
       }
       setStep('reset');
     } catch {
-      setError('Unable to connect to API');
+      setError(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -73,18 +73,17 @@ export function ForgotPasswordPage() {
     try {
       const res = await fetch('/api/v1/auth/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...languageHeader },
         body: JSON.stringify({ userName, compCode, otp, newPassword }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.message ?? PASSWORD_POLICY_MESSAGE);
+        setError(t('auth.forgot.resetFailed'));
         return;
       }
-      setMessage(data.data.message);
+      setMessage(t('auth.forgot.passwordUpdated'));
       setStep('done');
     } catch {
-      setError('Unable to connect to API');
+      setError(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -93,22 +92,23 @@ export function ForgotPasswordPage() {
   return (
     <div className="login-page">
       <form className="login-card">
-        <h1>Forgot Password</h1>
-        <p className="subtitle">{PASSWORD_POLICY_MESSAGE}</p>
+        <LanguageSwitcher className="language-switcher top-right" />
+        <h1>{t('auth.forgot.title')}</h1>
+        <p className="subtitle">{t('auth.forgot.policy')}</p>
 
         {step === 'request' && (
           <>
             <label>
-              User Name
+              {t('auth.forgot.userName')}
               <input value={userName} onChange={(e) => setUserName(e.target.value)} />
             </label>
             <label>
-              Company Code
+              {t('auth.forgot.compCode')}
               <input value={compCode} onChange={(e) => setCompCode(e.target.value)} />
             </label>
             {error && <p className="error">{error}</p>}
             <button type="button" disabled={loading} onClick={requestOtp}>
-              {loading ? 'Sending…' : 'Send OTP'}
+              {loading ? t('auth.forgot.sendingOtp') : t('auth.forgot.sendOtp')}
             </button>
           </>
         )}
@@ -117,12 +117,12 @@ export function ForgotPasswordPage() {
           <>
             {message && <p className="success">{message}</p>}
             <label>
-              OTP
+              {t('auth.forgot.otp')}
               <input value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
             </label>
             {error && <p className="error">{error}</p>}
             <button type="button" disabled={loading} onClick={verifyOtp}>
-              {loading ? 'Verifying…' : 'Verify OTP'}
+              {loading ? t('auth.forgot.verifyingOtp') : t('auth.forgot.verifyOtp')}
             </button>
           </>
         )}
@@ -130,7 +130,7 @@ export function ForgotPasswordPage() {
         {step === 'reset' && (
           <>
             <label>
-              New Password
+              {t('auth.forgot.newPassword')}
               <input
                 type="password"
                 value={newPassword}
@@ -139,7 +139,7 @@ export function ForgotPasswordPage() {
             </label>
             {error && <p className="error">{error}</p>}
             <button type="button" disabled={loading} onClick={resetPassword}>
-              {loading ? 'Saving…' : 'Reset Password'}
+              {loading ? t('auth.forgot.savingPassword') : t('auth.forgot.resetPassword')}
             </button>
           </>
         )}
@@ -147,13 +147,13 @@ export function ForgotPasswordPage() {
         {step === 'done' && (
           <>
             <p className="success">{message}</p>
-            <Link to="/login">Back to login</Link>
+            <Link to="/login">{t('common.backToLogin')}</Link>
           </>
         )}
 
         {step !== 'done' && (
           <p className="link-row">
-            <Link to="/login">Back to login</Link>
+            <Link to="/login">{t('common.backToLogin')}</Link>
           </p>
         )}
       </form>

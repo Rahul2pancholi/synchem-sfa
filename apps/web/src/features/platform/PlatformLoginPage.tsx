@@ -1,8 +1,11 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function PlatformLoginPage() {
   const navigate = useNavigate();
+  const { t, languageHeader } = useI18n();
   const [email, setEmail] = useState('superadmin@synchem.co');
   const [password, setPassword] = useState('Platform@123');
   const [error, setError] = useState('');
@@ -16,12 +19,12 @@ export function PlatformLoginPage() {
     try {
       const res = await fetch('/api/v1/platform/token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...languageHeader },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        setError('Invalid platform credentials');
+        setError(t('platform.login.invalidCredentials'));
         return;
       }
 
@@ -29,7 +32,7 @@ export function PlatformLoginPage() {
       localStorage.setItem('platform_token', data.access_token);
       navigate('/platform/tenants');
     } catch {
-      setError('Unable to connect to API');
+      setError(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -38,14 +41,15 @@ export function PlatformLoginPage() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>Platform Admin</h1>
-        <p className="subtitle">Super admin tenant management</p>
+        <LanguageSwitcher className="language-switcher top-right" />
+        <h1>{t('platform.login.title')}</h1>
+        <p className="subtitle">{t('platform.login.subtitle')}</p>
         <label>
-          Email
+          {t('platform.login.email')}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label>
-          Password
+          {t('auth.login.password')}
           <input
             type="password"
             value={password}
@@ -54,7 +58,7 @@ export function PlatformLoginPage() {
         </label>
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? t('common.signingIn') : t('common.signIn')}
         </button>
       </form>
     </div>

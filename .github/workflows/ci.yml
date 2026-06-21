@@ -23,6 +23,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile=false
 
+      - run: pnpm --filter @synchem-sfa/shared-i18n build
+      - run: pnpm --filter @synchem-sfa/shared-i18n test
+
       - run: pnpm --filter @synchem-sfa/shared-types build
 
       - run: pnpm --filter @synchem-sfa/api exec prisma generate
@@ -33,3 +36,4 @@ jobs:
       - run: pnpm --filter @synchem-sfa/api build
 
       - run: pnpm --filter @synchem-sfa/web build
+      - run: pnpm --filter @synchem-sfa/web test

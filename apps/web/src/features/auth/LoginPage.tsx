@@ -1,9 +1,12 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROLE_DASHBOARD_ROUTES } from '@synchem-sfa/shared-types';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { t, languageHeader } = useI18n();
   const [userName, setUserName] = useState('admin');
   const [password, setPassword] = useState('Admin@123');
   const [compCode, setCompCode] = useState('SYN');
@@ -24,12 +27,15 @@ export function LoginPage() {
     try {
       const res = await fetch('/token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          ...languageHeader,
+        },
         body,
       });
 
       if (!res.ok) {
-        setError('Invalid username, password, or company code');
+        setError(t('auth.login.invalidCredentials'));
         return;
       }
 
@@ -46,7 +52,7 @@ export function LoginPage() {
       const home = ROLE_DASHBOARD_ROUTES[data.roleType] ?? '/app';
       navigate(home);
     } catch {
-      setError('Unable to connect to API. Is the server running?');
+      setError(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -55,14 +61,15 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>Synchem SFA</h1>
-        <p className="subtitle">Pharma Sales Force Automation</p>
+        <LanguageSwitcher className="language-switcher top-right" />
+        <h1>{t('auth.login.title')}</h1>
+        <p className="subtitle">{t('auth.login.subtitle')}</p>
         <label>
-          User Name
+          {t('auth.login.userName')}
           <input value={userName} onChange={(e) => setUserName(e.target.value)} />
         </label>
         <label>
-          Password
+          {t('auth.login.password')}
           <input
             type="password"
             value={password}
@@ -70,15 +77,15 @@ export function LoginPage() {
           />
         </label>
         <label>
-          Company Code
+          {t('auth.login.compCode')}
           <input value={compCode} onChange={(e) => setCompCode(e.target.value)} />
         </label>
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? t('common.signingIn') : t('common.signIn')}
         </button>
         <p className="link-row">
-          <Link to="/forgot-password">Forgot password?</Link>
+          <Link to="/forgot-password">{t('auth.login.forgotPassword')}</Link>
         </p>
       </form>
     </div>

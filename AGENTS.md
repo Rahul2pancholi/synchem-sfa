@@ -51,7 +51,15 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 - New endpoint → integration test: success + 401 + tenant isolation + validation error
 - New business rule in service → unit test all branches (mock repository **ports**)
 - Bug fix → regression test
+- **i18n:** every new user-facing string → add keys to `packages/shared-i18n` for **English, Hindi, and Hinglish**; run `@synchem-sfa/shared-i18n` parity tests
 - Run `pnpm lint` and `pnpm test` in affected packages before finishing
+
+### Languages (English + Hindi + Hinglish)
+- Product supports **3 UI languages:** `en` (English), `hi` (Hindi/Devanagari), `hinglish` (Roman Hinglish)
+- **Never hardcode** user-visible labels in components or API error messages — use `@synchem-sfa/shared-i18n` keys
+- Web: `useI18n()` + `LanguageSwitcher`; persist choice in `localStorage` key `appLanguage`
+- API: read `X-App-Language` (or `Accept-Language`) and return localized auth/validation messages where applicable
+- Phase 1+ features: add message keys in the same PR as the UI/API change
 
 ### Scalable architecture (microservice-ready)
 - **Ports & adapters:** services inject `*RepositoryPort`, `StoragePort`, `QueuePort` — never Prisma/S3 directly in business logic
@@ -93,6 +101,7 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 4. Tenant scope on all data access
 5. New DB/external access uses port + adapter (not direct Prisma/lib in service)
 6. Logs include requestId + compCode on key actions
+7. User-facing text uses `@synchem-sfa/shared-i18n` (en / hi / hinglish) — no hardcoded labels
 
 ---
 
