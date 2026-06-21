@@ -166,6 +166,74 @@ async function main() {
     },
   });
 
+  const mpState = await prisma.state.upsert({
+    where: { compCode_stateName: { compCode: 'SYN', stateName: 'Madhya Pradesh' } },
+    update: {},
+    create: { compCode: 'SYN', stateName: 'Madhya Pradesh' },
+  });
+
+  await prisma.city.upsert({
+    where: {
+      compCode_stateId_cityName: { compCode: 'SYN', stateId: mpState.id, cityName: 'Indore' },
+    },
+    update: {},
+    create: { compCode: 'SYN', stateId: mpState.id, cityName: 'Indore' },
+  });
+
+  const hq = await prisma.headQuarter.upsert({
+    where: { compCode_hqName: { compCode: 'SYN', hqName: 'Indore-1' } },
+    update: { stateId: mpState.id },
+    create: { compCode: 'SYN', hqName: 'Indore-1', stateId: mpState.id },
+  });
+
+  await prisma.route.upsert({
+    where: {
+      compCode_headQuarterId_routeName: {
+        compCode: 'SYN',
+        headQuarterId: hq.id,
+        routeName: 'Route-A',
+      },
+    },
+    update: {},
+    create: { compCode: 'SYN', headQuarterId: hq.id, routeName: 'Route-A' },
+  });
+
+  const brand = await prisma.brand.upsert({
+    where: { compCode_brandName: { compCode: 'SYN', brandName: 'Synchem' } },
+    update: {},
+    create: { compCode: 'SYN', brandName: 'Synchem' },
+  });
+
+  const division = await prisma.productDivision.upsert({
+    where: { compCode_divisionName: { compCode: 'SYN', divisionName: 'General' } },
+    update: {},
+    create: { compCode: 'SYN', divisionName: 'General' },
+  });
+
+  await prisma.product.upsert({
+    where: { compCode_productCode: { compCode: 'SYN', productCode: 'PRD001' } },
+    update: { brandId: brand.id, divisionId: division.id },
+    create: {
+      compCode: 'SYN',
+      productName: 'Sample Product',
+      productCode: 'PRD001',
+      brandId: brand.id,
+      divisionId: division.id,
+    },
+  });
+
+  await prisma.specialist.upsert({
+    where: { compCode_specialistName: { compCode: 'SYN', specialistName: 'General Physician' } },
+    update: {},
+    create: { compCode: 'SYN', specialistName: 'General Physician' },
+  });
+
+  await prisma.designation.upsert({
+    where: { compCode_designationName: { compCode: 'SYN', designationName: 'Medical Representative' } },
+    update: {},
+    create: { compCode: 'SYN', designationName: 'Medical Representative' },
+  });
+
   for (const [key, value] of [
     ['SET001', '1'],
     ['SET002', '1'],

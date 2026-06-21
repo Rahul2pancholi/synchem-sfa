@@ -34,7 +34,17 @@ model Company {
   headquarters HeadQuarter[]
   doctors      Doctor[]
   retailers    Retailer[]
+  stockists    Stockist[]
   products     Product[]
+  brands       Brand[]
+  divisions    ProductDivision[]
+  designations Designation[]
+  dosages      Dosage[]
+  specialists  Specialist[]
+  qualifications Qualification[]
+  holidays     Holiday[]
+  expenseHeads ExpenseHead[]
+  expenseTemplates ExpenseTemplate[]
   syncBatches  SyncBatch[]
 
   @@map("companies")
@@ -200,6 +210,7 @@ model Employee {
   role             Role           @relation(fields: [roleId], references: [id])
   hierarchy        Hierarchy?     @relation(fields: [hierarchyId], references: [id])
   headQuarter      HeadQuarter?   @relation(fields: [headQuarterId], references: [id])
+  division         ProductDivision? @relation(fields: [divisionId], references: [id])
   reportingManager Employee?      @relation("EmployeeReportsTo", fields: [reportingManagerId], references: [id])
   directReports    Employee[]     @relation("EmployeeReportsTo")
   refreshTokens    RefreshToken[]
@@ -228,6 +239,7 @@ model State {
 
   company Company @relation(fields: [compCode], references: [compCode])
   cities  City[]
+  headquarters HeadQuarter[]
 
   @@unique([compCode, stateName])
   @@index([compCode])
@@ -261,6 +273,7 @@ model HeadQuarter {
   deletedAt DateTime? @map("deleted_at")
 
   company   Company    @relation(fields: [compCode], references: [compCode])
+  state     State?     @relation(fields: [stateId], references: [id])
   employees Employee[]
   routes    Route[]
 
@@ -282,10 +295,157 @@ model Route {
   headQuarter HeadQuarter @relation(fields: [headQuarterId], references: [id])
   doctors     Doctor[]
   retailers   Retailer[]
+  stockists   Stockist[]
 
   @@unique([compCode, headQuarterId, routeName])
   @@index([compCode, headQuarterId])
   @@map("routes")
+}
+
+// =============================================================================
+// LOOKUP MASTERS (Phase 1)
+// =============================================================================
+
+model ProductDivision {
+  id           String   @id @default(uuid()) @db.Uuid
+  compCode     String   @map("comp_code") @db.VarChar(10)
+  divisionName String   @map("division_name") @db.VarChar(100)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  company   Company    @relation(fields: [compCode], references: [compCode])
+  employees Employee[]
+  products  Product[]
+
+  @@unique([compCode, divisionName])
+  @@index([compCode])
+  @@map("product_divisions")
+}
+
+model Designation {
+  id              String   @id @default(uuid()) @db.Uuid
+  compCode        String   @map("comp_code") @db.VarChar(10)
+  designationName String   @map("designation_name") @db.VarChar(100)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, designationName])
+  @@index([compCode])
+  @@map("designations")
+}
+
+model Dosage {
+  id         String   @id @default(uuid()) @db.Uuid
+  compCode   String   @map("comp_code") @db.VarChar(10)
+  dosageName String   @map("dosage_name") @db.VarChar(100)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, dosageName])
+  @@index([compCode])
+  @@map("dosages")
+}
+
+model Specialist {
+  id             String   @id @default(uuid()) @db.Uuid
+  compCode       String   @map("comp_code") @db.VarChar(10)
+  specialistName String   @map("specialist_name") @db.VarChar(100)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+  doctors Doctor[]
+
+  @@unique([compCode, specialistName])
+  @@index([compCode])
+  @@map("specialists")
+}
+
+model Qualification {
+  id                String   @id @default(uuid()) @db.Uuid
+  compCode          String   @map("comp_code") @db.VarChar(10)
+  qualificationName String   @map("qualification_name") @db.VarChar(100)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+  doctors Doctor[]
+
+  @@unique([compCode, qualificationName])
+  @@index([compCode])
+  @@map("qualifications")
+}
+
+model Holiday {
+  id          String   @id @default(uuid()) @db.Uuid
+  compCode    String   @map("comp_code") @db.VarChar(10)
+  holidayName String   @map("holiday_name") @db.VarChar(100)
+  holidayDate DateTime @map("holiday_date") @db.Date
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, holidayDate, holidayName])
+  @@index([compCode])
+  @@map("holidays")
+}
+
+model ExpenseHead {
+  id        String   @id @default(uuid()) @db.Uuid
+  compCode  String   @map("comp_code") @db.VarChar(10)
+  headName  String   @map("head_name") @db.VarChar(100)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, headName])
+  @@index([compCode])
+  @@map("expense_heads")
+}
+
+model ExpenseTemplate {
+  id           String   @id @default(uuid()) @db.Uuid
+  compCode     String   @map("comp_code") @db.VarChar(10)
+  templateName String   @map("template_name") @db.VarChar(100)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, templateName])
+  @@index([compCode])
+  @@map("expense_templates")
+}
+
+model Stockist {
+  id           String    @id @default(uuid()) @db.Uuid
+  compCode     String    @map("comp_code") @db.VarChar(10)
+  routeId      String?   @map("route_id") @db.Uuid
+  stockistName String    @map("stockist_name") @db.VarChar(255)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+  route   Route?  @relation(fields: [routeId], references: [id])
+
+  @@index([compCode, routeId])
+  @@map("stockists")
 }
 
 // =============================================================================
@@ -307,8 +467,10 @@ model Doctor {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   deletedAt     DateTime? @map("deleted_at")
 
-  company Company @relation(fields: [compCode], references: [compCode])
-  route   Route?  @relation(fields: [routeId], references: [id])
+  company       Company        @relation(fields: [compCode], references: [compCode])
+  route         Route?         @relation(fields: [routeId], references: [id])
+  specialist    Specialist?    @relation(fields: [specialistId], references: [id])
+  qualification Qualification? @relation(fields: [qualificationId], references: [id])
 
   @@index([compCode, routeId])
   @@map("doctors")
@@ -341,6 +503,7 @@ model Brand {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  company Company @relation(fields: [compCode], references: [compCode])
   products Product[]
 
   @@unique([compCode, brandName])
@@ -361,8 +524,9 @@ model Product {
   updatedAt   DateTime @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  company Company @relation(fields: [compCode], references: [compCode])
-  brand   Brand?  @relation(fields: [brandId], references: [id])
+  company  Company          @relation(fields: [compCode], references: [compCode])
+  brand    Brand?           @relation(fields: [brandId], references: [id])
+  division ProductDivision? @relation(fields: [divisionId], references: [id])
 
   @@unique([compCode, productCode])
   @@index([compCode])

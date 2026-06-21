@@ -4,6 +4,7 @@ export * from './menu';
 export * from './platform';
 export * from './masters/hierarchy';
 export * from './masters/employee';
+export * from './masters/master-data';
 export {
   TokenRequestSchema,
   RoleTypeSchema,

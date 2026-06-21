@@ -105,7 +105,7 @@ const en: MessageCatalog = {
   'shell.brand': 'Synchem SFA',
   'shell.noMenus': 'No menus assigned',
   'shell.welcomePhase0':
-    'Phase 0 shell is ready — masters start in Phase 1.',
+    'Phase 1 masters are ready — set up geography, products, and customers from Master Setup.',
   'dashboard.management': 'Management Dashboard',
   'dashboard.manager': 'Manager Dashboard',
   'dashboard.fieldStaff': 'Field Staff Dashboard',

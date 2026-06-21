@@ -146,6 +146,10 @@ apps/api/prisma/       Canonical DB schema + migrations
 
 | Item | Status |
 |------|--------|
-| Hierarchy Master (MAS06) — API + web | Done |
-| Employee Master (MAS07) — API + web | Done |
-| City, HQ, Route, Product, Doctor, … | Pending |
+| Hierarchy + Employee masters | Done |
+| City, HQ, Route | Done |
+| Brand, Product, Doctor, Retailer, Stockist | Done |
+| LOVs (designation, dosage, division, specialist, qualification, holiday, expense) | Done |
+| Bulk upload (7 types) | Done |
+
+**Next:** Phase 2 — Core transactions (RTP, DCR, Weekly Plan, POB)

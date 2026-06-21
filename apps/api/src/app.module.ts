@@ -14,6 +14,7 @@ import { MenusModule } from './modules/menus/menus.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { TenantModule } from './modules/tenant/tenant.module';
 import { HierarchiesModule } from './modules/hierarchies/hierarchies.module';
+import { MasterDataModule } from './modules/master-data/master-data.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { HierarchiesModule } from './modules/hierarchies/hierarchies.module';
     PlatformModule,
     TenantModule,
     HierarchiesModule,
+    MasterDataModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
