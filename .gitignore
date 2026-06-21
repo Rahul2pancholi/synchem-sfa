@@ -1,0 +1,23 @@
+# Never commit credentials
+.env
+.env.*
+!.env.example
+credentials.*
+secrets.*
+
+# Dependencies & build
+node_modules/
+dist/
+.turbo/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log

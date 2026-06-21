@@ -1,0 +1,33 @@
+---
+description: Strict SFA development standards — modularity, DRY, tests, data safety
+alwaysApply: true
+---
+
+# SFA Development Standards (Strict)
+
+Read `AGENTS.md` and `docs/18-DEVELOPMENT-STANDARDS.md` before any code change.
+
+## MUST
+- Modular: one domain = one NestJS module / React feature folder; logic in services & hooks
+- DRY: search codebase first; shared DTOs in `packages/shared-types`; no copy-paste logic
+- Minimal diff: only task-related files; no drive-by refactors, formatting, or dependency bumps
+- Naming: DB `snake_case` + `comp_code`; API JSON `camelCase`; TS files `kebab-case`; use `compCode`, `dcr`, `rtp`, `pob`, `approveStatus` — no synonyms
+- Tenant safety: every Prisma query scoped by JWT `compCode`; integration test for new data modules
+- Atomicity: multi-step writes use `prisma.$transaction()` (submit+approval, POB lines, bulk upload)
+- Tests: new endpoints need integration tests; new business rules need unit tests; bug fixes need regression tests
+- Ports & adapters: services inject repository/storage/queue **ports** — Prisma/S3/Redis only inside adapters
+- Microservice-ready: no cross-module DB access; use exported services or domain events + queue
+- Observability: structured JSON logs with `requestId`, `compCode`, `module`, `action`; no console.log
+- Config: `APP_ENV` dev/uat/prod via validated ConfigService — no hardcoded URLs/secrets in code
+- Health: maintain `/health` and `/ready` (DB + Redis checks)
+
+## MUST NOT
+- Put business logic in controllers or presentational components
+- Import another module's internal files or repositories (use module exports only)
+- Unscoped DB queries without `compCode`
+- Partial writes without transaction when failure causes inconsistent state
+- Empty catch blocks; log errors, never log secrets
+- Import PrismaService directly in business services (use repository port)
+
+## Before finishing
+Run lint + tests on affected packages. Confirm PR touches only related files.

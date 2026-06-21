@@ -1,0 +1,39 @@
+---
+description: NestJS + Prisma backend patterns for SFA API
+globs: apps/api/**/*.ts,packages/**/*.ts
+alwaysApply: false
+---
+
+# Backend Patterns
+
+## Module layout
+`*.module.ts` → `*.controller.ts` (thin) → `*.service.ts` (logic) → `ports/*.port.ts` → `adapters/prisma-*.repository.ts`
+
+## Controller
+- Validate with DTO + Zod/class-validator
+- Delegate to service immediately — no Prisma in controller
+
+## Service
+- Inject repository **port** via DI token — not PrismaService directly
+- Business logic only — no HTTP, no env vars, no SDK imports
+
+## Repository adapter
+- Implements port interface; Prisma/SQL lives here only
+- Tenant scope on every query (`compCode` from method args, not global state alone)
+
+## Service transaction pattern
+```typescript
+await this.dcrRepo.submit(compCode, input, async (tx) => {
+  // adapter runs prisma.$transaction internally OR accepts tx client
+});
+```
+
+## Tenant context
+Always pass `compCode` from authenticated context into service methods — never from request body alone.
+
+## API response
+Return `{ responseCode, errorObj, data }` — business errors use `417`.
+
+## Tests
+- `*.service.spec.ts` — mock repository port
+- E2E — real adapters against test DB

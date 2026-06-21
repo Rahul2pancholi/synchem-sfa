@@ -1,0 +1,650 @@
+openapi: 3.0.3
+info:
+  title: Synchem SFA API
+  description: |
+    Multi-tenant Pharma SFA SaaS API — v1 draft.
+    Parity target: Synchem Salestrip (synchem.salestrip.in).
+    Full spec grows per phase — see docs/19-MVP-SCREEN-LIST.md.
+  version: 1.0.0
+  contact:
+    name: SFA Platform Team
+
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+  - url: https://api-uat.example.com
+    description: UAT
+  - url: https://api.example.com
+    description: Production
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Platform
+  - name: Tenant
+  - name: Menus
+  - name: Sync
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      operationId: getHealth
+      responses:
+        '200':
+          description: Process alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe (DB + Redis)
+      operationId: getReady
+      responses:
+        '200':
+          description: Ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+        '503':
+          description: Not ready
+
+  /token:
+    post:
+      tags: [Auth]
+      summary: OAuth2 password grant (Salestrip parity)
+      description: |
+        username format: `{userName},{compCode}` e.g. `admin,SYN`
+      operationId: token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant_type, username, password]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [password]
+                username:
+                  type: string
+                  example: admin,SYN
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: New tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessTokenResponse'
+
+  /api/v1/platform/companies:
+    get:
+      tags: [Platform]
+      summary: List tenants (platform super admin)
+      operationId: listCompanies
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Company list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessCompanyListResponse'
+    post:
+      tags: [Platform]
+      summary: Create tenant
+      operationId: createCompany
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessCompanyResponse'
+
+  /api/v1/platform/companies/{compCode}:
+    get:
+      tags: [Platform]
+      summary: Get tenant by compCode
+      operationId: getCompany
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CompCodePath'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessCompanyResponse'
+
+  /api/v1/menus:
+    get:
+      tags: [Menus]
+      summary: Role-based menu tree for logged-in user
+      operationId: getMenus
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessMenuListResponse'
+
+  /api/v1/employees/me:
+    get:
+      tags: [Tenant]
+      summary: Current employee profile
+      operationId: getCurrentEmployee
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessEmployeeResponse'
+
+  /api/v1/sync/push:
+    post:
+      tags: [Sync]
+      summary: Mobile offline push — delta changes
+      operationId: syncPush
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncPushRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessSyncPushResponse'
+        '409':
+          description: Version conflict in batch
+
+  /api/v1/sync/pull:
+    post:
+      tags: [Sync]
+      summary: Mobile delta pull since lastSyncAt
+      operationId: syncPull
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncPullRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessSyncPullResponse'
+
+  /api/v1/sync/masters/bootstrap:
+    post:
+      tags: [Sync]
+      summary: Initial master download for MR territory
+      operationId: syncMastersBootstrap
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncBootstrapRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessSyncBootstrapResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CompCodePath:
+      name: compCode
+      in: path
+      required: true
+      schema:
+        type: string
+        example: SYN
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    IdempotencyKeyHeader:
+      name: X-Idempotency-Key
+      in: header
+      description: Same as syncBatchId for push retries
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+        env:
+          type: string
+          enum: [dev, uat, prod]
+
+    ReadyResponse:
+      allOf:
+        - $ref: '#/components/schemas/HealthResponse'
+        - type: object
+          properties:
+            checks:
+              type: object
+              properties:
+                db:
+                  type: string
+                  enum: [ok, fail]
+                redis:
+                  type: string
+                  enum: [ok, fail]
+
+    ApiErrorResponse:
+      type: object
+      required: [responseCode, errorObj]
+      properties:
+        responseCode:
+          type: integer
+          example: 417
+        errorObj:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+        data:
+          nullable: true
+
+    ApiSuccessWrapper:
+      type: object
+      required: [responseCode, errorObj, data]
+      properties:
+        responseCode:
+          type: integer
+          example: 200
+        errorObj:
+          nullable: true
+        data:
+          nullable: true
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        expiredAt:
+          type: string
+          format: date-time
+        empId:
+          type: string
+        roleType:
+          type: string
+          enum: [AD, MAN, FS]
+        compCode:
+          type: string
+        compName:
+          type: string
+        menuList:
+          type: string
+          description: JSON string of menus (Salestrip parity)
+        employeeObj:
+          type: string
+          description: JSON string of employee profile
+        configurationSetting:
+          type: string
+          description: JSON string of tenant settings
+
+    ApiSuccessTokenResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TokenResponse'
+
+    Company:
+      type: object
+      properties:
+        compCode:
+          type: string
+        compName:
+          type: string
+        industryType:
+          type: string
+        timezone:
+          type: string
+          example: Asia/Kolkata
+        locale:
+          type: string
+          example: en-IN
+        active:
+          type: boolean
+
+    CreateCompanyRequest:
+      type: object
+      required: [compCode, compName]
+      properties:
+        compCode:
+          type: string
+          minLength: 2
+          maxLength: 10
+        compName:
+          type: string
+        industryType:
+          type: string
+          default: SYN
+        timezone:
+          type: string
+          default: Asia/Kolkata
+
+    ApiSuccessCompanyResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Company'
+
+    ApiSuccessCompanyListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Company'
+                page:
+                  type: integer
+                pageSize:
+                  type: integer
+                total:
+                  type: integer
+
+    MenuItem:
+      type: object
+      properties:
+        menuId:
+          type: string
+        menuCode:
+          type: string
+        menuName:
+          type: string
+        menuUrl:
+          type: string
+        canView:
+          type: boolean
+        canAdd:
+          type: boolean
+        canEdit:
+          type: boolean
+        canDelete:
+          type: boolean
+        childMenus:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+
+    ApiSuccessMenuListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/MenuItem'
+
+    Employee:
+      type: object
+      properties:
+        empId:
+          type: string
+        userName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        roleType:
+          type: string
+        headQuarterId:
+          type: string
+        compCode:
+          type: string
+
+    ApiSuccessEmployeeResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Employee'
+
+    SyncChange:
+      type: object
+      required: [clientId, entityType, operation, payload]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        serverId:
+          type: string
+          nullable: true
+        entityType:
+          type: string
+          enum: [daily_call_report, gps_check_in, dcr_doctor_visit, dcr_retailer_visit]
+        operation:
+          type: string
+          enum: [create, update, delete]
+        version:
+          type: integer
+          minimum: 1
+        payload:
+          type: object
+          additionalProperties: true
+
+    SyncPushRequest:
+      type: object
+      required: [syncBatchId, changes]
+      properties:
+        syncBatchId:
+          type: string
+          format: uuid
+        deviceId:
+          type: string
+        clientTimestamp:
+          type: string
+          format: date-time
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        schemaVersion:
+          type: integer
+          default: 1
+        changes:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/SyncChange'
+
+    SyncPushResult:
+      type: object
+      properties:
+        syncBatchId:
+          type: string
+        serverTimestamp:
+          type: string
+          format: date-time
+        applied:
+          type: array
+          items:
+            type: object
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              clientId:
+                type: string
+              code:
+                type: string
+              message:
+                type: string
+        serverChanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncChange'
+
+    ApiSuccessSyncPushResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/SyncPushResult'
+
+    SyncPullRequest:
+      type: object
+      properties:
+        lastSyncAt:
+          type: string
+          format: date-time
+        entityTypes:
+          type: array
+          items:
+            type: string
+        nextCursor:
+          type: string
+
+    ApiSuccessSyncPullResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                serverChanges:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SyncChange'
+                nextCursor:
+                  type: string
+                  nullable: true
+
+    SyncBootstrapRequest:
+      type: object
+      required: [headQuarterId]
+      properties:
+        headQuarterId:
+          type: string
+        routeIds:
+          type: array
+          items:
+            type: string
+
+    ApiSuccessSyncBootstrapResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiSuccessWrapper'
+        - type: object
+          properties:
+            data:
+              type: object
+              description: Master snapshot — doctors, retailers, products, rtp

@@ -1,0 +1,33 @@
+---
+description: Ports/adapters, env config, and microservice-ready module boundaries
+globs: apps/api/**/*.ts,packages/**/*.ts,infra/**/*
+alwaysApply: false
+---
+
+# Scalability & Adapter Patterns
+
+## Layer flow
+`Controller → Service → RepositoryPort → PrismaAdapter`
+
+## New module checklist
+- [ ] `ports/{entity}.repository.port.ts` + DI token symbol
+- [ ] `adapters/prisma-{entity}.repository.ts` — Prisma types stay here only
+- [ ] Service constructor `@Inject(TOKEN) private repo: Port`
+- [ ] Unit tests mock port; integration tests use real adapter
+
+## External integrations
+Wrap in port under `infrastructure/`: `StoragePort`, `QueuePort`, `CachePort`, `PushNotificationPort`, `EmailPort`
+
+## Cross-module
+- Call other module's **exported Service** OR publish domain event to queue
+- Never query another module's tables from your repository
+
+## Config
+- `APP_ENV`: dev | uat | prod — validate with Zod at startup
+- Access via ConfigService only — never scatter `process.env` in services
+
+## Logging
+Pino JSON: `{ requestId, compCode, empId, module, action, durationMs, env }`
+
+## Extract-ready modules
+Keep `reports/`, `sync/`, `notifications/` self-contained for future `apps/report-service` split.

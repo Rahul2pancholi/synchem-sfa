@@ -1,0 +1,29 @@
+---
+description: CI/CD, security, migrations, and API contract rules
+globs: .github/**/*,openapi/**/*,prisma/**/*,infra/**/*
+alwaysApply: false
+---
+
+# CI/CD, Security & Migrations
+
+## CI (every PR)
+lint → typecheck → test → build → Docker build. Do not skip checks.
+
+## Branches
+`feature/*` CI only · `develop`→dev · `release/*`→uat · `main`→prod (manual gate)
+
+## Migrations
+- Edit `prisma/schema.prisma` → `prisma migrate dev --name desc`
+- Commit SQL + schema together; forward-fix preferred over rollback
+- Prod: backup → `migrate deploy` → verify `/ready`
+
+## OpenAPI
+Update `openapi/sfa-api-v1.yaml` when adding/changing public endpoints.
+
+## Security
+- Rate limit `/token` and `/sync/push`
+- RBAC guard every endpoint
+- No secrets in code; tenant test on every new data module
+
+## Approvals
+Use generic ApprovalService — config per entityType, not duplicate queue logic.
