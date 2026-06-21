@@ -14,7 +14,7 @@ This repository is the **specification + build plan** for a SaaS SFA platform:
 - **Scale:** 20–40 users Day 1 → **500 users in 6 months**
 - **Reference:** Salestrip feature parity (152 screens, 327 APIs) over 9–10 months
 
-**Build status:** Research complete — application code not started yet.
+**Build status:** Phase 0 started — API + web scaffold on `develop` branch. See [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## ⭐ Final Build Plan
 

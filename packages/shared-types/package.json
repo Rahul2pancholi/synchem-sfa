@@ -1,0 +1,21 @@
+{
+  "name": "@synchem-sfa/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'no lint yet'",
+    "test": "echo 'no tests yet'"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "zod": "^3.25.67"
+  },
+  "dependencies": {
+    "zod": "^3.25.67"
+  }
+}

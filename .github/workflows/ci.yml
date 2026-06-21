@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile=false
+
+      - run: pnpm --filter @synchem-sfa/shared-types build
+
+      - run: pnpm --filter @synchem-sfa/api exec prisma generate
+
+      - run: pnpm --filter @synchem-sfa/api test
+
+      - run: pnpm --filter @synchem-sfa/api build
+
+      - run: pnpm --filter @synchem-sfa/web build
