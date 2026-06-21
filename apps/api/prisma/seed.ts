@@ -119,6 +119,53 @@ async function main() {
 
   await seedAdminPermissions('SYN', role.id);
 
+  const mrRole = await prisma.role.upsert({
+    where: { compCode_roleName: { compCode: 'SYN', roleName: 'MR' } },
+    update: {},
+    create: {
+      compCode: 'SYN',
+      roleName: 'MR',
+      roleType: 'FS',
+    },
+  });
+
+  await seedAdminPermissions('SYN', mrRole.id);
+
+  const adHierarchy = await prisma.hierarchy.upsert({
+    where: { compCode_hierarchyCode: { compCode: 'SYN', hierarchyCode: 'AD-INDORE' } },
+    update: {},
+    create: {
+      compCode: 'SYN',
+      hierarchyCode: 'AD-INDORE',
+      hierarchyType: 'AD',
+      hierarchyLevel: 1,
+    },
+  });
+
+  const rmHierarchy = await prisma.hierarchy.upsert({
+    where: { compCode_hierarchyCode: { compCode: 'SYN', hierarchyCode: 'RM-INDORE' } },
+    update: { reportingHierarchyId: adHierarchy.id },
+    create: {
+      compCode: 'SYN',
+      hierarchyCode: 'RM-INDORE',
+      hierarchyType: 'RM',
+      hierarchyLevel: 2,
+      reportingHierarchyId: adHierarchy.id,
+    },
+  });
+
+  await prisma.hierarchy.upsert({
+    where: { compCode_hierarchyCode: { compCode: 'SYN', hierarchyCode: 'MR-INDORE' } },
+    update: { reportingHierarchyId: rmHierarchy.id },
+    create: {
+      compCode: 'SYN',
+      hierarchyCode: 'MR-INDORE',
+      hierarchyType: 'MR',
+      hierarchyLevel: 4,
+      reportingHierarchyId: rmHierarchy.id,
+    },
+  });
+
   for (const [key, value] of [
     ['SET001', '1'],
     ['SET002', '1'],

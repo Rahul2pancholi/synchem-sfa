@@ -209,3 +209,43 @@ button:disabled {
   padding: 1rem 1.25rem;
   border-radius: 12px;
 }
+
+.nav-item a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.nav-item.file a:hover {
+  color: #93c5fd;
+}
+
+.master-page h1 {
+  margin-bottom: 1rem;
+}
+
+.master-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.master-form.grid-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.master-form input,
+.master-form select {
+  min-width: 160px;
+}
+
+.tree-preview {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto;
+  min-height: 80px;
+}

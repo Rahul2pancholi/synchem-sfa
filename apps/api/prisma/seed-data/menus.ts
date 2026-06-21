@@ -39,4 +39,20 @@ export const SEED_MENUS: SeedMenuDefinition[] = [
   { menuCode: 'REP', menuName: 'Reports', menuType: 'R', menuUrl: null, parentCode: null, sortOrder: 40 },
   { menuCode: 'ADM', menuName: 'Admin', menuType: 'T', menuUrl: null, parentCode: null, sortOrder: 50 },
   { menuCode: 'SET', menuName: 'Setting', menuType: 'T', menuUrl: null, parentCode: null, sortOrder: 60 },
+  {
+    menuCode: 'MAS06',
+    menuName: 'Hierarchy Master',
+    menuType: 'T',
+    menuUrl: '#/app/hierachy',
+    parentCode: 'MAS',
+    sortOrder: 21,
+  },
+  {
+    menuCode: 'MAS07',
+    menuName: 'Employee Master',
+    menuType: 'T',
+    menuUrl: '#/app/employees',
+    parentCode: 'MAS',
+    sortOrder: 22,
+  },
 ];

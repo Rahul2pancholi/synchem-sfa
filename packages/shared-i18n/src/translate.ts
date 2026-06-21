@@ -1,5 +1,5 @@
 import { DEFAULT_APP_LANGUAGE, type AppLanguage } from './locales';
-import { MESSAGES, type MessageKey } from './messages/phase0';
+import { MESSAGES, type MessageKey } from './messages/index';
 
 export function translate(key: MessageKey, language: AppLanguage = DEFAULT_APP_LANGUAGE): string {
   return MESSAGES[language][key] ?? MESSAGES.en[key] ?? key;

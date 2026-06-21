@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -22,6 +22,13 @@ function flattenMenus(items: LegacyMenuItem[], depth = 0): Array<{ item: LegacyM
   }
 
   return rows;
+}
+
+function menuHref(menuUrl: string | null): string | null {
+  if (!menuUrl) {
+    return null;
+  }
+  return menuUrl.replace(/^#\//, '/');
 }
 
 export function DashboardShell() {
@@ -53,15 +60,18 @@ export function DashboardShell() {
           {navItems.length === 0 ? (
             <div className="nav-item muted">{t('shell.noMenus')}</div>
           ) : (
-            navItems.map(({ item, depth }) => (
-              <div
-                key={item.MenuId}
-                className={`nav-item ${item.MenuBehaviour === 'FILE' ? 'file' : 'folder'}`}
-                style={{ paddingLeft: `${12 + depth * 14}px` }}
-              >
-                {item.MenuName}
-              </div>
-            ))
+            navItems.map(({ item, depth }) => {
+              const href = item.MenuBehaviour === 'FILE' ? menuHref(item.MenuUrl) : null;
+              return (
+                <div
+                  key={item.MenuId}
+                  className={`nav-item ${item.MenuBehaviour === 'FILE' ? 'file' : 'folder'}`}
+                  style={{ paddingLeft: `${12 + depth * 14}px` }}
+                >
+                  {href ? <Link to={href}>{item.MenuName}</Link> : item.MenuName}
+                </div>
+              );
+            })
           )}
         </nav>
       </aside>

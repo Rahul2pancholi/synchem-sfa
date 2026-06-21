@@ -141,3 +141,11 @@ apps/api/prisma/       Canonical DB schema + migrations
 | Trilingual UI (English, Hindi, Hinglish) | Done — `packages/shared-i18n` |
 
 **Next:** Phase 1 — Master data (Employee, Hierarchy, City, HQ, Route, Doctor, …)
+
+## Phase 1 progress
+
+| Item | Status |
+|------|--------|
+| Hierarchy Master (MAS06) — API + web | Done |
+| Employee Master (MAS07) — API + web | Done |
+| City, HQ, Route, Product, Doctor, … | Pending |

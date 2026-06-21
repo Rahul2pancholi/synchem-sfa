@@ -7,5 +7,5 @@ export {
   resolveAppLanguage,
   type AppLanguage,
 } from './locales';
-export { PHASE0_MESSAGE_KEYS, MESSAGES, type MessageKey } from './messages/phase0';
+export { MESSAGE_KEYS, PHASE0_MESSAGE_KEYS, PHASE1_MESSAGE_KEYS, MESSAGES, type MessageKey } from './messages/index';
 export { t, translate } from './translate';

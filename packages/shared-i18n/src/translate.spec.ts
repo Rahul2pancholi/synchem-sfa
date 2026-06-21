@@ -1,5 +1,5 @@
 import { APP_LANGUAGES, resolveAppLanguage } from './locales';
-import { MESSAGES, PHASE0_MESSAGE_KEYS } from './messages/phase0';
+import { MESSAGES, MESSAGE_KEYS } from './messages/index';
 import { translate } from './translate';
 
 describe('resolveAppLanguage', () => {
@@ -26,9 +26,9 @@ describe('resolveAppLanguage', () => {
 });
 
 describe('message catalogs', () => {
-  it('defines every Phase 0 key in all supported languages', () => {
+  it('defines every message key in all supported languages', () => {
     for (const language of APP_LANGUAGES) {
-      for (const key of PHASE0_MESSAGE_KEYS) {
+      for (const key of MESSAGE_KEYS) {
         const value = MESSAGES[language][key];
         expect(value).toBeTruthy();
         expect(value.trim().length).toBeGreaterThan(0);

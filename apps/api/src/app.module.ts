@@ -13,6 +13,7 @@ import { HealthModule } from './modules/health/health.module';
 import { MenusModule } from './modules/menus/menus.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { HierarchiesModule } from './modules/hierarchies/hierarchies.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
     AuthModule,
     PlatformModule,
     TenantModule,
+    HierarchiesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
