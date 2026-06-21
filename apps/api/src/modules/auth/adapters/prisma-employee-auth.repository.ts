@@ -38,6 +38,7 @@ export class PrismaEmployeeAuthRepository implements EmployeeAuthRepositoryPort 
       passwordHash: employee.passwordHash,
       firstName: employee.firstName,
       lastName: employee.lastName,
+      roleId: employee.roleId,
       roleType: employee.role.roleType as RoleType,
       roleName: employee.role.roleName,
       companyName: employee.company.compName,

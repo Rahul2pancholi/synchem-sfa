@@ -37,6 +37,7 @@ export function LoginPage() {
       localStorage.setItem('roleType', data.roleType);
       localStorage.setItem('compCode', data.compCode);
       localStorage.setItem('employeeObj', data.employeeObj);
+      localStorage.setItem('menuList', data.menuList ?? '[]');
       navigate('/app');
     } catch {
       setError('Unable to connect to API. Is the server running?');

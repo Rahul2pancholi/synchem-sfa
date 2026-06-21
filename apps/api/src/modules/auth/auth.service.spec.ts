@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import type { EmployeeAuthRepositoryPort } from './ports/employee-auth.repository.port';
 import { EMPLOYEE_AUTH_REPOSITORY } from './ports/employee-auth.repository.port';
 import { AppConfigService } from '../../config/config.service';
+import { MenusService } from '../menus/menus.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -27,6 +28,10 @@ describe('AuthService', () => {
         {
           provide: AppConfigService,
           useValue: { jwtSecret: 'x'.repeat(32), jwtExpiresIn: '12h' },
+        },
+        {
+          provide: MenusService,
+          useValue: { getLegacyMenuListJson: jest.fn().mockResolvedValue('[]') },
         },
       ],
     }).compile();
@@ -52,6 +57,7 @@ describe('AuthService', () => {
       passwordHash: hash,
       firstName: 'Admin',
       lastName: 'User',
+      roleId: 'role-1',
       roleType: 'AD',
       roleName: 'ADMIN',
       companyName: 'Synchem',
@@ -61,5 +67,6 @@ describe('AuthService', () => {
     const result = await service.login('admin,SYN', 'Admin@123');
     expect(result.access_token).toBe('jwt-token');
     expect(result.compCode).toBe('SYN');
+    expect(result.menuList).toBe('[]');
   });
 });

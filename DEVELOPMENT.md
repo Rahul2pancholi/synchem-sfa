@@ -73,6 +73,8 @@ pnpm prisma:seed
 
 Default login: **admin** / **Admin@123** / company code **SYN**
 
+Platform super admin: **superadmin@synchem.co** / **Platform@123**
+
 ## 4. Run apps
 
 ```bash

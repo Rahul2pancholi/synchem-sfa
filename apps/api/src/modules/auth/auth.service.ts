@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import type { JwtPayload } from '@synchem-sfa/shared-types';
 import { AppConfigService } from '../../config/config.service';
+import { MenusService } from '../menus/menus.service';
 import {
   EMPLOYEE_AUTH_REPOSITORY,
   type EmployeeAuthRepositoryPort,
@@ -38,6 +39,7 @@ export class AuthService {
     private readonly employeeAuthRepo: EmployeeAuthRepositoryPort,
     private readonly jwtService: JwtService,
     private readonly config: AppConfigService,
+    private readonly menusService: MenusService,
   ) {}
 
   async login(usernameField: string, password: string): Promise<TokenResult> {
@@ -71,10 +73,16 @@ export class AuthService {
       industryType: employee.industryType,
       roleType: employee.roleType,
       companyName: employee.companyName,
+      roleId: employee.roleId,
+      actorType: 'tenant',
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
     const expiresInSeconds = 12 * 60 * 60;
+    const menuList = await this.menusService.getLegacyMenuListJson(
+      employee.compCode,
+      employee.roleId,
+    );
 
     this.logger.log({
       compCode: employee.compCode,
@@ -101,7 +109,7 @@ export class AuthService {
       roleType: employee.roleType,
       compCode: employee.compCode,
       compName: employee.companyName,
-      menuList: '[]',
+      menuList,
       employeeObj: JSON.stringify(employeeObj),
       configurationSetting: '{}',
       isFirstLogin: 'false',

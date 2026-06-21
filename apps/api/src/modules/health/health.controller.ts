@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { AppConfigService } from '../../config/config.service';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 import { apiSuccess } from '@synchem-sfa/shared-types';
+import { Public } from '../../common/decorators/public.decorator';
 
 @Controller()
 export class HealthController {
@@ -10,6 +11,7 @@ export class HealthController {
     private readonly config: AppConfigService,
   ) {}
 
+  @Public()
   @Get('health')
   health() {
     return {
@@ -19,6 +21,7 @@ export class HealthController {
     };
   }
 
+  @Public()
   @Get('ready')
   async ready() {
     const dbOk = await this.prisma.isHealthy();

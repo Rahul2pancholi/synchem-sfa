@@ -10,6 +10,7 @@ node_modules/
 dist/
 .turbo/
 coverage/
+.jest-localstorage
 
 # OS
 .DS_Store

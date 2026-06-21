@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './infrastructure/persistence/prisma.module';
-import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
+import { MenusModule } from './modules/menus/menus.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { TenantModule } from './modules/tenant/tenant.module';
 
 @Module({
   imports: [
@@ -28,7 +33,16 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     PrismaModule,
     HealthModule,
+    MenusModule,
     AuthModule,
+    PlatformModule,
+    TenantModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}

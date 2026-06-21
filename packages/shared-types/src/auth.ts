@@ -11,19 +11,24 @@ export type TokenRequest = z.infer<typeof TokenRequestSchema>;
 export const RoleTypeSchema = z.enum(['AD', 'MAN', 'FS']);
 export type RoleType = z.infer<typeof RoleTypeSchema>;
 
+export type ActorType = 'tenant' | 'platform';
+
 export interface JwtPayload {
   sub: string;
-  empId: string;
+  empId?: string;
   fullName: string;
-  compCode: string;
-  industryType: string;
-  roleType: RoleType;
-  companyName: string;
+  compCode?: string;
+  industryType?: string;
+  roleType?: RoleType;
+  companyName?: string;
+  roleId?: string;
+  actorType: ActorType;
 }
 
 export interface TenantContext {
   compCode: string;
   empId: string;
   roleType: RoleType;
+  roleId: string;
   userName: string;
 }

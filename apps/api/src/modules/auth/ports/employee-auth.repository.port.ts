@@ -7,6 +7,7 @@ export interface AuthEmployeeRecord {
   passwordHash: string;
   firstName: string;
   lastName: string | null;
+  roleId: string;
   roleType: RoleType;
   roleName: string;
   companyName: string;
