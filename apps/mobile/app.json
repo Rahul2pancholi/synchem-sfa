@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Synchem SFA",
+    "slug": "synchem-sfa",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "synchem-sfa",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.synchem.sfa"
+    },
+    "android": {
+      "package": "co.synchem.sfa",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Synchem SFA to record field check-in location."
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

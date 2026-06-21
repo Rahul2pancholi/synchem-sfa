@@ -1,0 +1,104 @@
+import type { AppLanguage } from '../locales';
+
+export const PHASE3_MESSAGE_KEYS = [
+  'mobile.login.title',
+  'mobile.login.subtitle',
+  'mobile.login.userName',
+  'mobile.login.password',
+  'mobile.login.compCode',
+  'mobile.login.signIn',
+  'mobile.login.failed',
+  'mobile.mpin.setupTitle',
+  'mobile.mpin.unlockTitle',
+  'mobile.mpin.enter',
+  'mobile.mpin.confirm',
+  'mobile.mpin.invalid',
+  'mobile.mpin.save',
+  'mobile.dashboard.title',
+  'mobile.dashboard.welcome',
+  'mobile.dashboard.pendingSync',
+  'mobile.dashboard.syncNow',
+  'mobile.dashboard.syncSuccess',
+  'mobile.dashboard.syncFailed',
+  'mobile.dashboard.checkIn',
+  'mobile.dashboard.checkOut',
+  'mobile.dashboard.locationDenied',
+  'mobile.dashboard.newDcr',
+  'mobile.dashboard.viewDcrs',
+  'mobile.dashboard.logout',
+  'mobile.dcr.title',
+  'mobile.dcr.empty',
+  'mobile.dcr.createTitle',
+  'mobile.dcr.workDate',
+  'mobile.dcr.doctor',
+  'mobile.dcr.saveDraft',
+  'mobile.dcr.submit',
+  'mobile.dcr.submitSuccess',
+  'mobile.dcr.statusDraft',
+  'mobile.dcr.statusSubmitted',
+  'mobile.dcr.statusSynced',
+] as const;
+
+export type Phase3MessageKey = (typeof PHASE3_MESSAGE_KEYS)[number];
+
+type Phase3Catalog = Record<Phase3MessageKey, string>;
+
+const en: Phase3Catalog = {
+  'mobile.login.title': 'Field Staff Login',
+  'mobile.login.subtitle': 'Sign in with employee ID and company code',
+  'mobile.login.userName': 'User Name',
+  'mobile.login.password': 'Password',
+  'mobile.login.compCode': 'Company Code',
+  'mobile.login.signIn': 'Sign In',
+  'mobile.login.failed': 'Login failed. Check credentials.',
+  'mobile.mpin.setupTitle': 'Set MPIN',
+  'mobile.mpin.unlockTitle': 'Enter MPIN',
+  'mobile.mpin.enter': '4-digit MPIN',
+  'mobile.mpin.confirm': 'Confirm MPIN',
+  'mobile.mpin.invalid': 'MPIN must be 4 digits and match confirmation',
+  'mobile.mpin.save': 'Save MPIN',
+  'mobile.dashboard.title': 'Field Dashboard',
+  'mobile.dashboard.welcome': 'Welcome',
+  'mobile.dashboard.pendingSync': 'Pending sync items',
+  'mobile.dashboard.syncNow': 'Sync Now',
+  'mobile.dashboard.syncSuccess': 'Sync completed',
+  'mobile.dashboard.syncFailed': 'Sync failed. Will retry when online.',
+  'mobile.dashboard.checkIn': 'GPS Check-In',
+  'mobile.dashboard.checkOut': 'GPS Check-Out',
+  'mobile.dashboard.locationDenied': 'Location permission is required for check-in',
+  'mobile.dashboard.newDcr': 'New DCR',
+  'mobile.dashboard.viewDcrs': 'My DCRs',
+  'mobile.dashboard.logout': 'Logout',
+  'mobile.dcr.title': 'Daily Call Reports',
+  'mobile.dcr.empty': 'No DCR saved yet',
+  'mobile.dcr.createTitle': 'Create DCR',
+  'mobile.dcr.workDate': 'Work Date (YYYY-MM-DD)',
+  'mobile.dcr.doctor': 'Doctor',
+  'mobile.dcr.saveDraft': 'Save Draft',
+  'mobile.dcr.submit': 'Submit DCR',
+  'mobile.dcr.submitSuccess': 'DCR submitted offline',
+  'mobile.dcr.statusDraft': 'Draft',
+  'mobile.dcr.statusSubmitted': 'Submitted',
+  'mobile.dcr.statusSynced': 'Synced',
+};
+
+const hi: Partial<Phase3Catalog> = {
+  'mobile.login.title': 'फील्ड स्टाफ लॉगिन',
+  'mobile.login.signIn': 'साइन इन',
+  'mobile.dashboard.title': 'फील्ड डैशबोर्ड',
+  'mobile.dashboard.syncNow': 'अभी सिंक करें',
+  'mobile.dcr.title': 'दैनिक कॉल रिपोर्ट',
+};
+
+const hinglish: Partial<Phase3Catalog> = {
+  'mobile.login.title': 'Field Staff Login',
+  'mobile.login.signIn': 'Sign in karo',
+  'mobile.dashboard.syncNow': 'Abhi sync karo',
+  'mobile.dcr.title': 'Daily Call Reports',
+};
+
+export const PHASE3_MESSAGES = {
+  en,
+  hi: { ...en, ...hi },
+  hinglish: { ...en, ...hinglish },
+};

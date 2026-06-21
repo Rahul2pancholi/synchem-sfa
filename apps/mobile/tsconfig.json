@@ -1,0 +1,13 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "experimentalDecorators": true,
+    "paths": {
+      "@synchem-sfa/shared-i18n": ["../../packages/shared-i18n/src/index.ts"],
+      "@synchem-sfa/shared-types": ["../../packages/shared-types/src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

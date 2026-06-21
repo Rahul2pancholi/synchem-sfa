@@ -154,3 +154,32 @@ apps/api/prisma/       Canonical DB schema + migrations
 | Master screens: antd Table/Form/Card | Done |
 
 **Next:** Phase 2 — Core transactions (RTP, DCR, Weekly Plan, POB)
+
+## Phase 3 checklist (mobile MVP — started)
+
+| Item | Status |
+|------|--------|
+| Expo app in monorepo (`apps/mobile`) | Done |
+| WatermelonDB schema (DCR, masters, GPS, sync meta) | Done |
+| Mobile login (`EMPLOYEE` + compCode) + MPIN | Done |
+| NestJS sync API (`/sync/push`, `/sync/pull`, `/sync/masters/bootstrap`) | Done |
+| Offline DCR create / submit (local DB) | Done |
+| GPS check-in / check-out (`expo-location`) | Done |
+| Field staff dashboard + manual sync | Done |
+| Seed MR user (`mr1` / `Mr@123`) + sample doctor/retailer | Done |
+| Firebase push notifications | Deferred |
+| Load test: 100 concurrent syncs | Deferred |
+
+### Run mobile (dev)
+
+```bash
+# Terminal 1 — API (same as web)
+pnpm dev:api
+
+# Terminal 2 — Expo (iOS simulator / Android emulator / Expo Go)
+pnpm dev:mobile
+```
+
+Set `EXPO_PUBLIC_API_URL` if API is not on `http://localhost:3000` (use machine LAN IP for physical device).
+
+**Mobile login:** `mr1` / `Mr@123` / `SYN`

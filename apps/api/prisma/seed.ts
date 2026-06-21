@@ -198,6 +198,42 @@ async function main() {
     create: { compCode: 'SYN', headQuarterId: hq.id, routeName: 'Route-A' },
   });
 
+  const route = await prisma.route.findFirstOrThrow({
+    where: { compCode: 'SYN', routeName: 'Route-A' },
+  });
+
+  const specialist = await prisma.specialist.findFirstOrThrow({
+    where: { compCode: 'SYN', specialistName: 'General Physician' },
+  });
+
+  await prisma.doctor.upsert({
+    where: { id: '00000000-0000-4000-8000-000000000101' },
+    update: { routeId: route.id, active: true },
+    create: {
+      id: '00000000-0000-4000-8000-000000000101',
+      compCode: 'SYN',
+      routeId: route.id,
+      doctorName: 'Dr. Sample Sharma',
+      specialistId: specialist.id,
+      mobileNo: '9876543210',
+      approveStatus: 'APPROVED',
+      active: true,
+    },
+  });
+
+  await prisma.retailer.upsert({
+    where: { id: '00000000-0000-4000-8000-000000000201' },
+    update: { routeId: route.id, active: true },
+    create: {
+      id: '00000000-0000-4000-8000-000000000201',
+      compCode: 'SYN',
+      routeId: route.id,
+      retailerName: 'Sample Medical Store',
+      approveStatus: 'APPROVED',
+      active: true,
+    },
+  });
+
   const brand = await prisma.brand.upsert({
     where: { compCode_brandName: { compCode: 'SYN', brandName: 'Synchem' } },
     update: {},
@@ -270,6 +306,35 @@ async function main() {
     },
   });
 
+  const mrPasswordHash = await bcrypt.hash('Mr@123', 10);
+  const mrHierarchy = await prisma.hierarchy.findFirstOrThrow({
+    where: { compCode: 'SYN', hierarchyCode: 'MR-INDORE' },
+  });
+
+  await prisma.employee.upsert({
+    where: { compCode_userName: { compCode: 'SYN', userName: 'mr1' } },
+    update: {
+      passwordHash: mrPasswordHash,
+      roleId: mrRole.id,
+      headQuarterId: hq.id,
+      hierarchyId: mrHierarchy.id,
+    },
+    create: {
+      compCode: 'SYN',
+      userName: 'mr1',
+      passwordHash: mrPasswordHash,
+      employeeCode: 'MR001',
+      firstName: 'Rahul',
+      lastName: 'MR',
+      email: 'mr1@synchem.co',
+      roleId: mrRole.id,
+      headQuarterId: hq.id,
+      hierarchyId: mrHierarchy.id,
+      active: true,
+      isFirstLogin: false,
+    },
+  });
+
   const platformHash = await bcrypt.hash(platformPassword, 10);
   await prisma.platformUser.upsert({
     where: { email: 'superadmin@synchem.co' },
@@ -281,7 +346,7 @@ async function main() {
     },
   });
 
-  console.log('Seed complete: SYN tenant + admin (admin / Admin@123)');
+  console.log('Seed complete: SYN tenant + admin (admin / Admin@123) + MR (mr1 / Mr@123)');
   console.log('Platform super admin: superadmin@synchem.co / Platform@123');
 }
 
