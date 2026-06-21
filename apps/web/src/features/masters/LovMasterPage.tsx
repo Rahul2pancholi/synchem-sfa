@@ -1,110 +1,106 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, Card, Empty, Form, Input, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { useI18n } from '../../i18n/I18nProvider';
-import { authHeaders } from './masterApi';
+import { authHeaders, fetchApi } from '../../lib/api-client';
 import type { LovPageConfig } from './masterPageConfig';
+
+interface ListResponse {
+  data: { items: Record<string, unknown>[] };
+}
 
 export function LovMasterPage({ config }: { config: LovPageConfig }) {
   const { t, languageHeader } = useI18n();
-  const [items, setItems] = useState<Record<string, unknown>[]>([]);
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    void loadItems();
-  }, [config.apiPath]);
+  const listQuery = useQuery({
+    queryKey: ['lov-list', config.apiPath],
+    queryFn: async () => {
+      const data = await fetchApi<ListResponse>(config.apiPath, languageHeader);
+      return data.data.items ?? [];
+    },
+  });
 
-  async function loadItems() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch(config.apiPath, { headers: authHeaders(languageHeader) });
-      if (!res.ok) {
-        setError(t(config.loadFailedKey));
-        return;
-      }
-      const data = await res.json();
-      setItems(data.data.items ?? []);
-    } catch {
-      setError(t(config.loadFailedKey));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const createMutation = useMutation({
+    mutationFn: async (name: string) =>
+      fetch(config.apiPath, {
+        method: 'POST',
+        headers: authHeaders(languageHeader),
+        body: JSON.stringify({ name }),
+      }).then((res) => {
+        if (!res.ok) throw new Error(t(config.createFailedKey));
+      }),
+    onSuccess: async () => {
+      message.success(t('common.create'));
+      form.resetFields();
+      await queryClient.invalidateQueries({ queryKey: ['lov-list', config.apiPath] });
+    },
+    onError: () => message.error(t(config.createFailedKey)),
+  });
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError('');
-    const res = await fetch(config.apiPath, {
-      method: 'POST',
-      headers: authHeaders(languageHeader),
-      body: JSON.stringify({ name }),
-    });
-    if (!res.ok) {
-      setError(t(config.createFailedKey));
-      return;
-    }
-    setName('');
-    await loadItems();
-  }
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) =>
+      fetch(`${config.apiPath}/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(languageHeader),
+      }).then((res) => {
+        if (!res.ok) throw new Error(t(config.createFailedKey));
+      }),
+    onSuccess: async () => {
+      message.success(t('common.delete'));
+      await queryClient.invalidateQueries({ queryKey: ['lov-list', config.apiPath] });
+    },
+    onError: () => message.error(t(config.createFailedKey)),
+  });
 
-  async function onDelete(id: string) {
-    const res = await fetch(`${config.apiPath}/${id}`, {
-      method: 'DELETE',
-      headers: authHeaders(languageHeader),
-    });
-    if (!res.ok) {
-      setError(t(config.createFailedKey));
-      return;
-    }
-    await loadItems();
-  }
+  const columns: ColumnsType<Record<string, unknown>> = [
+    { title: t('masters.lov.name'), dataIndex: config.nameField, key: config.nameField },
+    {
+      title: t('platform.tenants.status'),
+      key: 'active',
+      render: (_: unknown, row) => (
+        <Tag color={row.active === false ? 'default' : 'success'}>
+          {row.active === false ? t('common.inactive') : t('common.active')}
+        </Tag>
+      ),
+    },
+    {
+      title: t('common.actions'),
+      key: 'actions',
+      render: (_: unknown, row) =>
+        row.active !== false ? (
+          <Button danger size="small" onClick={() => deleteMutation.mutate(String(row.id))}>
+            {t('common.delete')}
+          </Button>
+        ) : null,
+    },
+  ];
 
   return (
-    <div className="master-page">
-      <h1>{t(config.titleKey)}</h1>
-      <section className="platform-card">
-        <form className="master-form" onSubmit={onSubmit}>
-          <input
-            placeholder={t('masters.lov.name')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <button type="submit">{t('common.create')}</button>
-        </form>
-        {error && <p className="error">{error}</p>}
-      </section>
-      <section className="platform-card">
-        {loading ? (
-          <p>{t('common.loading')}</p>
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Typography.Title level={3} style={{ margin: 0 }}>
+        {t(config.titleKey)}
+      </Typography.Title>
+      <Card>
+        <Form form={form} layout="inline" onFinish={(v) => createMutation.mutate(v.name)}>
+          <Form.Item name="name" rules={[{ required: true }]}>
+            <Input placeholder={t('masters.lov.name')} style={{ minWidth: 240 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+              {t('common.create')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+      <Card>
+        {listQuery.isLoading ? (
+          <Spin />
         ) : (
-          <table className="tenant-table">
-            <thead>
-              <tr>
-                <th>{t('masters.lov.name')}</th>
-                <th>{t('platform.tenants.status')}</th>
-                <th>{t('common.actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={String(row.id)}>
-                  <td>{String(row[config.nameField] ?? '')}</td>
-                  <td>{row.active === false ? t('common.inactive') : t('common.active')}</td>
-                  <td>
-                    {row.active !== false && (
-                      <button type="button" onClick={() => void onDelete(String(row.id))}>
-                        {t('common.delete')}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table rowKey="id" columns={columns} dataSource={listQuery.data ?? []} pagination={{ pageSize: 20 }} />
         )}
-      </section>
-    </div>
+      </Card>
+    </Space>
   );
 }

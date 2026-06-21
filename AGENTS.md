@@ -61,6 +61,18 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 - API: read `X-App-Language` (or `Accept-Language`) and return localized auth/validation messages where applicable
 - Phase 1+ features: add message keys in the same PR as the UI/API change
 
+### UI design (web)
+- Professional **enterprise admin** look — consistent spacing, loading/empty/error states, accessible labels
+- **Reuse** shared components from `apps/web/src/components/ui/`; page = thin wrapper, logic in hooks
+- **Desktop-first** master/transaction screens; dates `DD-MM-YYYY`; details: `docs/18-DEVELOPMENT-STANDARDS.md` §1.5
+- Full rules: `.cursor/rules/sfa-ui-design.mdc`
+
+### Library-first (speed + standards)
+- **Do not reinvent** tables, forms, date pickers, CSV parse, API caching if a stable OSS lib fits
+- **Preferred web stack for new/touched UI:** Ant Design + TanStack Query + react-hook-form + Zod + dayjs
+- Search repo first; add dependency only when it clearly saves time vs custom code
+- Full approved list: `.cursor/rules/sfa-library-first.mdc`
+
 ### Scalable architecture (microservice-ready)
 - **Ports & adapters:** services inject `*RepositoryPort`, `StoragePort`, `QueuePort` — never Prisma/S3 directly in business logic
 - **Module boundaries:** no cross-module DB queries; use exported services or domain events + queue
@@ -102,6 +114,7 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 5. New DB/external access uses port + adapter (not direct Prisma/lib in service)
 6. Logs include requestId + compCode on key actions
 7. User-facing text uses `@synchem-sfa/shared-i18n` (en / hi / hinglish) — no hardcoded labels
+8. Web UI uses design-system / approved libs (antd, TanStack Query) — no new hand-built tables/forms unless justified
 
 ---
 

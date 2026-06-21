@@ -138,11 +138,10 @@ apps/api/prisma/       Canonical DB schema + migrations
 | Web: login, forgot password, shell, platform tenants | Done |
 | Worker skeleton (`pnpm dev:worker`) | Done |
 | Health `/health` + `/ready` (DB + Redis) | Done |
-| Trilingual UI (English, Hindi, Hinglish) | Done — `packages/shared-i18n` |
+| Trilingual UI (English, Hindi, Hinglish) | Done |
+| Web UI: Ant Design + TanStack Query shell | Done |
 
-**Next:** Phase 1 — Master data (Employee, Hierarchy, City, HQ, Route, Doctor, …)
-
-## Phase 1 progress
+## Phase 1 checklist (complete)
 
 | Item | Status |
 |------|--------|
@@ -151,5 +150,7 @@ apps/api/prisma/       Canonical DB schema + migrations
 | Brand, Product, Doctor, Retailer, Stockist | Done |
 | LOVs (designation, dosage, division, specialist, qualification, holiday, expense) | Done |
 | Bulk upload (7 types) | Done |
+| OpenAPI Masters tag (Phase 1 endpoints) | Done |
+| Master screens: antd Table/Form/Card | Done |
 
 **Next:** Phase 2 — Core transactions (RTP, DCR, Weekly Plan, POB)

@@ -72,6 +72,13 @@ apps/web/src/features/
 - Page component = thin wrapper; logic in `hooks/` and `api/` within the feature
 - Shared UI in `components/ui/` — shared API client in `packages/api-client`
 - No API calls directly inside presentational components
+- Every list/form has **loading, empty, and error** UI states
+- New or significantly touched screens use **Ant Design** components (Table, Form, Button, Modal, DatePicker) — not raw HTML tables/forms
+- Data fetching in hooks via **TanStack Query** where the screen loads API data
+
+**MUST NOT (UI):**
+- Ship a master/transaction screen with only plain `<table>` / unstyled `<input>` when antd is available in the project
+- Copy-paste the same form layout across features — extract to `components/ui/`
 
 ### 1.3 Mobile (React Native) — same feature names as web/API
 
@@ -88,6 +95,41 @@ Keep feature names aligned across `api`, `web`, and `mobile`.
 | `packages/shared-types` | DTOs, enums, constants, Zod schemas | Business logic, DB calls |
 | `packages/api-client` | Generated OpenAPI client | Hand-written fetch wrappers duplicating client |
 | `packages/eslint-config` | Lint rules | — |
+
+### 1.5 Web UI design standards
+
+| Area | Standard |
+|------|----------|
+| Layout | `DashboardShell` + page title + primary action (Create / Save) |
+| Spacing | 8px grid; section gaps 16–24px |
+| Tables | antd `Table` — pagination, status column, row actions |
+| Forms | antd `Form` + `react-hook-form` + Zod; labels via `t()` |
+| Feedback | antd `message` / `notification` for success/error |
+| Dates | `dayjs`; display `DD-MM-YYYY` (Salestrip parity) |
+| Bulk CSV | `papaparse` — never fragile manual split |
+| A11y | Labels on inputs, keyboard focus, sufficient contrast |
+
+Cursor rule: `.cursor/rules/sfa-ui-design.mdc`
+
+### 1.6 Library-first development (reuse before build)
+
+**Default:** if a maintained open-source library solves 80%+ of the problem with less code and risk, **use it**.
+
+| Layer | Prefer | Avoid custom |
+|-------|--------|--------------|
+| Web UI kit | `antd` | Hand-built admin widgets |
+| Client API state | `@tanstack/react-query` | fetch + useState in every page |
+| Forms | `react-hook-form` + Zod from `shared-types` | Per-field useState validation |
+| Dates | `dayjs` | Manual string date math |
+| CSV | `papaparse` | `line.split(',')` |
+| API validation | Zod / class-validator | Inline string checks |
+| Auth/crypto | bcrypt, JWT (existing) | Custom hash |
+
+**Adding a dependency:** MIT/Apache, TypeScript types, fits React 19 + Vite or NestJS 11. One feature per PR when possible.
+
+**Custom code is required for:** tenant-scoped business rules, approval engine, sync/idempotency, Salestrip response adapters.
+
+Cursor rule: `.cursor/rules/sfa-library-first.mdc`
 
 ---
 

@@ -1,0 +1,38 @@
+---
+description: Web UI design standards — consistent, professional, fast to build
+alwaysApply: true
+---
+
+# SFA UI Design Standards
+
+## Goal
+Professional **pharma enterprise admin** UI — clean, readable, consistent. Desktop-first (MR/manager use laptops). Not generic AI slop.
+
+## MUST (every new/changed screen)
+- Use **shared layout**: `DashboardShell` sidebar + header; page title via `t('…')` from `@synchem-sfa/shared-i18n`
+- **Reuse UI components** from `apps/web/src/components/ui/` (create there when used 2+ times)
+- **Loading, empty, and error states** on every list/form — never blank screen
+- **Tables**: library Table component (see `sfa-library-first.mdc`) — sortable header, row actions, status badge
+- **Forms**: labeled fields, required marker, validation message under field, primary action right/bottom
+- **Spacing**: 8px grid — page padding 24px, section gap 16–24px, form field gap 12–16px
+- **Dates**: display `DD-MM-YYYY`; use shared date helper + library DatePicker
+- **Trilingual**: all labels/buttons/toasts via `useI18n().t()` — no hardcoded English
+- **Accessibility**: every input has `<label>` or `aria-label`; visible focus ring; contrast WCAG AA
+
+## MUST NOT
+- Raw `<table className="tenant-table">` for **new** screens — migrate to design-system Table when touching file
+- Inline styles except one-off layout; prefer shared CSS module or UI kit tokens
+- Different button styles per page — use shared Button variants (primary / default / danger)
+- Tiny touch targets — buttons min height 32px, nav items easy to click
+- Mix 3+ font sizes on one page — title, body, caption only
+
+## Screen patterns (SFA)
+| Pattern | Rule |
+|---------|------|
+| Master list | Title + Create button → filter bar (optional) → table → pagination |
+| Master create/edit | Modal or drawer from list; save + cancel; success toast |
+| Bulk upload | CSV hint row, textarea/file drop, result summary (created/skipped) |
+| Approval queue | Status chip + action buttons in row |
+
+## When refactoring Phase 0/1 screens
+Prioritize: login/shell → master lists → transaction forms. One feature folder at a time; keep diff focused.

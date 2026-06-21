@@ -1,30 +1,28 @@
-import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Card, Form, Input, Space, Typography, message } from 'antd';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
+
+interface PlatformLoginFormValues {
+  email: string;
+  password: string;
+}
 
 export function PlatformLoginPage() {
   const navigate = useNavigate();
   const { t, languageHeader } = useI18n();
-  const [email, setEmail] = useState('superadmin@synchem.co');
-  const [password, setPassword] = useState('Platform@123');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm<PlatformLoginFormValues>();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
+  async function handleSubmit(values: PlatformLoginFormValues) {
     try {
       const res = await fetch('/api/v1/platform/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...languageHeader },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(values),
       });
 
       if (!res.ok) {
-        setError(t('platform.login.invalidCredentials'));
+        message.error(t('platform.login.invalidCredentials'));
         return;
       }
 
@@ -32,35 +30,40 @@ export function PlatformLoginPage() {
       localStorage.setItem('platform_token', data.access_token);
       navigate('/platform/tenants');
     } catch {
-      setError(t('auth.login.apiError'));
-    } finally {
-      setLoading(false);
+      message.error(t('auth.login.apiError'));
     }
   }
 
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
-        <LanguageSwitcher className="language-switcher top-right" />
-        <h1>{t('platform.login.title')}</h1>
-        <p className="subtitle">{t('platform.login.subtitle')}</p>
-        <label>
-          {t('platform.login.email')}
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </label>
-        <label>
-          {t('auth.login.password')}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? t('common.signingIn') : t('common.signIn')}
-        </button>
-      </form>
+      <Card style={{ width: 400 }} title={t('platform.login.title')}>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <LanguageSwitcher />
+          </div>
+          <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
+            {t('platform.login.subtitle')}
+          </Typography.Paragraph>
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ email: 'superadmin@synchem.co', password: 'Platform@123' }}
+            onFinish={handleSubmit}
+          >
+            <Form.Item name="email" label={t('platform.login.email')} rules={[{ required: true, type: 'email' }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="password" label={t('auth.login.password')} rules={[{ required: true }]}>
+              <Input.Password />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block>
+                {t('common.signIn')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Space>
+      </Card>
     </div>
   );
 }

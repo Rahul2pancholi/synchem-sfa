@@ -1,6 +1,23 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Button,
+  Card,
+  DatePicker,
+  Empty,
+  Form,
+  Input,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { useI18n } from '../../i18n/I18nProvider';
-import { authHeaders } from './masterApi';
+import { authHeaders, fetchApi } from '../../lib/api-client';
 import type { FormField, MasterPageConfig } from './masterPageConfig';
 
 interface OptionRow {
@@ -8,181 +25,186 @@ interface OptionRow {
   [key: string]: unknown;
 }
 
+interface ListResponse {
+  data: { items: Record<string, unknown>[] };
+}
+
 export function GenericMasterPage({ config }: { config: MasterPageConfig }) {
   const { t, languageHeader } = useI18n();
-  const [items, setItems] = useState<Record<string, unknown>[]>([]);
-  const [options, setOptions] = useState<Record<string, OptionRow[]>>({});
-  const [form, setForm] = useState<Record<string, string>>({});
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
-  const optionFields = useMemo(
-    () => config.formFields.filter((field) => field.type === 'select' && field.optionsFrom),
-    [config.formFields],
-  );
+  const optionFields = config.formFields.filter((f) => f.type === 'select' && f.optionsFrom);
 
-  useEffect(() => {
-    void loadAll();
-  }, [config.apiPath]);
-
-  async function loadAll() {
-    setLoading(true);
-    setError('');
-    try {
-      const optionLoads = await Promise.all(
+  const optionsQuery = useQuery({
+    queryKey: ['master-options', config.apiPath, optionFields.map((f) => f.optionsFrom)],
+    queryFn: async () => {
+      const entries = await Promise.all(
         optionFields.map(async (field) => {
-          const res = await fetch(field.optionsFrom!, { headers: authHeaders(languageHeader) });
-          const data = await res.json();
-          return [field.name, data.data.items ?? data.data ?? []] as const;
+          const data = await fetchApi<ListResponse>(field.optionsFrom!, languageHeader);
+          return [field.name, data.data.items ?? []] as const;
         }),
       );
+      return Object.fromEntries(entries) as Record<string, OptionRow[]>;
+    },
+    enabled: optionFields.length > 0,
+  });
 
-      const optionMap: Record<string, OptionRow[]> = {};
-      for (const [name, rows] of optionLoads) {
-        optionMap[name] = rows as OptionRow[];
-      }
-      setOptions(optionMap);
+  const listQuery = useQuery({
+    queryKey: ['master-list', config.apiPath],
+    queryFn: async () => {
+      const data = await fetchApi<ListResponse>(config.apiPath, languageHeader);
+      return data.data.items ?? [];
+    },
+  });
 
-      const listRes = await fetch(config.apiPath, { headers: authHeaders(languageHeader) });
-      if (!listRes.ok) {
-        setError(t(config.loadFailedKey));
-        return;
-      }
-      const listData = await listRes.json();
-      setItems(listData.data.items ?? []);
-    } catch {
-      setError(t(config.loadFailedKey));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const createMutation = useMutation({
+    mutationFn: async (body: Record<string, unknown>) =>
+      fetch(config.apiPath, {
+        method: 'POST',
+        headers: authHeaders(languageHeader),
+        body: JSON.stringify(body),
+      }).then(async (res) => {
+        if (!res.ok) throw new Error(t(config.createFailedKey));
+        return res.json();
+      }),
+    onSuccess: async () => {
+      message.success(t('common.create'));
+      form.resetFields();
+      await queryClient.invalidateQueries({ queryKey: ['master-list', config.apiPath] });
+    },
+    onError: () => message.error(t(config.createFailedKey)),
+  });
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError('');
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) =>
+      fetch(`${config.apiPath}/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(languageHeader),
+      }).then((res) => {
+        if (!res.ok) throw new Error(t(config.deleteFailedKey ?? config.createFailedKey));
+      }),
+    onSuccess: async () => {
+      message.success(t('common.delete'));
+      await queryClient.invalidateQueries({ queryKey: ['master-list', config.apiPath] });
+    },
+    onError: () => message.error(t(config.deleteFailedKey ?? config.createFailedKey)),
+  });
 
-    const body: Record<string, unknown> = {};
-    for (const field of config.formFields) {
-      const value = form[field.name]?.trim();
-      if (!value && field.required) return;
-      if (value) body[field.name] = value;
-    }
-
-    const res = await fetch(config.apiPath, {
-      method: 'POST',
-      headers: authHeaders(languageHeader),
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      setError(t(config.createFailedKey));
-      return;
-    }
-
-    setForm({});
-    await loadAll();
-  }
-
-  async function onDelete(id: string) {
-    if (!config.canDelete) return;
-    const res = await fetch(`${config.apiPath}/${id}`, {
-      method: 'DELETE',
-      headers: authHeaders(languageHeader),
-    });
-    if (!res.ok) {
-      setError(t(config.deleteFailedKey ?? config.createFailedKey));
-      return;
-    }
-    await loadAll();
-  }
-
-  function renderField(field: FormField) {
+  function renderFormItem(field: FormField) {
     if (field.type === 'select') {
-      const rows = options[field.name] ?? [];
+      const rows = optionsQuery.data?.[field.name] ?? [];
       return (
-        <select
-          key={field.name}
-          value={form[field.name] ?? ''}
-          onChange={(e) => setForm((prev) => ({ ...prev, [field.name]: e.target.value }))}
-          required={field.required}
-        >
-          <option value="">{t('masters.employee.none')}</option>
-          {rows.map((row) => (
-            <option key={row.id} value={row.id}>
-              {String(row[field.optionLabelKey ?? 'name'])}
-            </option>
-          ))}
-        </select>
+        <Form.Item key={field.name} name={field.name} label={t(field.labelKey)} rules={field.required ? [{ required: true }] : []}>
+          <Select
+            allowClear
+            placeholder={t('masters.employee.none')}
+            options={rows.map((row) => ({
+              value: row.id,
+              label: String(row[field.optionLabelKey ?? 'name']),
+            }))}
+          />
+        </Form.Item>
+      );
+    }
+
+    if (field.type === 'date') {
+      return (
+        <Form.Item key={field.name} name={field.name} label={t(field.labelKey)} rules={[{ required: !!field.required }]}>
+          <DatePicker style={{ width: '100%' }} format="DD-MM-YYYY" />
+        </Form.Item>
       );
     }
 
     return (
-      <input
-        key={field.name}
-        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
-        placeholder={t(field.labelKey)}
-        value={form[field.name] ?? ''}
-        onChange={(e) => setForm((prev) => ({ ...prev, [field.name]: e.target.value }))}
-        required={field.required}
-      />
+      <Form.Item key={field.name} name={field.name} label={t(field.labelKey)} rules={field.required ? [{ required: true }] : []}>
+        <Input type={field.type === 'number' ? 'number' : 'text'} />
+      </Form.Item>
     );
   }
 
-  function cellValue(row: Record<string, unknown>, key: string) {
-    const value = row[key];
-    if (key.endsWith('Date') && typeof value === 'string') {
-      return value.slice(0, 10);
+  const columns: ColumnsType<Record<string, unknown>> = [
+    ...config.columns.map((col) => ({
+      title: t(col.labelKey),
+      dataIndex: col.key,
+      key: col.key,
+      render: (value: unknown) => {
+        if (col.key.endsWith('Date') && typeof value === 'string') return value.slice(0, 10);
+        return value == null ? '' : String(value);
+      },
+    })),
+    {
+      title: t('platform.tenants.status'),
+      key: 'active',
+      render: (_: unknown, row) => (
+        <Tag color={row.active === false ? 'default' : 'success'}>
+          {row.active === false ? t('common.inactive') : t('common.active')}
+        </Tag>
+      ),
+    },
+  ];
+
+  if (config.canDelete) {
+    columns.push({
+      title: t('common.actions'),
+      key: 'actions',
+      render: (_: unknown, row) =>
+        row.active !== false ? (
+          <Button danger size="small" onClick={() => deleteMutation.mutate(String(row.id))}>
+            {t('common.delete')}
+          </Button>
+        ) : null,
+    });
+  }
+
+  async function onFinish(values: Record<string, unknown>) {
+    const body: Record<string, unknown> = {};
+    for (const field of config.formFields) {
+      const value = values[field.name];
+      if (value == null || value === '') continue;
+      if (field.type === 'date' && dayjs.isDayjs(value)) {
+        body[field.name] = value.format('YYYY-MM-DD');
+      } else {
+        body[field.name] = value;
+      }
     }
-    return value == null ? '' : String(value);
+    createMutation.mutate(body);
   }
 
   return (
-    <div className="master-page">
-      <h1>{t(config.titleKey)}</h1>
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Typography.Title level={3} style={{ margin: 0 }}>
+        {t(config.titleKey)}
+      </Typography.Title>
 
-      <section className="platform-card">
-        <h2>{t(config.createTitleKey)}</h2>
-        <form className="master-form grid-form" onSubmit={onSubmit}>
-          {config.formFields.map(renderField)}
-          <button type="submit">{t('common.create')}</button>
-        </form>
-        {error && <p className="error">{error}</p>}
-      </section>
+      <Card title={t(config.createTitleKey)}>
+        <Form form={form} layout="vertical" onFinish={onFinish} style={{ maxWidth: 720 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {config.formFields.map(renderFormItem)}
+          </div>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+              {t('common.create')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
 
-      <section className="platform-card">
-        {loading ? (
-          <p>{t('common.loading')}</p>
+      <Card>
+        {listQuery.isLoading ? (
+          <Spin />
+        ) : listQuery.isError ? (
+          <Empty description={t(config.loadFailedKey)} />
         ) : (
-          <table className="tenant-table">
-            <thead>
-              <tr>
-                {config.columns.map((col) => (
-                  <th key={col.key}>{t(col.labelKey)}</th>
-                ))}
-                <th>{t('platform.tenants.status')}</th>
-                {config.canDelete && <th>{t('common.actions')}</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={String(row.id)}>
-                  {config.columns.map((col) => (
-                    <td key={col.key}>{cellValue(row, col.key)}</td>
-                  ))}
-                  <td>{row.active === false ? t('common.inactive') : t('common.active')}</td>
-                  {config.canDelete && row.active !== false && (
-                    <td>
-                      <button type="button" onClick={() => void onDelete(String(row.id))}>
-                        {t('common.delete')}
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={listQuery.data ?? []}
+            pagination={{ pageSize: 20 }}
+            locale={{ emptyText: <Empty description={t(config.loadFailedKey)} /> }}
+          />
         )}
-      </section>
-    </div>
+      </Card>
+    </Space>
   );
 }

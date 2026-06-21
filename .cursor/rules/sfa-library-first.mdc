@@ -1,0 +1,53 @@
+---
+description: Prefer proven open-source libraries — do not reinvent stable wheels
+alwaysApply: true
+---
+
+# Library-first (reuse before build)
+
+## Principle
+**Stable, standard, open-source library > custom code** when the library clearly fits and saves time with equal or better quality. Build custom only when no good fit or library cost (bundle, license, RN parity) is too high.
+
+## Before writing new code — check
+1. Search repo for existing helper/component
+2. Check **approved stack** below
+3. WebSearch / npm for maintained lib (MIT/Apache, recent releases, TS types)
+4. If adding dependency: one PR, justify in comment if non-obvious; prefer deps already in monorepo
+
+## MUST NOT reinvent
+| Need | Use (approved) | NOT custom |
+|------|----------------|------------|
+| Admin tables, forms, modals, upload | **Ant Design (`antd`)** | Hand-built HTML tables/forms |
+| Form state + validation | **react-hook-form** + **Zod** (schemas from `@synchem-sfa/shared-types`) | Manual useState per field |
+| API fetch/cache/loading | **TanStack Query (`@tanstack/react-query`)** | Raw fetch in every useEffect |
+| Dates/times | **dayjs** + antd DatePicker | Native date string hacks |
+| CSV parse (bulk upload) | **papaparse** | Split-by-comma one-liner |
+| Icons | **@ant-design/icons** or **lucide-react** | Emoji or random SVGs |
+| NestJS validation | **class-validator** + **Zod** in shared-types | Ad-hoc if checks |
+| Password hash | **bcrypt** (already used) | Custom crypto |
+| Job queue | **pg-boss** (already used) | Custom polling table |
+
+## Web UI stack (adopt on new/touched screens)
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Component kit | **antd** | Fast CRUD, tables, forms, enterprise SFA fit |
+| Icons | `@ant-design/icons` | Matches antd |
+| Server state | `@tanstack/react-query` | Loading/error/cache standard |
+| Forms | `react-hook-form` + `@hookform/resolvers/zod` | Reuse DTO schemas |
+
+**Existing plain CSS pages:** wrap incrementally with antd when you edit that screen — no repo-wide rewrite in unrelated PRs.
+
+## Mobile (Phase 3+)
+Prefer **Expo/React Native ecosystem** libs (navigation, location, SQLite/WatermelonDB). Do not port web antd to mobile — use RN Paper or native components per `docs/15-mobile-stack.md`.
+
+## Adding a new dependency — checklist
+- [ ] Solves real repeated problem (not one-liner)
+- [ ] License OK (MIT/Apache/BSD)
+- [ ] Works with React 19 + Vite (web) or NestJS 11 (api)
+- [ ] Typed (TypeScript)
+- [ ] Document in PR which custom code was avoided
+
+## When custom IS OK
+- Domain logic (approval engine, tenant scope, DCR rules)
+- Salestrip API response shape adapters
+- Thin wrappers around libs in `apps/web/src/components/ui/` or `apps/api/src/common/`

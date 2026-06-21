@@ -16,6 +16,8 @@ Read `AGENTS.md` and `docs/18-DEVELOPMENT-STANDARDS.md` before any code change.
 - Atomicity: multi-step writes use `prisma.$transaction()` (submit+approval, POB lines, bulk upload)
 - Tests: new endpoints need integration tests; new business rules need unit tests; bug fixes need regression tests
 - i18n: English + Hindi + Hinglish via `packages/shared-i18n`; no hardcoded UI/API user strings; parity test for all keys
+- UI design: loading/empty/error states; shared `components/ui/`; antd for new/touched tables/forms; see `sfa-ui-design.mdc`
+- Library-first: use approved OSS libs (antd, TanStack Query, react-hook-form, dayjs, papaparse) — no reinventing wheels; see `sfa-library-first.mdc`
 - Ports & adapters: services inject repository/storage/queue **ports** — Prisma/S3/Redis only inside adapters
 - Microservice-ready: no cross-module DB access; use exported services or domain events + queue
 - Observability: structured JSON logs with `requestId`, `compCode`, `module`, `action`; no console.log

@@ -1,5 +1,19 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Layout,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -12,14 +26,18 @@ interface Company {
   active: boolean;
 }
 
+interface CreateTenantFormValues {
+  compCode: string;
+  compName: string;
+}
+
 export function PlatformTenantsPage() {
   const navigate = useNavigate();
   const { t, languageHeader } = useI18n();
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [compCode, setCompCode] = useState('');
-  const [compName, setCompName] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [form] = Form.useForm<CreateTenantFormValues>();
 
   const token = localStorage.getItem('platform_token');
 
@@ -28,7 +46,6 @@ export function PlatformTenantsPage() {
       navigate('/platform/login');
       return;
     }
-
     void loadCompanies();
   }, [token, navigate]);
 
@@ -46,34 +63,36 @@ export function PlatformTenantsPage() {
       const data = await res.json();
       setCompanies(data.data.items ?? []);
     } catch {
-      setError(t('platform.tenants.loadFailed'));
+      message.error(t('platform.tenants.loadFailed'));
     } finally {
       setLoading(false);
     }
   }
 
-  async function createTenant(e: FormEvent) {
-    e.preventDefault();
-    setError('');
+  async function createTenant(values: CreateTenantFormValues) {
+    setCreating(true);
+    try {
+      const res = await fetch('/api/v1/platform/companies', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          ...languageHeader,
+        },
+        body: JSON.stringify(values),
+      });
 
-    const res = await fetch('/api/v1/platform/companies', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        ...languageHeader,
-      },
-      body: JSON.stringify({ compCode, compName }),
-    });
+      if (!res.ok) {
+        message.error(t('platform.tenants.createFailed'));
+        return;
+      }
 
-    if (!res.ok) {
-      setError(t('platform.tenants.createFailed'));
-      return;
+      form.resetFields();
+      message.success(t('common.create'));
+      await loadCompanies();
+    } finally {
+      setCreating(false);
     }
-
-    setCompCode('');
-    setCompName('');
-    await loadCompanies();
   }
 
   function logout() {
@@ -81,66 +100,73 @@ export function PlatformTenantsPage() {
     navigate('/platform/login');
   }
 
+  const columns: ColumnsType<Company> = [
+    { title: t('platform.tenants.code'), dataIndex: 'compCode', key: 'compCode' },
+    { title: t('platform.tenants.name'), dataIndex: 'compName', key: 'compName' },
+    { title: t('platform.tenants.timezone'), dataIndex: 'timezone', key: 'timezone' },
+    {
+      title: t('platform.tenants.status'),
+      key: 'active',
+      render: (_, row) => (
+        <Tag color={row.active ? 'success' : 'default'}>
+          {row.active ? t('platform.tenants.active') : t('platform.tenants.inactive')}
+        </Tag>
+      ),
+    },
+  ];
+
   return (
-    <div className="platform-page">
-      <header className="platform-header">
-        <h1>{t('platform.tenants.title')}</h1>
-        <div className="header-actions">
+    <Layout style={{ minHeight: '100vh', background: '#f5f5f5' }}>
+      <Layout.Header
+        style={{
+          background: '#fff',
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #f0f0f0',
+        }}
+      >
+        <Typography.Title level={4} style={{ margin: 0 }}>
+          {t('platform.tenants.title')}
+        </Typography.Title>
+        <Space>
           <LanguageSwitcher />
-          <Link to="/login" className="muted-link">
-            {t('platform.tenants.tenantLogin')}
-          </Link>
-          <button type="button" onClick={logout}>
-            {t('common.logout')}
-          </button>
-        </div>
-      </header>
+          <Link to="/login">{t('platform.tenants.tenantLogin')}</Link>
+          <Button onClick={logout}>{t('common.logout')}</Button>
+        </Space>
+      </Layout.Header>
+      <Layout.Content style={{ padding: 24, maxWidth: 960, margin: '0 auto', width: '100%' }}>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Card title={t('platform.tenants.createTitle')}>
+            <Form form={form} layout="inline" onFinish={createTenant}>
+              <Form.Item
+                name="compCode"
+                rules={[{ required: true }]}
+                normalize={(v: string) => v?.toUpperCase()}
+              >
+                <Input placeholder={t('platform.tenants.compCodePlaceholder')} />
+              </Form.Item>
+              <Form.Item name="compName" rules={[{ required: true }]}>
+                <Input placeholder={t('platform.tenants.compNamePlaceholder')} />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={creating}>
+                  {t('common.create')}
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
 
-      <section className="platform-card">
-        <h2>{t('platform.tenants.createTitle')}</h2>
-        <form className="inline-form" onSubmit={createTenant}>
-          <input
-            placeholder={t('platform.tenants.compCodePlaceholder')}
-            value={compCode}
-            onChange={(e) => setCompCode(e.target.value.toUpperCase())}
-          />
-          <input
-            placeholder={t('platform.tenants.compNamePlaceholder')}
-            value={compName}
-            onChange={(e) => setCompName(e.target.value)}
-          />
-          <button type="submit">{t('common.create')}</button>
-        </form>
-        {error && <p className="error">{error}</p>}
-      </section>
-
-      <section className="platform-card">
-        <h2>{t('platform.tenants.existingTitle')}</h2>
-        {loading ? (
-          <p>{t('common.loading')}</p>
-        ) : (
-          <table className="tenant-table">
-            <thead>
-              <tr>
-                <th>{t('platform.tenants.code')}</th>
-                <th>{t('platform.tenants.name')}</th>
-                <th>{t('platform.tenants.timezone')}</th>
-                <th>{t('platform.tenants.status')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {companies.map((company) => (
-                <tr key={company.compCode}>
-                  <td>{company.compCode}</td>
-                  <td>{company.compName}</td>
-                  <td>{company.timezone}</td>
-                  <td>{company.active ? t('platform.tenants.active') : t('platform.tenants.inactive')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-    </div>
+          <Card title={t('platform.tenants.existingTitle')}>
+            {loading ? (
+              <Spin />
+            ) : (
+              <Table rowKey="compCode" columns={columns} dataSource={companies} pagination={false} />
+            )}
+          </Card>
+        </Space>
+      </Layout.Content>
+    </Layout>
   );
 }

@@ -1,9 +1,17 @@
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Alert, Button, Card, Form, Input, Space, Steps, Typography, message } from 'antd';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
 
 type Step = 'request' | 'verify' | 'reset' | 'done';
+
+const STEP_INDEX: Record<Step, number> = {
+  request: 0,
+  verify: 1,
+  reset: 2,
+  done: 3,
+};
 
 export function ForgotPasswordPage() {
   const { t, languageHeader } = useI18n();
@@ -11,17 +19,10 @@ export function ForgotPasswordPage() {
   const [userName, setUserName] = useState('');
   const [compCode, setCompCode] = useState('SYN');
   const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function requestOtp(e: FormEvent) {
-    e.preventDefault();
+  async function requestOtp() {
     setLoading(true);
-    setError('');
-    setMessage('');
-
     try {
       const res = await fetch('/api/v1/auth/forgot-password', {
         method: 'POST',
@@ -30,23 +31,20 @@ export function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message ?? t('auth.forgot.otpRequestFailed'));
+        message.error(data.message ?? t('auth.forgot.otpRequestFailed'));
         return;
       }
-      setMessage(t('auth.forgot.otpSent'));
+      message.success(t('auth.forgot.otpSent'));
       setStep('verify');
     } catch {
-      setError(t('auth.login.apiError'));
+      message.error(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
   }
 
-  async function verifyOtp(e: FormEvent) {
-    e.preventDefault();
+  async function verifyOtp() {
     setLoading(true);
-    setError('');
-
     try {
       const res = await fetch('/api/v1/auth/verify-otp', {
         method: 'POST',
@@ -54,36 +52,33 @@ export function ForgotPasswordPage() {
         body: JSON.stringify({ userName, compCode, otp }),
       });
       if (!res.ok) {
-        setError(t('auth.forgot.otpInvalid'));
+        message.error(t('auth.forgot.otpInvalid'));
         return;
       }
       setStep('reset');
     } catch {
-      setError(t('auth.login.apiError'));
+      message.error(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
   }
 
-  async function resetPassword(e: FormEvent) {
-    e.preventDefault();
+  async function resetPassword(values: { newPassword: string }) {
     setLoading(true);
-    setError('');
-
     try {
       const res = await fetch('/api/v1/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...languageHeader },
-        body: JSON.stringify({ userName, compCode, otp, newPassword }),
+        body: JSON.stringify({ userName, compCode, otp, newPassword: values.newPassword }),
       });
       if (!res.ok) {
-        setError(t('auth.forgot.resetFailed'));
+        message.error(t('auth.forgot.resetFailed'));
         return;
       }
-      setMessage(t('auth.forgot.passwordUpdated'));
+      message.success(t('auth.forgot.passwordUpdated'));
       setStep('done');
     } catch {
-      setError(t('auth.login.apiError'));
+      message.error(t('auth.login.apiError'));
     } finally {
       setLoading(false);
     }
@@ -91,72 +86,72 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="login-page">
-      <form className="login-card">
-        <LanguageSwitcher className="language-switcher top-right" />
-        <h1>{t('auth.forgot.title')}</h1>
-        <p className="subtitle">{t('auth.forgot.policy')}</p>
+      <Card style={{ width: 440 }} title={t('auth.forgot.title')}>
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <LanguageSwitcher />
+          </div>
+          <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
+            {t('auth.forgot.policy')}
+          </Typography.Paragraph>
+          <Steps
+            size="small"
+            current={STEP_INDEX[step]}
+            items={[
+              { title: t('auth.forgot.sendOtp') },
+              { title: t('auth.forgot.verifyOtp') },
+              { title: t('auth.forgot.resetPassword') },
+              { title: t('auth.forgot.passwordUpdated') },
+            ]}
+          />
 
-        {step === 'request' && (
-          <>
-            <label>
-              {t('auth.forgot.userName')}
-              <input value={userName} onChange={(e) => setUserName(e.target.value)} />
-            </label>
-            <label>
-              {t('auth.forgot.compCode')}
-              <input value={compCode} onChange={(e) => setCompCode(e.target.value)} />
-            </label>
-            {error && <p className="error">{error}</p>}
-            <button type="button" disabled={loading} onClick={requestOtp}>
-              {loading ? t('auth.forgot.sendingOtp') : t('auth.forgot.sendOtp')}
-            </button>
-          </>
-        )}
+          {step === 'request' && (
+            <Form layout="vertical" onFinish={requestOtp}>
+              <Form.Item label={t('auth.forgot.userName')} required>
+                <Input value={userName} onChange={(e) => setUserName(e.target.value)} />
+              </Form.Item>
+              <Form.Item label={t('auth.forgot.compCode')} required>
+                <Input value={compCode} onChange={(e) => setCompCode(e.target.value)} />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                {t('auth.forgot.sendOtp')}
+              </Button>
+            </Form>
+          )}
 
-        {step === 'verify' && (
-          <>
-            {message && <p className="success">{message}</p>}
-            <label>
-              {t('auth.forgot.otp')}
-              <input value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
-            </label>
-            {error && <p className="error">{error}</p>}
-            <button type="button" disabled={loading} onClick={verifyOtp}>
-              {loading ? t('auth.forgot.verifyingOtp') : t('auth.forgot.verifyOtp')}
-            </button>
-          </>
-        )}
+          {step === 'verify' && (
+            <Form layout="vertical" onFinish={verifyOtp}>
+              <Form.Item label={t('auth.forgot.otp')} required>
+                <Input value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                {t('auth.forgot.verifyOtp')}
+              </Button>
+            </Form>
+          )}
 
-        {step === 'reset' && (
-          <>
-            <label>
-              {t('auth.forgot.newPassword')}
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </label>
-            {error && <p className="error">{error}</p>}
-            <button type="button" disabled={loading} onClick={resetPassword}>
-              {loading ? t('auth.forgot.savingPassword') : t('auth.forgot.resetPassword')}
-            </button>
-          </>
-        )}
+          {step === 'reset' && (
+            <Form layout="vertical" onFinish={resetPassword}>
+              <Form.Item
+                name="newPassword"
+                label={t('auth.forgot.newPassword')}
+                rules={[{ required: true, min: 8 }]}
+              >
+                <Input.Password />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                {t('auth.forgot.resetPassword')}
+              </Button>
+            </Form>
+          )}
 
-        {step === 'done' && (
-          <>
-            <p className="success">{message}</p>
-            <Link to="/login">{t('common.backToLogin')}</Link>
-          </>
-        )}
+          {step === 'done' && (
+            <Alert type="success" message={t('auth.forgot.passwordUpdated')} showIcon />
+          )}
 
-        {step !== 'done' && (
-          <p className="link-row">
-            <Link to="/login">{t('common.backToLogin')}</Link>
-          </p>
-        )}
-      </form>
+          <Link to="/login">{t('common.backToLogin')}</Link>
+        </Space>
+      </Card>
     </div>
   );
 }
