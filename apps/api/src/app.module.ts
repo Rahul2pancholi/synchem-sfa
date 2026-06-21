@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { MenuPermissionGuard } from './common/guards/menu-permission.guard';
 import { AppConfigModule } from './config/config.module';
+import { RedisModule } from './infrastructure/cache/redis.module';
 import { PrismaModule } from './infrastructure/persistence/prisma.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { MenusModule } from './modules/menus/menus.module';
@@ -13,6 +17,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
 @Module({
   imports: [
     AppConfigModule,
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.LOG_LEVEL ?? 'info',
@@ -22,6 +27,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
             : undefined,
         customProps: (req) => ({
           requestId: req.id,
+          compCode: (req as { user?: { compCode?: string } }).user?.compCode,
         }),
         genReqId: (req, res) => {
           const existing = req.headers['x-request-id'];
@@ -31,7 +37,9 @@ import { TenantModule } from './modules/tenant/tenant.module';
         },
       },
     }),
+    RedisModule,
     PrismaModule,
+    AuditModule,
     HealthModule,
     MenusModule,
     AuthModule,
@@ -39,10 +47,9 @@ import { TenantModule } from './modules/tenant/tenant.module';
     TenantModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: MenuPermissionGuard },
   ],
 })
 export class AppModule {}

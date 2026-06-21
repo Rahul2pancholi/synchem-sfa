@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { AppConfigService } from '../src/config/config.service';
+import { RedisService } from '../src/infrastructure/cache/redis.module';
 import { PrismaService } from '../src/infrastructure/persistence/prisma.module';
 
 describe('Health (e2e)', () => {
@@ -27,6 +28,12 @@ describe('Health (e2e)', () => {
         isHealthy: jest.fn().mockResolvedValue(true),
         $connect: jest.fn(),
         $disconnect: jest.fn(),
+      })
+      .overrideProvider(RedisService)
+      .useValue({
+        isConfigured: jest.fn().mockReturnValue(false),
+        ping: jest.fn().mockResolvedValue(false),
+        onModuleDestroy: jest.fn(),
       })
       .compile();
 

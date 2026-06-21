@@ -25,3 +25,12 @@ export interface CompanySummary {
   locale: string;
   active: boolean;
 }
+
+export const UpdateCompanyRequestSchema = z.object({
+  compName: z.string().min(1).optional(),
+  active: z.boolean().optional(),
+  timezone: z.string().optional(),
+  locale: z.string().optional(),
+});
+
+export type UpdateCompanyRequest = z.infer<typeof UpdateCompanyRequestSchema>;

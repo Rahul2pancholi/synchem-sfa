@@ -14,13 +14,42 @@ export class PrismaEmployeeAuthRepository implements EmployeeAuthRepositoryPort 
     userName: string,
     compCode: string,
   ): Promise<AuthEmployeeRecord | null> {
+    return this.findEmployee({
+      compCode,
+      userName,
+      active: true,
+      deletedAt: null,
+    });
+  }
+
+  async findByIdAndCompCode(
+    empId: string,
+    compCode: string,
+  ): Promise<AuthEmployeeRecord | null> {
+    return this.findEmployee({
+      id: empId,
+      compCode,
+      active: true,
+      deletedAt: null,
+    });
+  }
+
+  async updatePassword(empId: string, compCode: string, passwordHash: string): Promise<void> {
+    await this.prisma.employee.updateMany({
+      where: { id: empId, compCode },
+      data: { passwordHash, isFirstLogin: false },
+    });
+  }
+
+  private async findEmployee(where: {
+    id?: string;
+    compCode: string;
+    userName?: string;
+    active: boolean;
+    deletedAt: null;
+  }): Promise<AuthEmployeeRecord | null> {
     const employee = await this.prisma.employee.findFirst({
-      where: {
-        compCode,
-        userName,
-        active: true,
-        deletedAt: null,
-      },
+      where,
       include: {
         role: true,
         company: true,

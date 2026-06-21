@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { PlatformTokenRequestSchema } from '@synchem-sfa/shared-types';
 import { Public } from '../../common/decorators/public.decorator';
 import { RequireActor } from '../../common/decorators/require-actor.decorator';
@@ -46,5 +38,11 @@ export class PlatformController {
   @RequireActor('platform')
   getCompany(@Param('compCode') compCode: string) {
     return this.platformService.getCompany(compCode);
+  }
+
+  @Patch('companies/:compCode')
+  @RequireActor('platform')
+  updateCompany(@Param('compCode') compCode: string, @Body() body: Record<string, unknown>) {
+    return this.platformService.updateCompany(compCode, body);
   }
 }

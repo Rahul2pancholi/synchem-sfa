@@ -32,6 +32,10 @@ export interface CompanyRepositoryPort {
   list(page: number, pageSize: number): Promise<{ items: CompanyRecord[]; total: number }>;
   findByCompCode(compCode: string): Promise<CompanyRecord | null>;
   create(input: CreateCompanyInput): Promise<CompanyRecord>;
+  update(
+    compCode: string,
+    input: Partial<Pick<CompanyRecord, 'compName' | 'active' | 'timezone' | 'locale'>>,
+  ): Promise<CompanyRecord>;
 }
 
 export const COMPANY_REPOSITORY = Symbol('COMPANY_REPOSITORY');

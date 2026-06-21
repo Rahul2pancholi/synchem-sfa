@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/audit.module';
 import {
   PrismaCompanyRepository,
   PrismaPlatformUserRepository,
@@ -11,6 +12,7 @@ import {
 } from './ports/platform.repository.port';
 
 @Module({
+  imports: [AuditModule],
   controllers: [PlatformController],
   providers: [
     PlatformService,

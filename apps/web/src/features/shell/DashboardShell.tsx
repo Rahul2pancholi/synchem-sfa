@@ -1,3 +1,5 @@
+import { Outlet } from 'react-router-dom';
+
 interface LegacyMenuItem {
   MenuId: string;
   MenuCode: string;
@@ -22,6 +24,7 @@ function flattenMenus(items: LegacyMenuItem[], depth = 0): Array<{ item: LegacyM
 
 export function DashboardShell() {
   const compCode = localStorage.getItem('compCode') ?? '';
+  const compName = localStorage.getItem('compName') ?? compCode;
   const employeeRaw = localStorage.getItem('employeeObj');
   const employee = employeeRaw ? JSON.parse(employeeRaw) : null;
   const menuRaw = localStorage.getItem('menuList');
@@ -37,7 +40,8 @@ export function DashboardShell() {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">Synchem SFA</div>
-        <div className="tenant">{compCode}</div>
+        <div className="tenant">{compName}</div>
+        <div className="tenant-code">{compCode}</div>
         <nav>
           {navItems.length === 0 ? (
             <div className="nav-item muted">No menus assigned</div>
@@ -56,17 +60,17 @@ export function DashboardShell() {
       </aside>
       <main className="content">
         <header>
-          <h2>Dashboard</h2>
+          <div>
+            <h2>{compName}</h2>
+            <p className="header-user">
+              {employee?.firstName} {employee?.lastName ?? ''} · {employee?.roleName}
+            </p>
+          </div>
           <button type="button" onClick={logout}>
             Logout
           </button>
         </header>
-        <section className="welcome">
-          <p>
-            Welcome, <strong>{employee?.firstName ?? 'User'}</strong> — role-based sidebar is
-            loaded from <code>menuList</code>. Masters and transactions come in Phase 1–2.
-          </p>
-        </section>
+        <Outlet />
       </main>
     </div>
   );

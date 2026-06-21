@@ -48,4 +48,8 @@ export class AppConfigService {
   get logLevel(): AppEnv['LOG_LEVEL'] {
     return this.env.LOG_LEVEL;
   }
+
+  get redisUrl(): string | undefined {
+    return this.env.REDIS_URL;
+  }
 }

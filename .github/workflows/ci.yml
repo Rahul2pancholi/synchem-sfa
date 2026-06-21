@@ -28,6 +28,7 @@ jobs:
       - run: pnpm --filter @synchem-sfa/api exec prisma generate
 
       - run: pnpm --filter @synchem-sfa/api test
+      - run: pnpm --filter @synchem-sfa/api test:e2e
 
       - run: pnpm --filter @synchem-sfa/api build
 

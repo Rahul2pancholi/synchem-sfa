@@ -119,6 +119,23 @@ async function main() {
 
   await seedAdminPermissions('SYN', role.id);
 
+  for (const [key, value] of [
+    ['SET001', '1'],
+    ['SET002', '1'],
+    ['SET010', 'Asia/Kolkata'],
+  ] as const) {
+    await prisma.companySetting.upsert({
+      where: { compCode_settingKey: { compCode: 'SYN', settingKey: key } },
+      update: { settingValue: value },
+      create: {
+        compCode: 'SYN',
+        settingKey: key,
+        settingValue: value,
+        dataType: 'string',
+      },
+    });
+  }
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.employee.upsert({

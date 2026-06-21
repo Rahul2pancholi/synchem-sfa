@@ -69,6 +69,18 @@ export class PrismaCompanyRepository implements CompanyRepositoryPort {
 
     return toCompanyRecord(company);
   }
+
+  async update(
+    compCode: string,
+    input: Partial<Pick<CompanyRecord, 'compName' | 'active' | 'timezone' | 'locale'>>,
+  ): Promise<CompanyRecord> {
+    const company = await this.prisma.company.update({
+      where: { compCode },
+      data: input,
+    });
+
+    return toCompanyRecord(company);
+  }
 }
 
 function toCompanyRecord(company: {

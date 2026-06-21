@@ -7,6 +7,7 @@
     "dev": "turbo run dev",
     "dev:api": "pnpm --filter @synchem-sfa/api dev",
     "dev:web": "pnpm --filter @synchem-sfa/web dev",
+    "dev:worker": "pnpm --filter @synchem-sfa/worker dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

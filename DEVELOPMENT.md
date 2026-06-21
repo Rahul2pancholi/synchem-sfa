@@ -113,9 +113,30 @@ curl -X POST http://localhost:3000/token \
 ```
 apps/api/              NestJS API
 apps/web/              React + Vite
+apps/worker/           pg-boss job skeleton (Phase 0)
+apps/mobile/           Placeholder — starts Phase 3
 packages/shared-types/
 infra/docker/          docker-compose (Colima / CI)
 docs/                  Specifications
 openapi/
 apps/api/prisma/       Canonical DB schema + migrations
 ```
+
+## Phase 0 checklist (complete)
+
+| Item | Status |
+|------|--------|
+| Monorepo + CI | Done |
+| Docker Postgres (5434) + Redis | Done |
+| Prisma schema + migrations + seed | Done |
+| Login `/token` + refresh rotation | Done |
+| Forgot password (OTP via Redis) | Done |
+| JWT guards + tenant/platform actors | Done |
+| RBAC menus + `@RequirePermission` guard | Done |
+| Platform tenant CRUD API | Done |
+| Audit log on login / tenant create | Done |
+| Web: login, forgot password, shell, platform tenants | Done |
+| Worker skeleton (`pnpm dev:worker`) | Done |
+| Health `/health` + `/ready` (DB + Redis) | Done |
+
+**Next:** Phase 1 — Master data (Employee, Hierarchy, City, HQ, Route, Doctor, …)

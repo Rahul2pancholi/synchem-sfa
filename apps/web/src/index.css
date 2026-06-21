@@ -68,6 +68,73 @@ button:disabled {
   font-size: 0.875rem;
 }
 
+.success {
+  color: #15803d;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.link-row {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.link-row a,
+.muted-link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.platform-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.platform-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.platform-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tenant-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tenant-table th,
+.tenant-table td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-user {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.tenant-code {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
 .shell {
   display: grid;
   grid-template-columns: 240px 1fr;

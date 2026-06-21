@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ROLE_DASHBOARD_ROUTES } from '@synchem-sfa/shared-types';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -34,11 +35,16 @@ export function LoginPage() {
 
       const data = await res.json();
       localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('roleType', data.roleType);
       localStorage.setItem('compCode', data.compCode);
+      localStorage.setItem('compName', data.compName);
       localStorage.setItem('employeeObj', data.employeeObj);
       localStorage.setItem('menuList', data.menuList ?? '[]');
-      navigate('/app');
+      localStorage.setItem('configurationSetting', data.configurationSetting ?? '{}');
+
+      const home = ROLE_DASHBOARD_ROUTES[data.roleType] ?? '/app';
+      navigate(home);
     } catch {
       setError('Unable to connect to API. Is the server running?');
     } finally {
@@ -71,6 +77,9 @@ export function LoginPage() {
         <button type="submit" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign In'}
         </button>
+        <p className="link-row">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
       </form>
     </div>
   );

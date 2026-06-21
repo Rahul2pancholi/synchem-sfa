@@ -19,6 +19,8 @@ export interface EmployeeAuthRepositoryPort {
     userName: string,
     compCode: string,
   ): Promise<AuthEmployeeRecord | null>;
+  findByIdAndCompCode(empId: string, compCode: string): Promise<AuthEmployeeRecord | null>;
+  updatePassword(empId: string, compCode: string, passwordHash: string): Promise<void>;
 }
 
 export const EMPLOYEE_AUTH_REPOSITORY = Symbol('EMPLOYEE_AUTH_REPOSITORY');

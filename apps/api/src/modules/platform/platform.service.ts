@@ -11,9 +11,11 @@ import * as bcrypt from 'bcrypt';
 import {
   apiSuccess,
   CreateCompanyRequestSchema,
+  UpdateCompanyRequestSchema,
   type JwtPayload,
 } from '@synchem-sfa/shared-types';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
+import { AuditService } from '../audit/audit.service';
 import {
   COMPANY_REPOSITORY,
   PLATFORM_USER_REPOSITORY,
@@ -32,6 +34,7 @@ export class PlatformService {
     private readonly companyRepo: CompanyRepositoryPort,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly auditService: AuditService,
   ) {}
 
   async login(email: string, password: string) {
@@ -52,6 +55,14 @@ export class PlatformService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
+
+    await this.auditService.log({
+      compCode: 'PLATFORM',
+      entityType: 'platform_user',
+      entityId: user.id,
+      action: 'LOGIN',
+      newValues: { email: user.email },
+    });
 
     this.logger.log({ module: 'platform', action: 'loginSuccess', email: user.email });
 
@@ -87,27 +98,66 @@ export class PlatformService {
     }
 
     const input = parsed.data;
-    const existing = await this.companyRepo.findByCompCode(input.compCode);
+    const compCode = input.compCode.toUpperCase();
+    const existing = await this.companyRepo.findByCompCode(compCode);
     if (existing) {
-      throw new ConflictException(`Company ${input.compCode} already exists`);
+      throw new ConflictException(`Company ${compCode} already exists`);
     }
 
     const company = await this.companyRepo.create({
-      compCode: input.compCode.toUpperCase(),
+      compCode,
       compName: input.compName,
       industryType: input.industryType,
       timezone: input.timezone,
       locale: input.locale,
     });
 
-    await this.seedTenantDefaults(company.compCode);
+    const roleId = await this.seedTenantDefaults(compCode);
+
+    await this.auditService.log({
+      compCode: 'PLATFORM',
+      entityType: 'company',
+      entityId: roleId,
+      action: 'CREATE',
+      newValues: { ...company },
+    });
 
     this.logger.log({ module: 'platform', action: 'createCompany', compCode: company.compCode });
 
     return apiSuccess(company);
   }
 
-  private async seedTenantDefaults(compCode: string) {
+  async updateCompany(compCode: string, body: unknown) {
+    const parsed = UpdateCompanyRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new ConflictException(parsed.error.message);
+    }
+
+    const existing = await this.companyRepo.findByCompCode(compCode);
+    if (!existing) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const company = await this.companyRepo.update(compCode, parsed.data);
+    const adminRole = await this.prisma.role.findFirst({
+      where: { compCode, roleName: 'ADMIN' },
+    });
+
+    if (adminRole) {
+      await this.auditService.log({
+        compCode: 'PLATFORM',
+        entityType: 'company',
+        entityId: adminRole.id,
+        action: 'UPDATE',
+        oldValues: { ...existing },
+        newValues: { ...company },
+      });
+    }
+
+    return apiSuccess(company);
+  }
+
+  private async seedTenantDefaults(compCode: string): Promise<string> {
     const role = await this.prisma.role.create({
       data: {
         compCode,
@@ -133,5 +183,7 @@ export class PlatformService {
         })),
       });
     }
+
+    return role.id;
   }
 }
