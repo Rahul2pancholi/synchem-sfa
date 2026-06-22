@@ -815,4 +815,99 @@ export class ReportsService {
 
     return apiSuccess(payload);
   }
+
+  async fieldStaffKpis(compCode: string, empId: string, query: unknown) {
+    const now = new Date();
+    const parsed = ReportFilterSchema.safeParse(query ?? {});
+    const month = parsed.success && parsed.data.month ? parsed.data.month : now.getMonth() + 1;
+    const year = parsed.success && parsed.data.year ? parsed.data.year : now.getFullYear();
+    const dateRange = this.monthDateRange(month, year);
+    const todayDay = now.getDate();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    const [
+      employee,
+      pobAgg,
+      targetRow,
+      approvedDcrs,
+      plannedByEmp,
+      missed,
+      rtp,
+      weeklyDoctorsToday,
+      pendingSubmitCount,
+    ] = await Promise.all([
+      this.prisma.employee.findFirst({
+        where: { id: empId, compCode },
+        select: { headQuarter: { select: { hqName: true } } },
+      }),
+      this.prisma.personalOrderBooking.aggregate({
+        where: { compCode, empId, approveStatus: 'APPROVED', orderDate: dateRange },
+        _sum: { totalAmount: true },
+      }),
+      this.prisma.employeeMonthlyTarget.findFirst({
+        where: { compCode, empId, targetMonth: month, targetYear: year },
+      }),
+      this.prisma.dailyCallReport.findMany({
+        where: { compCode, empId, approveStatus: 'APPROVED', workDate: dateRange },
+        select: { _count: { select: { doctorVisits: true } } },
+      }),
+      this.plannedDoctorCallsByEmp(compCode, dateRange, { empId }),
+      this.buildMissedCallsData(compCode, month, year, { empId }),
+      this.prisma.tourProgramme.findFirst({
+        where: { compCode, empId, planMonth: month, planYear: year },
+        include: { days: { where: { dayOfMonth: todayDay }, take: 1 } },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.weeklyPlanEntry.count({
+        where: {
+          compCode,
+          doctorId: { not: null },
+          planDate: { gte: todayStart, lt: todayEnd },
+          weeklyPlan: { empId, approveStatus: 'APPROVED' },
+        },
+      }),
+      Promise.all([
+        this.prisma.dailyCallReport.count({
+          where: { compCode, empId, approveStatus: { in: ['DRAFT', 'REJECTED'] } },
+        }),
+        this.prisma.personalOrderBooking.count({
+          where: { compCode, empId, approveStatus: { in: ['DRAFT', 'REJECTED'] } },
+        }),
+        this.prisma.tourProgramme.count({
+          where: { compCode, empId, approveStatus: { in: ['DRAFT', 'REJECTED'] } },
+        }),
+        this.prisma.weeklyPlan.count({
+          where: { compCode, empId, approveStatus: { in: ['DRAFT', 'REJECTED'] } },
+        }),
+      ]).then((counts) => counts.reduce((sum, n) => sum + n, 0)),
+    ]);
+
+    const pobApprovedAmount = Number(pobAgg._sum.totalAmount ?? 0);
+    const amountTarget = Number(targetRow?.amountTarget ?? 0);
+    const doctorVisits = approvedDcrs.reduce((sum, row) => sum + row._count.doctorVisits, 0);
+    const plannedDoctorCalls = plannedByEmp.get(empId) ?? 0;
+    const rtpDay = rtp?.days[0];
+
+    const payload = {
+      month,
+      year,
+      headQuarterName: employee?.headQuarter?.hqName ?? null,
+      pobApprovedAmount,
+      amountTarget,
+      pobAchievementPct: this.pct(pobApprovedAmount, amountTarget),
+      doctorVisits,
+      plannedDoctorCalls,
+      coveragePct: this.pct(doctorVisits, plannedDoctorCalls),
+      missedCallCount: missed.summary.missedCallCount,
+      rtpWorkTypeToday: rtpDay?.workType ?? null,
+      rtpHasPlanToday: Boolean(rtpDay),
+      weeklyDoctorsToday,
+      pendingSubmitCount,
+    };
+
+    return apiSuccess(payload);
+  }
 }

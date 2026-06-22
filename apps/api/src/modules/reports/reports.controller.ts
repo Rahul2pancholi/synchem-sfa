@@ -57,4 +57,10 @@ export class ReportsController {
   managerSalesKpis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
     return this.reports.managerSalesKpis(user.compCode!, query);
   }
+
+  @Get('field-staff-kpis')
+  @RequirePermission('DSH01', 'view')
+  fieldStaffKpis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.fieldStaffKpis(user.compCode!, user.empId!, query);
+  }
 }

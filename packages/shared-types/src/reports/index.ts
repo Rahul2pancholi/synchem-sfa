@@ -150,3 +150,20 @@ export interface ManagerSalesKpis {
   coveragePct: number;
   missedCallCount: number;
 }
+
+export interface FieldStaffKpis {
+  month: number;
+  year: number;
+  headQuarterName: string | null;
+  pobApprovedAmount: number;
+  amountTarget: number;
+  pobAchievementPct: number;
+  doctorVisits: number;
+  plannedDoctorCalls: number;
+  coveragePct: number;
+  missedCallCount: number;
+  rtpWorkTypeToday: string | null;
+  rtpHasPlanToday: boolean;
+  weeklyDoctorsToday: number;
+  pendingSubmitCount: number;
+}

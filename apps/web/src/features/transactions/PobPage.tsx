@@ -44,6 +44,8 @@ export function PobPage() {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [divisionFilter, setDivisionFilter] = useState<string | undefined>();
+  const [partySearch, setPartySearch] = useState('');
+  const [productSearch, setProductSearch] = useState('');
   const partyType = Form.useWatch('partyType', form) ?? 'DOCTOR';
   const watchedLines = (Form.useWatch('lines', form) ?? []) as PobLineForm[];
 
@@ -55,41 +57,32 @@ export function PobPage() {
     },
   });
 
-  const productsQuery = useQuery({
-    queryKey: ['products-options'],
+  const partyQuery = useQuery({
+    queryKey: ['pob-party-options', partyType, partySearch],
     queryFn: async () => {
-      const res = await fetchApi<{ data: { items: ProductOption[] } }>(
-        '/api/v1/products?pageSize=200',
+      const params = new URLSearchParams({ partyType });
+      if (partySearch.trim()) params.set('search', partySearch.trim());
+      const res = await fetchApi<{ data: { items: PartyOption[] } }>(
+        `/api/v1/personal-orders/party-options?${params.toString()}`,
         languageHeader,
       );
       return res.data.items;
     },
   });
 
-  const doctorsQuery = useQuery({
-    queryKey: ['doctors-options'],
+  const productsQuery = useQuery({
+    queryKey: ['pob-product-options', divisionFilter, productSearch],
     queryFn: async () => {
-      const res = await fetchApi<{ data: { items: Array<{ id: string; doctorName: string }> } }>(
-        '/api/v1/doctors?pageSize=200',
+      const params = new URLSearchParams();
+      if (productSearch.trim()) params.set('search', productSearch.trim());
+      if (divisionFilter) params.set('divisionId', divisionFilter);
+      const res = await fetchApi<{ data: { items: ProductOption[] } }>(
+        `/api/v1/personal-orders/product-options?${params.toString()}`,
         languageHeader,
       );
-      return res.data.items.map((d) => ({ id: d.id, name: d.doctorName }));
+      return res.data.items;
     },
   });
-
-  const retailersQuery = useQuery({
-    queryKey: ['retailers-options'],
-    queryFn: async () => {
-      const res = await fetchApi<{ data: { items: Array<{ id: string; retailerName: string }> } }>(
-        '/api/v1/retailers?pageSize=200',
-        languageHeader,
-      );
-      return res.data.items.map((r) => ({ id: r.id, name: r.retailerName }));
-    },
-  });
-
-  const partyOptions: PartyOption[] =
-    partyType === 'RETAILER' ? (retailersQuery.data ?? []) : (doctorsQuery.data ?? []);
 
   const divisionOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -102,12 +95,6 @@ export function PobPage() {
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [productsQuery.data]);
-
-  const filteredProducts = useMemo(() => {
-    const items = productsQuery.data ?? [];
-    if (!divisionFilter) return items;
-    return items.filter((p) => p.divisionId === divisionFilter);
-  }, [productsQuery.data, divisionFilter]);
 
   const grandTotal = watchedLines.reduce((sum, line) => sum + lineAmount(line), 0);
 
@@ -125,6 +112,8 @@ export function PobPage() {
         orderDate: dayjs(),
         lines: [{ qty: 1, rate: 0 }],
       });
+      setPartySearch('');
+      setProductSearch('');
       await queryClient.invalidateQueries({ queryKey: ['personal-orders'] });
     },
     onError: () => message.error(t('txn.pob.createFailed')),
@@ -204,7 +193,10 @@ export function PobPage() {
           <div className="form-grid">
             <Form.Item name="partyType" label={t('txn.pob.partyType')} rules={[{ required: true }]}>
               <Select
-                onChange={() => form.setFieldValue('partyId', undefined)}
+                onChange={() => {
+                  form.setFieldValue('partyId', undefined);
+                  setPartySearch('');
+                }}
                 options={[
                   { value: 'DOCTOR', label: t('txn.common.doctor') },
                   { value: 'RETAILER', label: t('txn.common.retailer') },
@@ -214,9 +206,11 @@ export function PobPage() {
             <Form.Item name="partyId" label={t('txn.pob.party')} rules={[{ required: true }]}>
               <Select
                 showSearch
-                optionFilterProp="label"
-                loading={partyType === 'RETAILER' ? retailersQuery.isLoading : doctorsQuery.isLoading}
-                options={partyOptions.map((p) => ({ value: p.id, label: p.name }))}
+                filterOption={false}
+                onSearch={setPartySearch}
+                loading={partyQuery.isLoading}
+                options={(partyQuery.data ?? []).map((p) => ({ value: p.id, label: p.name }))}
+                placeholder={t('txn.pob.searchParty')}
               />
             </Form.Item>
             <Form.Item name="orderDate" label={t('txn.pob.orderDate')} rules={[{ required: true }]}>
@@ -249,12 +243,14 @@ export function PobPage() {
                       >
                         <Select
                           showSearch
-                          optionFilterProp="label"
+                          filterOption={false}
+                          onSearch={setProductSearch}
                           loading={productsQuery.isLoading}
-                          options={filteredProducts.map((p) => ({
+                          options={(productsQuery.data ?? []).map((p) => ({
                             value: p.id,
                             label: p.brandName ? `${p.productName} (${p.brandName})` : p.productName,
                           }))}
+                          placeholder={t('txn.pob.searchProduct')}
                         />
                       </Form.Item>
                       <Form.Item

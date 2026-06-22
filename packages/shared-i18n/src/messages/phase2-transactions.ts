@@ -46,6 +46,8 @@ export const PHASE2_MESSAGE_KEYS = [
   'txn.pob.lines',
   'txn.pob.removeLine',
   'txn.pob.listTitle',
+  'txn.pob.searchParty',
+  'txn.pob.searchProduct',
   'txn.common.status',
   'txn.common.doctor',
   'txn.common.retailer',
@@ -108,6 +110,8 @@ const en: Phase2Catalog = {
   'txn.pob.lines': 'Order lines',
   'txn.pob.removeLine': 'Remove line',
   'txn.pob.listTitle': 'My POB list',
+  'txn.pob.searchParty': 'Search doctor or retailer…',
+  'txn.pob.searchProduct': 'Search product…',
   'txn.common.status': 'Status',
   'txn.common.doctor': 'Doctor',
   'txn.common.retailer': 'Retailer',
@@ -133,6 +137,8 @@ const hi: Partial<Phase2Catalog> = {
   'txn.pob.amount': 'राशि',
   'txn.pob.lines': 'ऑर्डर लाइन',
   'txn.pob.listTitle': 'मेरी POB सूची',
+  'txn.pob.searchParty': 'डॉक्टर या रिटेलर खोजें…',
+  'txn.pob.searchProduct': 'उत्पाद खोजें…',
   'mobile.rtp.title': 'मेरा टूर प्रोग्राम',
 };
 
@@ -148,6 +154,8 @@ const hinglish: Partial<Phase2Catalog> = {
   'txn.pob.amount': 'Amount',
   'txn.pob.lines': 'Order lines',
   'txn.pob.listTitle': 'Meri POB list',
+  'txn.pob.searchParty': 'Doctor ya retailer search karo…',
+  'txn.pob.searchProduct': 'Product search karo…',
   'mobile.biometric.prompt': 'Fingerprint ya Face ID use karo',
   'mobile.sync.auto': 'Online aate hi auto-sync',
 };

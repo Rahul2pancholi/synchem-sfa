@@ -37,7 +37,7 @@ export function StatCard({
   info,
 }: {
   title: ReactNode;
-  value: number;
+  value: number | string;
   to?: string;
   suffix?: ReactNode;
   /** Simple-language help shown on info icon hover / tap */

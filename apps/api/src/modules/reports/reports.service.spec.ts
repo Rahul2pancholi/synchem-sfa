@@ -8,20 +8,40 @@ describe('ReportsService', () => {
   const emp1 = '33333333-3333-4333-8333-333333333301';
 
   const prisma = {
-    employee: { findMany: jest.fn().mockResolvedValue([]) },
-    dailyCallReport: { findMany: jest.fn().mockResolvedValue([]) },
+    employee: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findFirst: jest.fn().mockResolvedValue({ headQuarter: { hqName: 'Aligarh 1' } }),
+    },
+    dailyCallReport: {
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+    },
     expenseStatement: { findMany: jest.fn().mockResolvedValue([]) },
     personalOrderBooking: {
       findMany: jest.fn().mockResolvedValue([]),
       aggregate: jest.fn().mockResolvedValue({ _sum: { totalAmount: 0 } }),
+      count: jest.fn().mockResolvedValue(0),
     },
     product: { findMany: jest.fn().mockResolvedValue([]) },
     employeeMonthlyTarget: {
       findMany: jest.fn().mockResolvedValue([]),
       aggregate: jest.fn().mockResolvedValue({ _sum: { amountTarget: 0 } }),
+      findFirst: jest.fn().mockResolvedValue({ amountTarget: 200000 }),
     },
-    weeklyPlan: { findMany: jest.fn().mockResolvedValue([]) },
-    weeklyPlanEntry: { findMany: jest.fn().mockResolvedValue([]) },
+    weeklyPlan: {
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+    },
+    weeklyPlanEntry: {
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(3),
+    },
+    tourProgramme: {
+      findFirst: jest.fn().mockResolvedValue({
+        days: [{ workType: 'FIELD', dayOfMonth: 22 }],
+      }),
+      count: jest.fn().mockResolvedValue(0),
+    },
     dcrDoctorVisit: { findMany: jest.fn().mockResolvedValue([]) },
     doctor: { findMany: jest.fn().mockResolvedValue([]) },
   } as unknown as PrismaService;
@@ -258,5 +278,31 @@ describe('ReportsService', () => {
     expect(result.data.plannedDoctorCalls).toBe(2);
     expect(result.data.coveragePct).toBe(500);
     expect(result.data.missedCallCount).toBe(0);
+  });
+
+  it('aggregates field staff KPIs for logged-in MR', async () => {
+    (prisma.personalOrderBooking.aggregate as jest.Mock).mockResolvedValueOnce({
+      _sum: { totalAmount: 50000 },
+    });
+    (prisma.dailyCallReport.findMany as jest.Mock).mockResolvedValueOnce([
+      { _count: { doctorVisits: 4 } },
+    ]);
+    (prisma.weeklyPlan.findMany as jest.Mock).mockResolvedValueOnce([
+      { empId: emp1, entries: [{ doctorId: 'd1' }, { doctorId: 'd2' }] },
+    ]);
+    (prisma.weeklyPlanEntry.findMany as jest.Mock).mockResolvedValueOnce([]);
+    (prisma.dcrDoctorVisit.findMany as jest.Mock).mockResolvedValueOnce([]);
+    (prisma.dailyCallReport.count as jest.Mock).mockResolvedValueOnce(1);
+    (prisma.personalOrderBooking.count as jest.Mock).mockResolvedValueOnce(2);
+
+    const result = await service.fieldStaffKpis('SYN', emp1, { month: 6, year: 2026 });
+
+    expect(result.data.headQuarterName).toBe('Aligarh 1');
+    expect(result.data.pobApprovedAmount).toBe(50000);
+    expect(result.data.pobAchievementPct).toBe(25);
+    expect(result.data.weeklyDoctorsToday).toBe(3);
+    expect(result.data.rtpHasPlanToday).toBe(true);
+    expect(result.data.rtpWorkTypeToday).toBe('FIELD');
+    expect(result.data.pendingSubmitCount).toBe(3);
   });
 });

@@ -79,6 +79,26 @@ export class TransactionsController {
     return this.transactions.submitWeeklyPlan(user.compCode!, user.empId!, id);
   }
 
+  @Get('personal-orders/party-options')
+  @RequirePermission('TRN04', 'view')
+  listPobPartyOptions(
+    @CurrentUser() user: JwtPayload,
+    @Query('partyType') partyType: string,
+    @Query('search') search?: string,
+  ) {
+    return this.transactions.listPobPartyOptions(user.compCode!, partyType ?? 'DOCTOR', search);
+  }
+
+  @Get('personal-orders/product-options')
+  @RequirePermission('TRN04', 'view')
+  listPobProductOptions(
+    @CurrentUser() user: JwtPayload,
+    @Query('search') search?: string,
+    @Query('divisionId') divisionId?: string,
+  ) {
+    return this.transactions.listPobProductOptions(user.compCode!, search, divisionId);
+  }
+
   @Get('personal-orders')
   @RequirePermission('TRN04', 'view')
   listPobs(@CurrentUser() user: JwtPayload) {

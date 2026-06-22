@@ -1,6 +1,7 @@
-import type { DcrSummary, PobSummary } from '@synchem-sfa/shared-types';
+import type { DcrSummary, FieldStaffKpis, PobSummary } from '@synchem-sfa/shared-types';
+import type { MessageKey } from '@synchem-sfa/shared-i18n';
 import { useQuery } from '@tanstack/react-query';
-import { Col, Row, Spin, Button, Space } from 'antd';
+import { Col, Row, Spin, Button, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../../components/ui/PageLayout';
@@ -14,8 +15,30 @@ interface ListResponse<T> {
   data: { items: T[] };
 }
 
+interface KpisResponse {
+  data: FieldStaffKpis;
+}
+
 function isDraft(status: string) {
   return status === 'DRAFT' || status === 'REJECTED';
+}
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function rtpTodayLabel(
+  workType: string | null | undefined,
+  hasPlan: boolean,
+  t: (key: MessageKey) => string,
+) {
+  if (!hasPlan) return t('dashboard.fs.rtpNone');
+  if (workType === 'LEAVE' || workType === 'HOLIDAY') return t('dashboard.fs.rtpLeave');
+  return t('dashboard.fs.rtpField');
 }
 
 export function FieldStaffDashboardHome() {
@@ -29,6 +52,14 @@ export function FieldStaffDashboardHome() {
   const canRtp = usePermission('TRN01', 'view');
   const canWeekly = usePermission('TRN24', 'view');
   const canLoadStats = canDcr || canPob;
+
+  const kpisQuery = useQuery({
+    queryKey: ['field-staff-kpis'],
+    queryFn: async () => {
+      const res = await fetchApi<KpisResponse>('/api/v1/reports/field-staff-kpis', languageHeader);
+      return res.data;
+    },
+  });
 
   const dcrQuery = useQuery({
     queryKey: ['field-staff-dcr'],
@@ -48,19 +79,90 @@ export function FieldStaffDashboardHome() {
     enabled: canPob,
   });
 
+  const kpis = kpisQuery.data;
   const dcrItems = dcrQuery.data ?? [];
   const pobItems = pobQuery.data ?? [];
   const dcrToday = canDcr ? dcrItems.filter((row) => row.workDate === today).length : 0;
   const dcrDraft = canDcr ? dcrItems.filter((row) => isDraft(row.approveStatus)).length : 0;
   const pobDraft = canPob ? pobItems.filter((row) => isDraft(row.approveStatus)).length : 0;
-  const loading = (canDcr && dcrQuery.isLoading) || (canPob && pobQuery.isLoading);
+  const loading =
+    kpisQuery.isLoading || (canDcr && dcrQuery.isLoading) || (canPob && pobQuery.isLoading);
 
+  const hqSuffix = kpis?.headQuarterName ? ` · ${kpis.headQuarterName}` : '';
   const welcome = employee?.firstName
-    ? `${employee.firstName}, ${t('dashboard.fs.subtitle')}`
-    : t('dashboard.fs.subtitle');
+    ? `${employee.firstName}, ${t('dashboard.fs.subtitle')}${hqSuffix}`
+    : `${t('dashboard.fs.subtitle')}${hqSuffix}`;
 
   return (
     <PageLayout title={t('dashboard.fieldStaff')} subtitle={welcome}>
+      <PageSection title={t('dashboard.fs.todayPlan')}>
+        <Spin spinning={kpisQuery.isLoading}>
+          <Row gutter={[16, 16]}>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.rtpToday')}
+                info={t('dashboard.fs.statHelp.rtpToday')}
+                value={rtpTodayLabel(kpis?.rtpWorkTypeToday, kpis?.rtpHasPlanToday ?? false, t)}
+                to={canRtp ? '/app/monthlyRTP' : undefined}
+              />
+            </Col>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.weeklyDoctorsToday')}
+                info={t('dashboard.fs.statHelp.weeklyDoctorsToday')}
+                value={kpis?.weeklyDoctorsToday ?? 0}
+                to={canWeekly ? '/app/weeklyPlan' : undefined}
+              />
+            </Col>
+            {canLoadStats ? (
+              <Col xs={12} sm={12} md={8} lg={6}>
+                <StatCard
+                  title={t('dashboard.fs.pendingSubmit')}
+                  info={t('dashboard.fs.statHelp.pendingSubmit')}
+                  value={kpis?.pendingSubmitCount ?? 0}
+                />
+              </Col>
+            ) : null}
+          </Row>
+        </Spin>
+      </PageSection>
+
+      <PageSection title={t('dashboard.fs.salesKpis')}>
+        <Spin spinning={kpisQuery.isLoading}>
+          <Row gutter={[16, 16]}>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.pobMtd')}
+                info={t('dashboard.fs.statHelp.pobMtd')}
+                value={formatInr(kpis?.pobApprovedAmount ?? 0)}
+                to={canPob ? '/app/pob/add' : undefined}
+              />
+            </Col>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.pobAchievement')}
+                info={t('dashboard.fs.statHelp.pobAchievement')}
+                value={`${kpis?.pobAchievementPct ?? 0}%`}
+              />
+            </Col>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.coverage')}
+                info={t('dashboard.fs.statHelp.coverage')}
+                value={`${kpis?.coveragePct ?? 0}%`}
+              />
+            </Col>
+            <Col xs={12} sm={12} md={8} lg={6}>
+              <StatCard
+                title={t('dashboard.fs.missedCalls')}
+                info={t('dashboard.fs.statHelp.missedCalls')}
+                value={kpis?.missedCallCount ?? 0}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </PageSection>
+
       {canLoadStats ? (
         <PageSection title={t('dashboard.fs.todayWork')}>
           <Spin spinning={loading}>
@@ -104,7 +206,9 @@ export function FieldStaffDashboardHome() {
         <Space wrap size="middle">
           {canDcr ? (
             <Link to="/app/dcrRecord">
-              <Button size="large">{t('txn.dcr.title')}</Button>
+              <Button size="large" type="primary">
+                {t('txn.dcr.title')}
+              </Button>
             </Link>
           ) : null}
           {canPob ? (
@@ -123,6 +227,12 @@ export function FieldStaffDashboardHome() {
             </Link>
           ) : null}
         </Space>
+        {kpis?.amountTarget ? (
+          <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0 }}>
+            {t('dashboard.fs.pobAchievement')}: {formatInr(kpis.pobApprovedAmount)} /{' '}
+            {formatInr(kpis.amountTarget)}
+          </Typography.Paragraph>
+        ) : null}
       </PageSection>
     </PageLayout>
   );

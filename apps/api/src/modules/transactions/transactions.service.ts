@@ -219,8 +219,6 @@ export class TransactionsService {
     return apiSuccess({ id, approveStatus: 'SUBMITTED' });
   }
 
-  // ─── POB ───────────────────────────────────────────────────────────────────
-
   async listPobs(compCode: string, empId: string) {
     const rows = await this.prisma.personalOrderBooking.findMany({
       where: { compCode, empId },
@@ -290,6 +288,78 @@ export class TransactionsService {
     });
 
     return apiSuccess({ id, approveStatus: 'SUBMITTED' });
+  }
+
+  async listPobPartyOptions(compCode: string, partyType: string, search?: string) {
+    const q = search?.trim();
+    const take = 50;
+    if (partyType === 'RETAILER') {
+      const items = await this.prisma.retailer.findMany({
+        where: {
+          compCode,
+          deletedAt: null,
+          active: true,
+          ...(q ? { retailerName: { contains: q, mode: 'insensitive' } } : {}),
+        },
+        take,
+        orderBy: { retailerName: 'asc' },
+        select: { id: true, retailerName: true },
+      });
+      return apiSuccess({
+        items: items.map((row) => ({ id: row.id, name: row.retailerName })),
+      });
+    }
+
+    const items = await this.prisma.doctor.findMany({
+      where: {
+        compCode,
+        deletedAt: null,
+        active: true,
+        ...(q ? { doctorName: { contains: q, mode: 'insensitive' } } : {}),
+      },
+      take,
+      orderBy: { doctorName: 'asc' },
+      select: { id: true, doctorName: true },
+    });
+    return apiSuccess({
+      items: items.map((row) => ({ id: row.id, name: row.doctorName })),
+    });
+  }
+
+  async listPobProductOptions(compCode: string, search?: string, divisionId?: string) {
+    const q = search?.trim();
+    const items = await this.prisma.product.findMany({
+      where: {
+        compCode,
+        deletedAt: null,
+        active: true,
+        ...(divisionId ? { divisionId } : {}),
+        ...(q
+          ? {
+              OR: [
+                { productName: { contains: q, mode: 'insensitive' } },
+                { productCode: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      take: 100,
+      orderBy: { productName: 'asc' },
+      include: {
+        brand: { select: { brandName: true } },
+        division: { select: { divisionName: true } },
+      },
+    });
+    return apiSuccess({
+      items: items.map((row) => ({
+        id: row.id,
+        productName: row.productName,
+        productCode: row.productCode,
+        brandName: row.brand?.brandName ?? null,
+        divisionId: row.divisionId,
+        divisionName: row.division?.divisionName ?? null,
+      })),
+    });
   }
 
   // ─── Push token (Phase 3 polish) ───────────────────────────────────────────
