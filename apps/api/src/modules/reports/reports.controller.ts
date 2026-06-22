@@ -70,6 +70,18 @@ export class ReportsController {
     return this.reports.doctorReport(user.compCode!, query);
   }
 
+  @Get('employee-attendance')
+  @RequirePermission('REP13', 'view')
+  employeeAttendance(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.employeeAttendance(user.compCode!, query);
+  }
+
+  @Get('employee-analysis')
+  @RequirePermission('REP04', 'view')
+  employeeAnalysis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.employeeAnalysis(user.compCode!, query);
+  }
+
   @Get('manager-kpis')
   @RequirePermission('REP20', 'view')
   managerSalesKpis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {

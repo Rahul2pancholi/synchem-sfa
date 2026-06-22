@@ -29,6 +29,10 @@ export const DoctorReportFilterSchema = ReportFilterSchema.extend({
   routeId: z.string().uuid().optional(),
 });
 
+export const EmployeeAttendanceFilterSchema = VisitSummaryFilterSchema;
+
+export const EmployeeAnalysisFilterSchema = VisitSummaryFilterSchema;
+
 export type ReportFilter = z.infer<typeof ReportFilterSchema>;
 export type SalesSummaryFilter = z.infer<typeof SalesSummaryFilterSchema>;
 export type TargetAchievementFilter = z.infer<typeof TargetAchievementFilterSchema>;
@@ -37,6 +41,8 @@ export type MissedCallsFilter = z.infer<typeof MissedCallsFilterSchema>;
 export type MonthlyCoveredDoctorFilter = z.infer<typeof MonthlyCoveredDoctorFilterSchema>;
 export type RtpSummaryFilter = z.infer<typeof RtpSummaryFilterSchema>;
 export type DoctorReportFilter = z.infer<typeof DoctorReportFilterSchema>;
+export type EmployeeAttendanceFilter = z.infer<typeof EmployeeAttendanceFilterSchema>;
+export type EmployeeAnalysisFilter = z.infer<typeof EmployeeAnalysisFilterSchema>;
 
 export interface DcrSummaryReportRow {
   empId: string;
@@ -208,6 +214,50 @@ export interface DoctorReportRow {
   approveStatus: string;
   visitCount: number;
   lastVisitDate: string | null;
+}
+
+export interface EmployeeAttendanceTotals {
+  totalEmployees: number;
+  totalFieldDays: number;
+  totalLeaveDays: number;
+  holidaysInMonth: number;
+}
+
+export interface EmployeeAttendanceReportRow {
+  empId: string;
+  employeeName: string;
+  employeeCode: string | null;
+  headQuarterName: string | null;
+  fieldDays: number;
+  leaveDays: number;
+  holidayDays: number;
+  plannedFieldDays: number;
+  meetingDays: number;
+}
+
+export interface EmployeeAnalysisTotals {
+  totalEmployees: number;
+  avgCallAchievementPct: number;
+  avgPobAchievementPct: number;
+  avgCoveragePct: number;
+}
+
+export interface EmployeeAnalysisReportRow {
+  empId: string;
+  employeeName: string;
+  employeeCode: string | null;
+  headQuarterName: string | null;
+  fieldDays: number;
+  doctorVisits: number;
+  plannedDoctorCalls: number;
+  coveragePct: number;
+  callTarget: number | null;
+  callAchievementPct: number | null;
+  amountTarget: number;
+  actualAmount: number;
+  pobAchievementPct: number;
+  pobCount: number;
+  pobTarget: number | null;
 }
 
 export interface ManagerSalesKpis {

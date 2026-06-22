@@ -64,6 +64,8 @@ export const SEED_MENUS: SeedMenuDefinition[] = [
   { menuCode: 'REP22', menuName: 'Missed Calls', menuType: 'R', menuUrl: '#/app/report/missedCallReport', parentCode: 'REP', sortOrder: 48 },
   { menuCode: 'REP23', menuName: 'Monthly Covered Doctor', menuType: 'R', menuUrl: '#/app/report/monthlyCoveredDoctor', parentCode: 'REP', sortOrder: 49 },
   { menuCode: 'REP18', menuName: 'Doctor Report', menuType: 'R', menuUrl: '#/app/report/doctors', parentCode: 'REP', sortOrder: 50 },
+  { menuCode: 'REP13', menuName: 'Employee Attendance', menuType: 'R', menuUrl: '#/app/report/employee-attendance', parentCode: 'REP', sortOrder: 51 },
+  { menuCode: 'REP04', menuName: 'Employee Analysis', menuType: 'R', menuUrl: '#/app/report/employee-analysis', parentCode: 'REP', sortOrder: 52 },
   { menuCode: 'ADM', menuName: 'Admin', menuType: 'T', menuUrl: null, parentCode: null, sortOrder: 50 },
   { menuCode: 'ADM01', menuName: 'Role Master', menuType: 'T', menuUrl: '#/app/roleMaster', parentCode: 'ADM', sortOrder: 51 },
   { menuCode: 'ADM04', menuName: 'Role Setting', menuType: 'T', menuUrl: '#/app/roleSetting', parentCode: 'ADM', sortOrder: 52 },

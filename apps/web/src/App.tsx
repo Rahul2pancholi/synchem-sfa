@@ -30,6 +30,8 @@ import { MissedCallsReportPage } from './features/reports/MissedCallsReportPage'
 import { MonthlyCoveredDoctorReportPage } from './features/reports/MonthlyCoveredDoctorReportPage';
 import { RtpSummaryReportPage } from './features/reports/RtpSummaryReportPage';
 import { DoctorReportPage } from './features/reports/DoctorReportPage';
+import { EmployeeAttendanceReportPage } from './features/reports/EmployeeAttendanceReportPage';
+import { EmployeeAnalysisReportPage } from './features/reports/EmployeeAnalysisReportPage';
 import { InsightsChatConfigPage } from './features/admin/InsightsChatConfigPage';
 import { LoginAnalyticsPage } from './features/admin/LoginAnalyticsPage';
 
@@ -106,6 +108,8 @@ export function App() {
         <Route path="report/missedCallReport" element={guarded('REP22', <MissedCallsReportPage />)} />
         <Route path="report/monthlyCoveredDoctor" element={guarded('REP23', <MonthlyCoveredDoctorReportPage />)} />
         <Route path="report/doctors" element={guarded('REP18', <DoctorReportPage />)} />
+        <Route path="report/employee-attendance" element={guarded('REP13', <EmployeeAttendanceReportPage />)} />
+        <Route path="report/employee-analysis" element={guarded('REP04', <EmployeeAnalysisReportPage />)} />
         <Route path="pob/add" element={guarded('TRN04', <PobPage />)} />
         <Route path="roleMaster" element={guarded('ADM01', <RoleMasterPage />)} />
         <Route path="roleSetting" element={guarded('ADM04', <RoleSettingPage />)} />
