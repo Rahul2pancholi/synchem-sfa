@@ -52,6 +52,24 @@ export class ReportsController {
     return this.reports.missedCalls(user.compCode!, query);
   }
 
+  @Get('monthly-covered-doctors')
+  @RequirePermission('REP23', 'view')
+  monthlyCoveredDoctors(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.monthlyCoveredDoctors(user.compCode!, query);
+  }
+
+  @Get('rtp-summary')
+  @RequirePermission('REP10', 'view')
+  rtpSummary(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.rtpSummary(user.compCode!, query);
+  }
+
+  @Get('doctor-report')
+  @RequirePermission('REP18', 'view')
+  doctorReport(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.doctorReport(user.compCode!, query);
+  }
+
   @Get('manager-kpis')
   @RequirePermission('REP20', 'view')
   managerSalesKpis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { apiSuccess, ReportFilterSchema, SalesSummaryFilterSchema, TargetAchievementFilterSchema, VisitSummaryFilterSchema, MissedCallsFilterSchema } from '@synchem-sfa/shared-types';
+import { apiSuccess, ReportFilterSchema, SalesSummaryFilterSchema, TargetAchievementFilterSchema, VisitSummaryFilterSchema, MissedCallsFilterSchema, MonthlyCoveredDoctorFilterSchema, RtpSummaryFilterSchema, DoctorReportFilterSchema } from '@synchem-sfa/shared-types';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 
 @Injectable()
@@ -814,6 +814,365 @@ export class ReportsService {
     };
 
     return apiSuccess(payload);
+  }
+
+  async rtpSummary(compCode: string, query: unknown) {
+    const parsed = RtpSummaryFilterSchema.safeParse(query ?? {});
+    const month = parsed.success ? parsed.data.month : undefined;
+    const year = parsed.success ? parsed.data.year : undefined;
+    const empId = parsed.success ? parsed.data.empId : undefined;
+    const headQuarterId = parsed.success ? parsed.data.headQuarterId : undefined;
+
+    if (!month || !year) {
+      return apiSuccess({
+        summary: {
+          totalSubmitted: 0,
+          approvedCount: 0,
+          pendingCount: 0,
+          draftCount: 0,
+          notSubmittedCount: 0,
+        },
+        items: [],
+      });
+    }
+
+    const employeeWhere = {
+      compCode,
+      active: true,
+      ...(empId ? { id: empId } : {}),
+      ...(headQuarterId ? { headQuarterId } : {}),
+    };
+
+    const [programmes, activeEmployeeCount] = await Promise.all([
+      this.prisma.tourProgramme.findMany({
+        where: {
+          compCode,
+          planMonth: month,
+          planYear: year,
+          ...(empId ? { empId } : {}),
+          ...(headQuarterId ? { employee: { headQuarterId } } : {}),
+        },
+        include: {
+          days: { select: { workType: true } },
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              employeeCode: true,
+              headQuarter: { select: { hqName: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.employee.count({ where: employeeWhere }),
+    ]);
+
+    const items = programmes
+      .map((rtp) => {
+        const employee = rtp.employee;
+        const fieldDays = rtp.days.filter((day) => day.workType === 'FIELD').length;
+        return {
+          empId: rtp.empId,
+          employeeName: `${employee.firstName} ${employee.lastName ?? ''}`.trim(),
+          employeeCode: employee.employeeCode,
+          headQuarterName: employee.headQuarter?.hqName ?? null,
+          approveStatus: rtp.approveStatus,
+          fieldDays,
+          totalPlanDays: rtp.days.length,
+          submittedAt: rtp.submittedAt ? this.dateKey(rtp.submittedAt) : null,
+        };
+      })
+      .sort((a, b) => a.employeeName.localeCompare(b.employeeName));
+
+    const summary = {
+      totalSubmitted: programmes.length,
+      approvedCount: programmes.filter((row) => row.approveStatus === 'APPROVED').length,
+      pendingCount: programmes.filter(
+        (row) => row.approveStatus === 'SUBMITTED' || row.approveStatus === 'PENDING',
+      ).length,
+      draftCount: programmes.filter((row) => row.approveStatus === 'DRAFT').length,
+      notSubmittedCount: Math.max(0, activeEmployeeCount - programmes.length),
+    };
+
+    return apiSuccess({ summary, items });
+  }
+
+  async doctorReport(compCode: string, query: unknown) {
+    const parsed = DoctorReportFilterSchema.safeParse(query ?? {});
+    const month = parsed.success ? parsed.data.month : undefined;
+    const year = parsed.success ? parsed.data.year : undefined;
+    const headQuarterId = parsed.success ? parsed.data.headQuarterId : undefined;
+    const routeId = parsed.success ? parsed.data.routeId : undefined;
+    const empId = parsed.success ? parsed.data.empId : undefined;
+    const dateRange = month && year ? this.monthDateRange(month, year) : undefined;
+
+    const doctors = await this.prisma.doctor.findMany({
+      where: {
+        compCode,
+        deletedAt: null,
+        active: true,
+        ...(routeId ? { routeId } : {}),
+        ...(headQuarterId ? { route: { headQuarterId } } : {}),
+      },
+      select: {
+        id: true,
+        doctorName: true,
+        mobileNo: true,
+        approveStatus: true,
+        route: {
+          select: {
+            routeName: true,
+            headQuarter: { select: { hqName: true } },
+          },
+        },
+        specialist: { select: { specialistName: true } },
+      },
+      orderBy: { doctorName: 'asc' },
+      take: 5000,
+    });
+
+    const doctorIds = doctors.map((doctor) => doctor.id);
+    const dcrFilter = {
+      approveStatus: 'APPROVED' as const,
+      ...(empId ? { empId } : {}),
+    };
+
+    const [periodVisits, lastVisits] =
+      doctorIds.length === 0
+        ? [[], []]
+        : await Promise.all([
+            this.prisma.dcrDoctorVisit.findMany({
+              where: {
+                compCode,
+                doctorId: { in: doctorIds },
+                dcr: {
+                  ...dcrFilter,
+                  ...(dateRange ? { workDate: dateRange } : {}),
+                },
+              },
+              select: {
+                doctorId: true,
+                dcr: { select: { workDate: true } },
+              },
+            }),
+            dateRange
+              ? this.prisma.dcrDoctorVisit.findMany({
+                  where: {
+                    compCode,
+                    doctorId: { in: doctorIds },
+                    dcr: dcrFilter,
+                  },
+                  select: {
+                    doctorId: true,
+                    dcr: { select: { workDate: true } },
+                  },
+                })
+              : Promise.resolve([]),
+          ]);
+
+    const visitsForLast = dateRange ? lastVisits : periodVisits;
+
+    const countByDoctor = new Map<string, number>();
+    for (const visit of periodVisits) {
+      countByDoctor.set(visit.doctorId, (countByDoctor.get(visit.doctorId) ?? 0) + 1);
+    }
+
+    const lastByDoctor = new Map<string, string>();
+    for (const visit of visitsForLast) {
+      const visitDate = this.dateKey(visit.dcr.workDate);
+      const current = lastByDoctor.get(visit.doctorId);
+      if (!current || visitDate > current) {
+        lastByDoctor.set(visit.doctorId, visitDate);
+      }
+    }
+
+    const items = doctors.map((doctor) => ({
+      doctorId: doctor.id,
+      doctorName: doctor.doctorName,
+      routeName: doctor.route?.routeName ?? null,
+      headQuarterName: doctor.route?.headQuarter?.hqName ?? null,
+      specialistName: doctor.specialist?.specialistName ?? null,
+      mobileNo: doctor.mobileNo,
+      approveStatus: doctor.approveStatus,
+      visitCount: countByDoctor.get(doctor.id) ?? 0,
+      lastVisitDate: lastByDoctor.get(doctor.id) ?? null,
+    }));
+
+    const summary = {
+      totalDoctors: items.length,
+      visitedInPeriod: items.filter((row) => row.visitCount > 0).length,
+      totalVisits: periodVisits.length,
+      neverVisited: items.filter((row) => !row.lastVisitDate).length,
+    };
+
+    return apiSuccess({ summary, items });
+  }
+
+  async monthlyCoveredDoctors(compCode: string, query: unknown) {
+    const parsed = MonthlyCoveredDoctorFilterSchema.safeParse(query ?? {});
+    const month = parsed.success ? parsed.data.month : undefined;
+    const year = parsed.success ? parsed.data.year : undefined;
+    const empId = parsed.success ? parsed.data.empId : undefined;
+    const headQuarterId = parsed.success ? parsed.data.headQuarterId : undefined;
+
+    if (!month || !year) {
+      return apiSuccess({
+        summary: {
+          coveredDoctors: 0,
+          plannedDoctors: 0,
+          coveragePct: 0,
+          totalVisits: 0,
+        },
+        items: [],
+      });
+    }
+
+    const dateRange = this.monthDateRange(month, year);
+
+    const [plannedEntries, visits] = await Promise.all([
+      this.prisma.weeklyPlanEntry.findMany({
+        where: {
+          compCode,
+          doctorId: { not: null },
+          planDate: dateRange,
+          weeklyPlan: {
+            approveStatus: 'APPROVED',
+            ...(empId ? { empId } : {}),
+            ...(headQuarterId ? { employee: { headQuarterId } } : {}),
+          },
+        },
+        select: {
+          doctorId: true,
+          weeklyPlan: { select: { empId: true } },
+        },
+      }),
+      this.prisma.dcrDoctorVisit.findMany({
+        where: {
+          compCode,
+          dcr: {
+            approveStatus: 'APPROVED',
+            workDate: dateRange,
+            ...(empId ? { empId } : {}),
+            ...(headQuarterId ? { employee: { headQuarterId } } : {}),
+          },
+        },
+        select: {
+          doctorId: true,
+          dcr: {
+            select: {
+              empId: true,
+              workDate: true,
+              employee: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  employeeCode: true,
+                  headQuarter: { select: { hqName: true } },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const plannedDoctorIds = new Set<string>();
+    const plannedByEmpDoctor = new Set<string>();
+    for (const entry of plannedEntries) {
+      if (!entry.doctorId) continue;
+      plannedDoctorIds.add(entry.doctorId);
+      plannedByEmpDoctor.add(`${entry.weeklyPlan.empId}|${entry.doctorId}`);
+    }
+
+    type VisitAgg = {
+      empId: string;
+      doctorId: string;
+      employeeName: string;
+      employeeCode: string | null;
+      headQuarterName: string | null;
+      visitCount: number;
+      firstVisitDate: string;
+      lastVisitDate: string;
+    };
+
+    const byKey = new Map<string, VisitAgg>();
+    for (const visit of visits) {
+      const key = `${visit.dcr.empId}|${visit.doctorId}`;
+      const visitDate = this.dateKey(visit.dcr.workDate);
+      const employee = visit.dcr.employee;
+      const employeeName = `${employee.firstName} ${employee.lastName ?? ''}`.trim();
+      const current = byKey.get(key);
+      if (!current) {
+        byKey.set(key, {
+          empId: visit.dcr.empId,
+          doctorId: visit.doctorId,
+          employeeName,
+          employeeCode: employee.employeeCode,
+          headQuarterName: employee.headQuarter?.hqName ?? null,
+          visitCount: 1,
+          firstVisitDate: visitDate,
+          lastVisitDate: visitDate,
+        });
+        continue;
+      }
+      current.visitCount += 1;
+      if (visitDate < current.firstVisitDate) current.firstVisitDate = visitDate;
+      if (visitDate > current.lastVisitDate) current.lastVisitDate = visitDate;
+    }
+
+    const coveredDoctorIds = new Set([...byKey.values()].map((row) => row.doctorId));
+    const doctorIds = [...coveredDoctorIds];
+    const doctors =
+      doctorIds.length > 0
+        ? await this.prisma.doctor.findMany({
+            where: { compCode, id: { in: doctorIds } },
+            select: {
+              id: true,
+              doctorName: true,
+              route: { select: { routeName: true } },
+            },
+          })
+        : [];
+    const doctorById = new Map(
+      doctors.map((doctor) => [
+        doctor.id,
+        { doctorName: doctor.doctorName, routeName: doctor.route?.routeName ?? null },
+      ]),
+    );
+
+    const items = [...byKey.values()]
+      .map((row) => {
+        const doctor = doctorById.get(row.doctorId);
+        return {
+          empId: row.empId,
+          employeeName: row.employeeName,
+          employeeCode: row.employeeCode,
+          headQuarterName: row.headQuarterName,
+          doctorId: row.doctorId,
+          doctorName: doctor?.doctorName ?? row.doctorId,
+          routeName: doctor?.routeName ?? null,
+          visitCount: row.visitCount,
+          firstVisitDate: row.firstVisitDate,
+          lastVisitDate: row.lastVisitDate,
+          wasPlanned: plannedByEmpDoctor.has(`${row.empId}|${row.doctorId}`),
+        };
+      })
+      .sort((a, b) => {
+        const byEmp = a.employeeName.localeCompare(b.employeeName);
+        if (byEmp !== 0) return byEmp;
+        return a.doctorName.localeCompare(b.doctorName);
+      });
+
+    const summary = {
+      coveredDoctors: coveredDoctorIds.size,
+      plannedDoctors: plannedDoctorIds.size,
+      coveragePct: this.pct(coveredDoctorIds.size, plannedDoctorIds.size),
+      totalVisits: visits.length,
+    };
+
+    return apiSuccess({ summary, items });
   }
 
   async fieldStaffKpis(compCode: string, empId: string, query: unknown) {

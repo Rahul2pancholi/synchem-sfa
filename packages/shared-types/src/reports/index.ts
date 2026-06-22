@@ -20,11 +20,23 @@ export const VisitSummaryFilterSchema = TargetAchievementFilterSchema;
 
 export const MissedCallsFilterSchema = VisitSummaryFilterSchema;
 
+export const MonthlyCoveredDoctorFilterSchema = VisitSummaryFilterSchema;
+
+export const RtpSummaryFilterSchema = VisitSummaryFilterSchema;
+
+export const DoctorReportFilterSchema = ReportFilterSchema.extend({
+  headQuarterId: z.string().uuid().optional(),
+  routeId: z.string().uuid().optional(),
+});
+
 export type ReportFilter = z.infer<typeof ReportFilterSchema>;
 export type SalesSummaryFilter = z.infer<typeof SalesSummaryFilterSchema>;
 export type TargetAchievementFilter = z.infer<typeof TargetAchievementFilterSchema>;
 export type VisitSummaryFilter = z.infer<typeof VisitSummaryFilterSchema>;
 export type MissedCallsFilter = z.infer<typeof MissedCallsFilterSchema>;
+export type MonthlyCoveredDoctorFilter = z.infer<typeof MonthlyCoveredDoctorFilterSchema>;
+export type RtpSummaryFilter = z.infer<typeof RtpSummaryFilterSchema>;
+export type DoctorReportFilter = z.infer<typeof DoctorReportFilterSchema>;
 
 export interface DcrSummaryReportRow {
   empId: string;
@@ -137,6 +149,65 @@ export interface MissedCallsReportRow {
   doctorId: string;
   doctorName: string;
   plannedDate: string;
+}
+
+export interface MonthlyCoveredDoctorTotals {
+  coveredDoctors: number;
+  plannedDoctors: number;
+  coveragePct: number;
+  totalVisits: number;
+}
+
+export interface MonthlyCoveredDoctorReportRow {
+  empId: string;
+  employeeName: string;
+  employeeCode: string | null;
+  headQuarterName: string | null;
+  doctorId: string;
+  doctorName: string;
+  routeName: string | null;
+  visitCount: number;
+  firstVisitDate: string;
+  lastVisitDate: string;
+  wasPlanned: boolean;
+}
+
+export interface RtpSummaryTotals {
+  totalSubmitted: number;
+  approvedCount: number;
+  pendingCount: number;
+  draftCount: number;
+  notSubmittedCount: number;
+}
+
+export interface RtpSummaryReportRow {
+  empId: string;
+  employeeName: string;
+  employeeCode: string | null;
+  headQuarterName: string | null;
+  approveStatus: string;
+  fieldDays: number;
+  totalPlanDays: number;
+  submittedAt: string | null;
+}
+
+export interface DoctorReportTotals {
+  totalDoctors: number;
+  visitedInPeriod: number;
+  totalVisits: number;
+  neverVisited: number;
+}
+
+export interface DoctorReportRow {
+  doctorId: string;
+  doctorName: string;
+  routeName: string | null;
+  headQuarterName: string | null;
+  specialistName: string | null;
+  mobileNo: string | null;
+  approveStatus: string;
+  visitCount: number;
+  lastVisitDate: string | null;
 }
 
 export interface ManagerSalesKpis {

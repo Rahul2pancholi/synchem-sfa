@@ -27,6 +27,9 @@ import { SalesSummaryReportPage } from './features/reports/SalesSummaryReportPag
 import { TargetAchievementReportPage } from './features/reports/TargetAchievementReportPage';
 import { VisitSummaryReportPage } from './features/reports/VisitSummaryReportPage';
 import { MissedCallsReportPage } from './features/reports/MissedCallsReportPage';
+import { MonthlyCoveredDoctorReportPage } from './features/reports/MonthlyCoveredDoctorReportPage';
+import { RtpSummaryReportPage } from './features/reports/RtpSummaryReportPage';
+import { DoctorReportPage } from './features/reports/DoctorReportPage';
 import { InsightsChatConfigPage } from './features/admin/InsightsChatConfigPage';
 import { LoginAnalyticsPage } from './features/admin/LoginAnalyticsPage';
 
@@ -99,7 +102,10 @@ export function App() {
         <Route path="report/salesSummary" element={guarded('REP41712', <SalesSummaryReportPage />)} />
         <Route path="report/employeeTargetAchievement" element={guarded('REP20', <TargetAchievementReportPage />)} />
         <Route path="report/visit-summary" element={guarded('REP02', <VisitSummaryReportPage />)} />
+        <Route path="report/rtp-summary" element={guarded('REP10', <RtpSummaryReportPage />)} />
         <Route path="report/missedCallReport" element={guarded('REP22', <MissedCallsReportPage />)} />
+        <Route path="report/monthlyCoveredDoctor" element={guarded('REP23', <MonthlyCoveredDoctorReportPage />)} />
+        <Route path="report/doctors" element={guarded('REP18', <DoctorReportPage />)} />
         <Route path="pob/add" element={guarded('TRN04', <PobPage />)} />
         <Route path="roleMaster" element={guarded('ADM01', <RoleMasterPage />)} />
         <Route path="roleSetting" element={guarded('ADM04', <RoleSettingPage />)} />

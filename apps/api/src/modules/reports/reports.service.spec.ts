@@ -11,6 +11,7 @@ describe('ReportsService', () => {
     employee: {
       findMany: jest.fn().mockResolvedValue([]),
       findFirst: jest.fn().mockResolvedValue({ headQuarter: { hqName: 'Aligarh 1' } }),
+      count: jest.fn().mockResolvedValue(20),
     },
     dailyCallReport: {
       findMany: jest.fn().mockResolvedValue([]),
@@ -40,6 +41,7 @@ describe('ReportsService', () => {
       findFirst: jest.fn().mockResolvedValue({
         days: [{ workType: 'FIELD', dayOfMonth: 22 }],
       }),
+      findMany: jest.fn().mockResolvedValue([]),
       count: jest.fn().mockResolvedValue(0),
     },
     dcrDoctorVisit: { findMany: jest.fn().mockResolvedValue([]) },
@@ -278,6 +280,152 @@ describe('ReportsService', () => {
     expect(result.data.plannedDoctorCalls).toBe(2);
     expect(result.data.coveragePct).toBe(500);
     expect(result.data.missedCallCount).toBe(0);
+  });
+
+  it('lists doctors visited in month with coverage vs weekly plan', async () => {
+    const docId = '44444444-4444-4444-8444-444444444401';
+    const workDate = new Date('2026-06-15T00:00:00.000Z');
+
+    (prisma.weeklyPlanEntry.findMany as jest.Mock).mockResolvedValueOnce([
+      {
+        doctorId: docId,
+        weeklyPlan: { empId: emp1 },
+      },
+    ]);
+    (prisma.dcrDoctorVisit.findMany as jest.Mock).mockResolvedValueOnce([
+      {
+        doctorId: docId,
+        dcr: {
+          empId: emp1,
+          workDate,
+          employee: {
+            id: emp1,
+            firstName: 'Rahul',
+            lastName: 'MR',
+            employeeCode: 'MR001',
+            headQuarter: { hqName: 'Mumbai' },
+          },
+        },
+      },
+      {
+        doctorId: docId,
+        dcr: {
+          empId: emp1,
+          workDate: new Date('2026-06-20T00:00:00.000Z'),
+          employee: {
+            id: emp1,
+            firstName: 'Rahul',
+            lastName: 'MR',
+            employeeCode: 'MR001',
+            headQuarter: { hqName: 'Mumbai' },
+          },
+        },
+      },
+    ]);
+    (prisma.doctor.findMany as jest.Mock).mockResolvedValueOnce([
+      { id: docId, doctorName: 'Dr. Patel', route: { routeName: 'Route A' } },
+    ]);
+
+    const result = await service.monthlyCoveredDoctors('SYN', { month: 6, year: 2026 });
+
+    expect(result.data.summary.coveredDoctors).toBe(1);
+    expect(result.data.summary.plannedDoctors).toBe(1);
+    expect(result.data.summary.coveragePct).toBe(100);
+    expect(result.data.summary.totalVisits).toBe(2);
+    expect(result.data.items[0]?.doctorName).toBe('Dr. Patel');
+    expect(result.data.items[0]?.visitCount).toBe(2);
+    expect(result.data.items[0]?.wasPlanned).toBe(true);
+    expect(result.data.items[0]?.firstVisitDate).toBe('2026-06-15');
+    expect(result.data.items[0]?.lastVisitDate).toBe('2026-06-20');
+  });
+
+  it('summarizes tour programme status per MR for the month', async () => {
+    const submittedAt = new Date('2026-06-05T00:00:00.000Z');
+
+    (prisma.tourProgramme.findMany as jest.Mock).mockResolvedValueOnce([
+      {
+        empId: emp1,
+        approveStatus: 'APPROVED',
+        submittedAt,
+        days: [
+          { workType: 'FIELD' },
+          { workType: 'FIELD' },
+          { workType: 'OFF' },
+        ],
+        employee: {
+          id: emp1,
+          firstName: 'Rahul',
+          lastName: 'MR',
+          employeeCode: 'MR001',
+          headQuarter: { hqName: 'Mumbai' },
+        },
+      },
+      {
+        empId: '33333333-3333-4333-8333-333333333302',
+        approveStatus: 'SUBMITTED',
+        submittedAt,
+        days: [{ workType: 'FIELD' }],
+        employee: {
+          id: '33333333-3333-4333-8333-333333333302',
+          firstName: 'Amit',
+          lastName: 'Kumar',
+          employeeCode: 'MR002',
+          headQuarter: { hqName: 'Delhi' },
+        },
+      },
+    ]);
+    (prisma.employee.count as jest.Mock).mockResolvedValueOnce(20);
+
+    const result = await service.rtpSummary('SYN', { month: 6, year: 2026 });
+
+    expect(result.data.summary.totalSubmitted).toBe(2);
+    expect(result.data.summary.approvedCount).toBe(1);
+    expect(result.data.summary.pendingCount).toBe(1);
+    expect(result.data.summary.notSubmittedCount).toBe(18);
+    expect(result.data.items[0]?.employeeName).toBe('Amit Kumar');
+    expect(result.data.items[0]?.fieldDays).toBe(1);
+    expect(result.data.items[1]?.employeeName).toBe('Rahul MR');
+    expect(result.data.items[1]?.fieldDays).toBe(2);
+    expect(result.data.items[1]?.submittedAt).toBe('2026-06-05');
+  });
+
+  it('lists doctors with visit stats and last visit date', async () => {
+    const docId = '44444444-4444-4444-8444-444444444401';
+    const workDate = new Date('2026-06-12T00:00:00.000Z');
+
+    (prisma.doctor.findMany as jest.Mock).mockResolvedValueOnce([
+      {
+        id: docId,
+        doctorName: 'Dr. Patel',
+        mobileNo: '9876543210',
+        approveStatus: 'APPROVED',
+        route: {
+          routeName: 'Route A',
+          headQuarter: { hqName: 'Mumbai' },
+        },
+        specialist: { specialistName: 'Cardiology' },
+      },
+    ]);
+    (prisma.dcrDoctorVisit.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        { doctorId: docId, dcr: { workDate } },
+        { doctorId: docId, dcr: { workDate: new Date('2026-06-18T00:00:00.000Z') } },
+      ])
+      .mockResolvedValueOnce([
+        { doctorId: docId, dcr: { workDate } },
+        { doctorId: docId, dcr: { workDate: new Date('2026-06-18T00:00:00.000Z') } },
+      ]);
+
+    const result = await service.doctorReport('SYN', { month: 6, year: 2026 });
+
+    expect(result.data.summary.totalDoctors).toBe(1);
+    expect(result.data.summary.visitedInPeriod).toBe(1);
+    expect(result.data.summary.totalVisits).toBe(2);
+    expect(result.data.summary.neverVisited).toBe(0);
+    expect(result.data.items[0]?.doctorName).toBe('Dr. Patel');
+    expect(result.data.items[0]?.visitCount).toBe(2);
+    expect(result.data.items[0]?.lastVisitDate).toBe('2026-06-18');
+    expect(result.data.items[0]?.specialistName).toBe('Cardiology');
   });
 
   it('aggregates field staff KPIs for logged-in MR', async () => {
