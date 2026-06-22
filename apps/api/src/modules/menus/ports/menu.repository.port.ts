@@ -16,6 +16,7 @@ export interface MenuPermissionRecord {
 
 export interface MenuRepositoryPort {
   findMenusForRole(compCode: string, roleId: string): Promise<MenuPermissionRecord[]>;
+  findAllPermissionsForRole(compCode: string, roleId: string): Promise<MenuPermissionRecord[]>;
 }
 
 export const MENU_REPOSITORY = Symbol('MENU_REPOSITORY');

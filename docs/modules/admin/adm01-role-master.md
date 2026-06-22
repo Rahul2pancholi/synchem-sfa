@@ -60,7 +60,8 @@ This screen stores or shows these types of information:
 
 ## Clone Checklist
 
-- [ ] Build UI screen at route `/app/roles`
+- [ ] See [22-ROLE-ACCESS-CONFIG-PLAN.md](../../22-ROLE-ACCESS-CONFIG-PLAN.md) — Phase 1.5
+- [ ] Build UI screen at route `/app/roleMaster`
 - [ ] Create database tables for data listed above
 - [ ] Implement API endpoints
 - [ ] Add role permission check (menu code `ADM01`)

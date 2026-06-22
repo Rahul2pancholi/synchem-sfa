@@ -29,7 +29,7 @@ export class PrismaSyncRepository implements SyncRepositoryPort {
       syncBatchId: row.syncBatchId,
       compCode: row.compCode,
       empId: row.empId,
-      responseJson: row.responseJson as SyncPushResult,
+      responseJson: row.responseJson as unknown as SyncPushResult,
     };
   }
 
@@ -225,7 +225,16 @@ export class PrismaSyncRepository implements SyncRepositoryPort {
       }),
     ]);
 
-    return { doctors, retailers, routes, products };
+    return {
+      doctors,
+      retailers,
+      routes,
+      products: products.map((p) => ({
+        id: p.id,
+        productName: p.productName,
+        productCode: p.productCode ?? '',
+      })),
+    };
   }
 
   private async applyOne(

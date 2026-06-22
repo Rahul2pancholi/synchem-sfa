@@ -25,6 +25,8 @@ tags:
   - name: Menus
   - name: Masters
   - name: Sync
+  - name: Transactions
+  - name: Approvals
 
 paths:
   /health:
@@ -404,6 +406,159 @@ paths:
                 $ref: '#/components/schemas/ApiSuccessSyncPushResponse'
         '409':
           description: Version conflict in batch
+
+  /api/v1/daily-call-reports:
+    get:
+      tags: [Transactions]
+      summary: List DCRs for current employee
+      operationId: listDailyCallReports
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: DCR list
+    post:
+      tags: [Transactions]
+      summary: Create DCR draft
+      operationId: createDailyCallReport
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Created
+
+  /api/v1/daily-call-reports/{id}/submit:
+    post:
+      tags: [Transactions]
+      summary: Submit DCR for approval
+      operationId: submitDailyCallReport
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Submitted
+
+  /api/v1/tour-programmes:
+    get:
+      tags: [Transactions]
+      summary: List tour programmes (RTP)
+      operationId: listTourProgrammes
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: RTP list
+    post:
+      tags: [Transactions]
+      summary: Create monthly RTP draft
+      operationId: createTourProgramme
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Created
+
+  /api/v1/weekly-plans:
+    get:
+      tags: [Transactions]
+      summary: List weekly plans
+      operationId: listWeeklyPlans
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Weekly plan list
+    post:
+      tags: [Transactions]
+      summary: Create weekly plan draft
+      operationId: createWeeklyPlan
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Created
+
+  /api/v1/personal-orders:
+    get:
+      tags: [Transactions]
+      summary: List personal order bookings (POB)
+      operationId: listPersonalOrders
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: POB list
+    post:
+      tags: [Transactions]
+      summary: Create POB draft
+      operationId: createPersonalOrder
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Created
+
+  /api/v1/employees/me/push-token:
+    post:
+      tags: [Transactions]
+      summary: Save Expo push token for employee
+      operationId: savePushToken
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Token saved
+
+  /api/v1/approvals/pending:
+    get:
+      tags: [Approvals]
+      summary: List pending approval queue items
+      operationId: listPendingApprovals
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: entityType
+          in: query
+          schema:
+            type: string
+            enum: [DCR, RTP, WEEKLY_PLAN]
+      responses:
+        '200':
+          description: Pending approval items
+
+  /api/v1/approvals/summary:
+    get:
+      tags: [Approvals]
+      summary: Pending approval counts by entity type
+      operationId: getApprovalSummary
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Approval summary counts
+
+  /api/v1/approvals/{id}/approve:
+    post:
+      tags: [Approvals]
+      summary: Approve a pending queue item
+      operationId: approveQueueItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Approved
+
+  /api/v1/approvals/{id}/reject:
+    post:
+      tags: [Approvals]
+      summary: Reject a pending queue item
+      operationId: rejectQueueItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Rejected
 
   /api/v1/sync/pull:
     post:

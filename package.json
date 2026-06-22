@@ -19,7 +19,12 @@
     "colima:status": "colima status",
     "setup:local": "colima start --cpu 2 --memory 4 && docker-compose -f infra/docker/docker-compose.yml up -d",
     "db:migrate": "pnpm --filter @synchem-sfa/api prisma:migrate",
-    "db:seed": "pnpm --filter @synchem-sfa/api prisma:seed"
+    "db:seed": "pnpm --filter @synchem-sfa/api prisma:seed",
+    "db:migrate:deploy": "pnpm --filter @synchem-sfa/api exec prisma migrate deploy",
+    "test:api-flow": "bash scripts/test-api-flow.sh",
+    "go-live:check": "bash scripts/go-live-check.sh",
+    "load-test": "node scripts/load-test/mvp-load.mjs",
+    "docker:uat": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.uat.yml up -d --build"
   },
   "devDependencies": {
     "turbo": "^2.5.4",

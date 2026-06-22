@@ -94,6 +94,8 @@ APIs:
 
 ## Clone Implementation
 
+> **Implementation plan:** [22-ROLE-ACCESS-CONFIG-PLAN.md](./22-ROLE-ACCESS-CONFIG-PLAN.md) — Phase 1.5 admin UI for Role Master + Role Setting.
+
 ### Database Tables
 
 ```sql

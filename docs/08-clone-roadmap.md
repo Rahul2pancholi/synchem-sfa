@@ -30,10 +30,11 @@ This document covers **detailed phase breakdown**. Two tracks:
 - [ ] GitHub Actions CI (lint, test, Docker build)
 - [ ] Prisma schema v1 + migrations
 - [ ] Auth: `/token` endpoint, JWT, refresh tokens
-- [ ] **Multi-tenant:** `companies` table, `compCode` middleware, tenant settings
-- [ ] **Platform super admin** + tenant admin roles
-- [ ] RBAC: roles, menus, permissions (per tenant)
-- [ ] React: login + sidebar shell (role-based menus)
+- [x] **Multi-tenant:** `companies` table, `compCode` middleware, tenant settings
+- [x] **Platform super admin** + tenant admin roles
+- [x] RBAC **engine**: roles, menus, `@RequirePermission` guard, login `menuList` (per tenant)
+- [ ] RBAC **admin UI**: Role Master + Role Setting — see [Phase 1.5](./22-ROLE-ACCESS-CONFIG-PLAN.md)
+- [x] React: login + sidebar shell (role-based menus from login)
 - [ ] OpenAPI v1 skeleton
 
 **Deliverable:** Login works, tenant isolation verified, sidebar renders.
@@ -53,56 +54,75 @@ Priority P0 masters — see [modules/master-setup/](./modules/master-setup/)
 
 **Deliverable:** Admin can set up full master data for Synchem.
 
+### Phase 1.5 — Role & Access Configuration (Month 2–3)
+
+> **Full spec:** [22-ROLE-ACCESS-CONFIG-PLAN.md](./22-ROLE-ACCESS-CONFIG-PLAN.md) — **complete**.
+
+| Sub-phase | Deliverable | Status |
+|-----------|-------------|--------|
+| **1.5A** | Role Master (`ADM01`) — CRUD roles | Done |
+| **1.5B** | Role Setting (`ADM04`) — menu permission matrix + bulk save API | Done |
+| **1.5C** | Web `usePermission` hook — hide buttons by `canAdd` / `canEdit` / … | Done |
+| **1.5D** | Route guard + mobile dashboard feature gating | Done |
+| **1.5E** | Default AD/MAN/FS permission templates in seed + i18n + tests | Done |
+
+**Deliverable:** Admin opens `/app/roleSetting`, checks/unchecks menus for MR role → MR login sees only allowed features. ✅
+
 ### Phase 2 — Core Transactions Web (Month 3)
 
-| # | Transaction | Priority |
-|---|-------------|----------|
-| 1 | Tour Programme (RTP) | P0 |
-| 2 | Daily Call Report (DCR) | P0 |
-| 3 | Weekly Plan | P0 |
-| 4 | Personal Order Booking (POB) | P0 |
+| # | Transaction | Priority | Status |
+|---|-------------|----------|--------|
+| 1 | Tour Programme (RTP) | P0 | Done |
+| 2 | Daily Call Report (DCR) | P0 | Done |
+| 3 | Weekly Plan | P0 | Done |
+| 4 | Personal Order Booking (POB) | P0 | Done |
 
-**Deliverable:** MR can plan and submit DCR on web (online).
+**Deliverable:** MR can plan and submit DCR on web (online). ✅
 
 ### Phase 3 — Mobile MVP (Month 3–4, parallel Phase 2)
 
 **Stack:** React Native + Expo + WatermelonDB — see [15-mobile-stack.md](./15-mobile-stack.md)
 
-- [ ] Mobile login (EMPLOYEE + compCode) + MPIN
-- [ ] Field Staff Dashboard
-- [ ] **Offline DCR** + delta sync API
-- [ ] GPS check-in (`expo-location`)
-- [ ] Firebase push (approval pending)
+- [x] Mobile login (EMPLOYEE + compCode) + MPIN
+- [x] Field Staff Dashboard
+- [x] **Offline DCR** + delta sync API
+- [x] GPS check-in (`expo-location`)
+- [x] Biometric MPIN unlock
+- [x] Auto-sync on foreground
+- [x] Mobile RTP read view
+- [x] Expo push token registration (API)
+- [ ] Firebase push delivery (approval pending)
 - [ ] Load test: 100 concurrent syncs
 
-**Deliverable:** MR submits DCR offline from mobile — **critical for 500 users**.
+**Deliverable:** MR submits DCR offline from mobile — **critical for 500 users**. ✅ (MVP + polish)
 
 ### Phase 4 — Approvals & Manager (Month 4–5)
 
 Minimum approval queues for go-live:
 
-- [ ] DCR Approval
-- [ ] Tour Programme Approval
-- [ ] Weekly Plan Approval
-- [ ] Leave Approval
-- [ ] Expense Approval
+- [x] DCR Approval
+- [x] Tour Programme Approval
+- [x] Weekly Plan Approval
+- [x] Leave Approval
+- [x] Expense Approval
 - [ ] Doctor / Retailer Approval
-- [ ] Manager Dashboard + push notifications
+- [x] Manager Dashboard (pending counts)
+- [ ] Push notifications
 
 **Deliverable:** Full submit → approve loop works.
 
 ### Phase 5 — Monthly Cycle + Reports (Month 5)
 
-| Module | Features |
-|--------|----------|
-| Leave | Application + policy |
-| Expense | Statement + template |
-| Stock | Statement (basic) |
-| Gift/Sample | Requisition + receive (basic) |
-| Dashboards | FS, Manager, Management |
-| Reports | **10–15 key reports** (not all 60) |
+| Module | Status |
+|--------|--------|
+| Leave application + policy | Done |
+| Expense statement + approval | Done |
+| Stock statement (basic) | Deferred |
+| Gift/Sample (basic) | Deferred |
+| Key reports (3 of 12) | Done |
+| Full report suite + Excel | Deferred |
 
-**Deliverable:** Month-end workflows + HO can view key reports.
+**Deliverable:** Month-end leave + expense workflows; HO can view key reports.
 
 ### Phase 6 — Go-Live (Month 6)
 
@@ -113,6 +133,8 @@ Minimum approval queues for go-live:
 - [ ] Monitoring (Sentry, uptime alerts)
 
 **Deliverable:** **500 live users** on production MVP.
+
+**Runbook:** [23-PHASE6-GO-LIVE.md](./23-PHASE6-GO-LIVE.md) · `pnpm go-live:check` · `pnpm load-test` · `pnpm docker:uat`
 
 ---
 
@@ -155,6 +177,22 @@ Each report: filters + grid + Excel/PDF export.
 - Receipt OCR
 - Manager approval summary
 - See [17-FINAL-BUILD-PLAN.md](./17-FINAL-BUILD-PLAN.md) Section 9
+
+### Phase 11 — Admin Workflow & Rules Builder (Month 7–9, SaaS differentiator)
+
+> **Full spec:** [21-WORKFLOW-BUILDER-PLAN.md](./21-WORKFLOW-BUILDER-PLAN.md) — planned, not started.
+
+Build **after Phase 4** (`ApprovalService` + hardcoded approval queues prove the engine).
+
+| Sub-phase | Deliverable |
+|-----------|-------------|
+| **11A** | Drag-and-drop **Approval Flow Designer** (DCR, RTP, Weekly Plan, Leave, Expense, Doctor/Retailer) |
+| **11B** | **Business Rules Designer** — pre-submit validation (min calls, lock days, geo-fence, block/warn) |
+| **11C** | Cross-module automation (optional) — reminders, webhooks, schedules |
+
+**Deliverable:** Tenant admin configures approval chains and DCR rules without code deploy.
+
+**Depends on:** Phase 2 (transactions), Phase 4 (approval engine), trilingual message keys.
 
 ---
 

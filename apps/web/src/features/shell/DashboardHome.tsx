@@ -1,4 +1,6 @@
-import { Card, Typography } from 'antd';
+import { Typography } from 'antd';
+import { PageLayout } from '../../components/ui/PageLayout';
+import { PageSection } from '../../components/ui/PageSection';
 import { useI18n } from '../../i18n/I18nProvider';
 
 export function DashboardHome({
@@ -9,14 +11,15 @@ export function DashboardHome({
   const { t } = useI18n();
   const employeeRaw = localStorage.getItem('employeeObj');
   const employee = employeeRaw ? JSON.parse(employeeRaw) : null;
+  const welcome = employee?.firstName
+    ? `${employee.firstName}, ${t('shell.welcomePhase0')}`
+    : t('shell.welcomePhase0');
 
   return (
-    <Card>
-      <Typography.Title level={4}>{t(titleKey)}</Typography.Title>
-      <Typography.Paragraph>
-        {employee?.firstName ? `${employee.firstName}, ` : ''}
-        {t('shell.welcomePhase0')}
-      </Typography.Paragraph>
-    </Card>
+    <PageLayout title={t(titleKey)} subtitle={welcome}>
+      <PageSection>
+        <Typography.Paragraph style={{ margin: 0 }}>{t('shell.welcomePhase0')}</Typography.Paragraph>
+      </PageSection>
+    </PageLayout>
   );
 }

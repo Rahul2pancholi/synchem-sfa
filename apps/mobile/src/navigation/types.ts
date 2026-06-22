@@ -5,4 +5,5 @@ export type RootStackParamList = {
   Dashboard: undefined;
   DcrList: undefined;
   DcrCreate: undefined;
+  RtpCalendar: undefined;
 };

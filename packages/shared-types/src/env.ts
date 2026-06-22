@@ -9,6 +9,8 @@ export const EnvSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('12h'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  SENTRY_DSN: z.string().url().optional(),
+  CORS_ORIGINS: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof EnvSchema>;

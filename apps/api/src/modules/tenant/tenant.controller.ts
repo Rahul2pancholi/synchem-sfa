@@ -62,15 +62,3 @@ export class TenantController {
     return this.tenantService.deactivateEmployee(user.compCode!, id);
   }
 }
-
-@Controller('api/v1/roles')
-@RequireActor('tenant')
-export class RolesController {
-  constructor(private readonly tenantService: TenantService) {}
-
-  @Get()
-  @RequirePermission('MAS07', 'view')
-  list(@CurrentUser() user: JwtPayload) {
-    return this.tenantService.listRoles(user.compCode!);
-  }
-}

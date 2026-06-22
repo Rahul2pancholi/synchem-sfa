@@ -5,7 +5,8 @@
 0. **⭐ BUILD PLAN:** [17-FINAL-BUILD-PLAN.md](./17-FINAL-BUILD-PLAN.md) — locked stack, multi-tenant SaaS, 6-month / 500-user plan
 0a. **⭐ CODING RULES:** [18-DEVELOPMENT-STANDARDS.md](./18-DEVELOPMENT-STANDARDS.md) + [AGENTS.md](../AGENTS.md) — strict modularity, tests, data safety (AI agents read first)
 0b. **MVP screens:** [19-MVP-SCREEN-LIST.md](./19-MVP-SCREEN-LIST.md) — formal 6-month go-live checklist
-0c. **Mobile sync:** [20-OFFLINE-SYNC-PROTOCOL.md](./20-OFFLINE-SYNC-PROTOCOL.md)
+0c. **Go-live runbook:** [23-PHASE6-GO-LIVE.md](./23-PHASE6-GO-LIVE.md) — UAT, deploy, load test, rollout
+0d. **Mobile sync:** [20-OFFLINE-SYNC-PROTOCOL.md](./20-OFFLINE-SYNC-PROTOCOL.md)
 0d. **OpenAPI v1:** [openapi/sfa-api-v1.yaml](../openapi/sfa-api-v1.yaml)
 0e. **Prisma schema v1:** [prisma/schema.prisma](../prisma/schema.prisma)
 1. **Original system reference:** [12-MASTER-CLONE-BIBLE.md](./12-MASTER-CLONE-BIBLE.md) — live sample data + business rules
@@ -31,6 +32,7 @@
 | **[17-FINAL-BUILD-PLAN.md](./17-FINAL-BUILD-PLAN.md)** | **⭐ Master build plan — locked stack, SaaS, 500 users, Docker** |
 | **[18-DEVELOPMENT-STANDARDS.md](./18-DEVELOPMENT-STANDARDS.md)** | **⭐ Strict coding rules — modularity, DRY, tests, atomicity** |
 | [19-MVP-SCREEN-LIST.md](./19-MVP-SCREEN-LIST.md) | **MVP screens — 6-month go-live checklist** |
+| [23-PHASE6-GO-LIVE.md](./23-PHASE6-GO-LIVE.md) | **Go-live — UAT, deploy, load test, rollout** |
 | [20-OFFLINE-SYNC-PROTOCOL.md](./20-OFFLINE-SYNC-PROTOCOL.md) | **Mobile offline sync protocol** |
 | [openapi/sfa-api-v1.yaml](../openapi/sfa-api-v1.yaml) | OpenAPI v1 draft |
 | [prisma/schema.prisma](../prisma/schema.prisma) | Prisma schema v1 draft |

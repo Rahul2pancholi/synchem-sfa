@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { SEED_MENUS } from './seed-data/menus';
+import { templatePermission } from './seed-data/role-permission-templates';
 
 const prisma = new PrismaClient();
 
@@ -53,10 +54,24 @@ async function seedMenus() {
   return menuIds;
 }
 
-async function seedAdminPermissions(compCode: string, roleId: string) {
+async function seedRolePermissions(
+  compCode: string,
+  roleId: string,
+  roleType: 'AD' | 'MAN' | 'FS',
+) {
   const menus = await prisma.menu.findMany({ where: { active: true } });
 
   for (const menu of menus) {
+    const flags = templatePermission(roleType, menu.menuCode);
+    const hasAny =
+      flags.canView ||
+      flags.canAdd ||
+      flags.canEdit ||
+      flags.canDelete ||
+      flags.canPreview ||
+      flags.canPrint;
+    if (!hasAny) continue;
+
     await prisma.roleMenuPermission.upsert({
       where: {
         compCode_roleId_menuId: {
@@ -65,27 +80,19 @@ async function seedAdminPermissions(compCode: string, roleId: string) {
           menuId: menu.id,
         },
       },
-      update: {
-        canView: true,
-        canAdd: true,
-        canEdit: true,
-        canDelete: true,
-        canPreview: true,
-        canPrint: true,
-      },
+      update: flags,
       create: {
         compCode,
         roleId,
         menuId: menu.id,
-        canView: true,
-        canAdd: true,
-        canEdit: true,
-        canDelete: true,
-        canPreview: true,
-        canPrint: true,
+        ...flags,
       },
     });
   }
+}
+
+async function seedAdminPermissions(compCode: string, roleId: string) {
+  await seedRolePermissions(compCode, roleId, 'AD');
 }
 
 async function main() {
@@ -129,7 +136,19 @@ async function main() {
     },
   });
 
-  await seedAdminPermissions('SYN', mrRole.id);
+  await seedRolePermissions('SYN', mrRole.id, 'FS');
+
+  const manRole = await prisma.role.upsert({
+    where: { compCode_roleName: { compCode: 'SYN', roleName: 'RM' } },
+    update: {},
+    create: {
+      compCode: 'SYN',
+      roleName: 'RM',
+      roleType: 'MAN',
+    },
+  });
+
+  await seedRolePermissions('SYN', manRole.id, 'MAN');
 
   const adHierarchy = await prisma.hierarchy.upsert({
     where: { compCode_hierarchyCode: { compCode: 'SYN', hierarchyCode: 'AD-INDORE' } },
@@ -311,6 +330,29 @@ async function main() {
     where: { compCode: 'SYN', hierarchyCode: 'MR-INDORE' },
   });
 
+  const rmPasswordHash = await bcrypt.hash('Rm@123', 10);
+  const rmEmployee = await prisma.employee.upsert({
+    where: { compCode_userName: { compCode: 'SYN', userName: 'rm1' } },
+    update: {
+      passwordHash: rmPasswordHash,
+      roleId: manRole.id,
+      hierarchyId: rmHierarchy.id,
+    },
+    create: {
+      compCode: 'SYN',
+      userName: 'rm1',
+      passwordHash: rmPasswordHash,
+      employeeCode: 'RM001',
+      firstName: 'Manager',
+      lastName: 'RM',
+      email: 'rm1@synchem.co',
+      roleId: manRole.id,
+      hierarchyId: rmHierarchy.id,
+      active: true,
+      isFirstLogin: false,
+    },
+  });
+
   await prisma.employee.upsert({
     where: { compCode_userName: { compCode: 'SYN', userName: 'mr1' } },
     update: {
@@ -318,6 +360,7 @@ async function main() {
       roleId: mrRole.id,
       headQuarterId: hq.id,
       hierarchyId: mrHierarchy.id,
+      reportingManagerId: rmEmployee.id,
     },
     create: {
       compCode: 'SYN',
@@ -330,10 +373,71 @@ async function main() {
       roleId: mrRole.id,
       headQuarterId: hq.id,
       hierarchyId: mrHierarchy.id,
+      reportingManagerId: rmEmployee.id,
       active: true,
       isFirstLogin: false,
     },
   });
+
+  const mrEmployee = await prisma.employee.findFirstOrThrow({
+    where: { compCode: 'SYN', userName: 'mr1' },
+  });
+
+  for (const policy of [
+    { leaveType: 'CL', annualQuota: 12, carryForwardLimit: 3 },
+    { leaveType: 'SL', annualQuota: 6, carryForwardLimit: 0 },
+    { leaveType: 'PL', annualQuota: 15, carryForwardLimit: 0 },
+  ]) {
+    await prisma.leavePolicy.upsert({
+      where: { compCode_leaveType: { compCode: 'SYN', leaveType: policy.leaveType } },
+      update: {
+        annualQuota: policy.annualQuota,
+        carryForwardLimit: policy.carryForwardLimit,
+        active: true,
+      },
+      create: {
+        compCode: 'SYN',
+        leaveType: policy.leaveType,
+        annualQuota: policy.annualQuota,
+        carryForwardLimit: policy.carryForwardLimit,
+        active: true,
+      },
+    });
+  }
+
+  const policyYear = new Date().getFullYear();
+  for (const balance of [
+    { leaveType: 'CL', balance: 12 },
+    { leaveType: 'SL', balance: 6 },
+    { leaveType: 'PL', balance: 15 },
+  ]) {
+    await prisma.leaveBalance.upsert({
+      where: {
+        compCode_empId_leaveType_policyYear: {
+          compCode: 'SYN',
+          empId: mrEmployee.id,
+          leaveType: balance.leaveType,
+          policyYear,
+        },
+      },
+      update: { balance: balance.balance },
+      create: {
+        compCode: 'SYN',
+        empId: mrEmployee.id,
+        leaveType: balance.leaveType,
+        policyYear,
+        balance: balance.balance,
+      },
+    });
+  }
+
+  for (const headName of ['Travel', 'Fixed Allowance', 'Daily Allowance']) {
+    await prisma.expenseHead.upsert({
+      where: { compCode_headName: { compCode: 'SYN', headName } },
+      update: { active: true },
+      create: { compCode: 'SYN', headName, active: true },
+    });
+  }
 
   const platformHash = await bcrypt.hash(platformPassword, 10);
   await prisma.platformUser.upsert({
@@ -346,7 +450,11 @@ async function main() {
     },
   });
 
-  console.log('Seed complete: SYN tenant + admin (admin / Admin@123) + MR (mr1 / Mr@123)');
+  await seedAdminPermissions('SYN', role.id);
+  await seedRolePermissions('SYN', manRole.id, 'MAN');
+  await seedRolePermissions('SYN', mrRole.id, 'FS');
+
+  console.log('Seed complete: SYN tenant + admin (admin / Admin@123) + MR (mr1 / Mr@123) + RM (rm1 / Rm@123)');
   console.log('Platform super admin: superadmin@synchem.co / Platform@123');
 }
 

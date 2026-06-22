@@ -1,17 +1,8 @@
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider } from 'antd';
 import type { ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../lib/query-client';
-
-const sfaTheme = {
-  algorithm: theme.defaultAlgorithm,
-  token: {
-    colorPrimary: '#1677ff',
-    borderRadius: 8,
-    fontFamily:
-      "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-  },
-};
+import { sfaTheme } from '../theme/sfa-theme';
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (

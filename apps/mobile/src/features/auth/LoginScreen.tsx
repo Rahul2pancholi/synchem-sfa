@@ -15,7 +15,9 @@ import {
   bootstrapMasters,
   loginWithPassword,
 } from '../../lib/sync-service';
-import { getMpinHash, hashMpin, saveSession } from '../../lib/auth-store';
+import { getMpinHash, saveSession } from '../../lib/auth-store';
+import { registerPushToken } from '../../lib/push-notifications';
+import { saveMenuList } from '../../lib/menu-permissions';
 import { useSessionStore } from '../../store/session-store';
 import type { RootStackParamList } from '../../navigation/types';
 
@@ -59,8 +61,18 @@ export function LoginScreen({ navigation }: Props) {
       await saveSession(session);
       setSession(session);
 
+      if (token.menuList) {
+        await saveMenuList(token.menuList);
+      }
+
       if (profile.headQuarterId) {
         await bootstrapMasters(token.access_token, language, profile.headQuarterId);
+      }
+
+      try {
+        await registerPushToken(token.access_token, language);
+      } catch {
+        // push optional in dev/simulator
       }
 
       const mpin = await getMpinHash();

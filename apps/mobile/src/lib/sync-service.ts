@@ -49,6 +49,7 @@ export async function loginWithPassword(params: {
     compName: string;
     empId: string;
     employeeObj: string;
+    menuList?: string;
   }>;
 }
 

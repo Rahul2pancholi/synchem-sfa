@@ -1,5 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import { RequireMenuView } from './features/access/AccessDeniedPage';
+import { RoleMasterPage } from './features/access/RoleMasterPage';
+import { RoleSettingPage } from './features/access/RoleSettingPage';
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { PlatformLoginPage } from './features/platform/PlatformLoginPage';
@@ -9,10 +12,24 @@ import { DashboardHome } from './features/shell/DashboardHome';
 import { HierarchyMasterPage } from './features/masters/HierarchyMasterPage';
 import { EmployeeMasterPage } from './features/masters/EmployeeMasterPage';
 import { BulkPageByKey, LovPageByKey, MasterPageByKey } from './features/masters/MasterPageRouter';
+import { DcrPage } from './features/transactions/DcrPage';
+import { PobPage } from './features/transactions/PobPage';
+import { RtpPage } from './features/transactions/RtpPage';
+import { WeeklyPlanPage } from './features/transactions/WeeklyPlanPage';
+import { ApprovalQueuePage } from './features/approvals/ApprovalQueuePage';
+import { ManagerDashboardHome } from './features/approvals/ManagerDashboardHome';
+import { LeaveApplicationPage } from './features/monthly/LeaveApplicationPage';
+import { ExpenseStatementPage } from './features/monthly/ExpenseStatementPage';
+import { LeavePolicyPage } from './features/monthly/LeavePolicyPage';
+import { ReportPage } from './features/reports/ReportPage';
 
 function RequireTenantToken({ children }: { children: ReactNode }) {
   const token = localStorage.getItem('access_token');
   return token ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function guarded(menuCode: string, element: ReactNode) {
+  return <RequireMenuView menuCode={menuCode}>{element}</RequireMenuView>;
 }
 
 export function App() {
@@ -30,34 +47,51 @@ export function App() {
           </RequireTenantToken>
         }
       >
-        <Route path="management/dashboard" element={<DashboardHome titleKey="dashboard.management" />} />
-        <Route path="manager/dashboard" element={<DashboardHome titleKey="dashboard.manager" />} />
-        <Route path="fieldStaff/dashboard" element={<DashboardHome titleKey="dashboard.fieldStaff" />} />
-        <Route path="hierachy" element={<HierarchyMasterPage />} />
-        <Route path="employees" element={<EmployeeMasterPage />} />
-        <Route path="city" element={<MasterPageByKey pageKey="city" />} />
-        <Route path="headQuarter" element={<MasterPageByKey pageKey="headQuarter" />} />
-        <Route path="route" element={<MasterPageByKey pageKey="route" />} />
-        <Route path="brand" element={<MasterPageByKey pageKey="brand" />} />
-        <Route path="product" element={<MasterPageByKey pageKey="product" />} />
-        <Route path="doctor" element={<MasterPageByKey pageKey="doctor" />} />
-        <Route path="retailer" element={<MasterPageByKey pageKey="retailer" />} />
-        <Route path="stockist" element={<MasterPageByKey pageKey="stockist" />} />
-        <Route path="holiday" element={<MasterPageByKey pageKey="holiday" />} />
-        <Route path="designation" element={<LovPageByKey pageKey="designation" />} />
-        <Route path="dosage" element={<LovPageByKey pageKey="dosage" />} />
-        <Route path="division" element={<LovPageByKey pageKey="division" />} />
-        <Route path="specialist" element={<LovPageByKey pageKey="specialist" />} />
-        <Route path="qualification" element={<LovPageByKey pageKey="qualification" />} />
-        <Route path="expenseHead" element={<LovPageByKey pageKey="expenseHead" />} />
-        <Route path="expenseTemplate" element={<LovPageByKey pageKey="expenseTemplate" />} />
-        <Route path="bulkCityUpload" element={<BulkPageByKey pageKey="bulkCityUpload" />} />
-        <Route path="bulkHQUpload" element={<BulkPageByKey pageKey="bulkHQUpload" />} />
-        <Route path="bulkRouteUpload" element={<BulkPageByKey pageKey="bulkRouteUpload" />} />
-        <Route path="bulkDoctorUpload" element={<BulkPageByKey pageKey="bulkDoctorUpload" />} />
-        <Route path="bulkRetailerUpload" element={<BulkPageByKey pageKey="bulkRetailerUpload" />} />
-        <Route path="bulkStockistUpload" element={<BulkPageByKey pageKey="bulkStockistUpload" />} />
-        <Route path="bulkProductUpload" element={<BulkPageByKey pageKey="bulkProductUpload" />} />
+        <Route path="management/dashboard" element={guarded('DSH03', <ManagerDashboardHome titleKey="dashboard.management" />)} />
+        <Route path="manager/dashboard" element={guarded('DSH02', <ManagerDashboardHome titleKey="dashboard.manager" />)} />
+        <Route path="fieldStaff/dashboard" element={guarded('DSH01', <DashboardHome titleKey="dashboard.fieldStaff" />)} />
+        <Route path="hierachy" element={guarded('MAS06', <HierarchyMasterPage />)} />
+        <Route path="employees" element={guarded('MAS07', <EmployeeMasterPage />)} />
+        <Route path="city" element={guarded('MAS20102', <MasterPageByKey pageKey="city" />)} />
+        <Route path="headQuarter" element={guarded('MAS20103', <MasterPageByKey pageKey="headQuarter" />)} />
+        <Route path="route" element={guarded('MAS20104', <MasterPageByKey pageKey="route" />)} />
+        <Route path="brand" element={guarded('MAS19', <MasterPageByKey pageKey="brand" />)} />
+        <Route path="product" element={guarded('MAS05', <MasterPageByKey pageKey="product" />)} />
+        <Route path="doctor" element={guarded('MAS09', <MasterPageByKey pageKey="doctor" />)} />
+        <Route path="retailer" element={guarded('MAS03', <MasterPageByKey pageKey="retailer" />)} />
+        <Route path="stockist" element={guarded('MAS04', <MasterPageByKey pageKey="stockist" />)} />
+        <Route path="holiday" element={guarded('MAS20204', <MasterPageByKey pageKey="holiday" />)} />
+        <Route path="designation" element={guarded('MAS20201', <LovPageByKey pageKey="designation" />)} />
+        <Route path="dosage" element={guarded('MAS20202', <LovPageByKey pageKey="dosage" />)} />
+        <Route path="division" element={guarded('MAS20206', <LovPageByKey pageKey="division" />)} />
+        <Route path="specialist" element={guarded('MAS20209', <LovPageByKey pageKey="specialist" />)} />
+        <Route path="qualification" element={guarded('MAS20208', <LovPageByKey pageKey="qualification" />)} />
+        <Route path="expenseHead" element={guarded('MAS20203', <LovPageByKey pageKey="expenseHead" />)} />
+        <Route path="expenseTemplate" element={guarded('MAS08', <LovPageByKey pageKey="expenseTemplate" />)} />
+        <Route path="bulkCityUpload" element={guarded('MASBLK01', <BulkPageByKey pageKey="bulkCityUpload" />)} />
+        <Route path="bulkHQUpload" element={guarded('MASBLK02', <BulkPageByKey pageKey="bulkHQUpload" />)} />
+        <Route path="bulkRouteUpload" element={guarded('MASBLK03', <BulkPageByKey pageKey="bulkRouteUpload" />)} />
+        <Route path="bulkDoctorUpload" element={guarded('MASBLK04', <BulkPageByKey pageKey="bulkDoctorUpload" />)} />
+        <Route path="bulkRetailerUpload" element={guarded('MASBLK05', <BulkPageByKey pageKey="bulkRetailerUpload" />)} />
+        <Route path="bulkStockistUpload" element={guarded('MASBLK06', <BulkPageByKey pageKey="bulkStockistUpload" />)} />
+        <Route path="bulkProductUpload" element={guarded('MASBLK07', <BulkPageByKey pageKey="bulkProductUpload" />)} />
+        <Route path="monthlyRTP" element={guarded('TRN01', <RtpPage />)} />
+        <Route path="weeklyPlan" element={guarded('TRN24', <WeeklyPlanPage />)} />
+        <Route path="dcrRecord" element={guarded('TRN03', <DcrPage />)} />
+        <Route path="dcrRecord/approval/admin" element={guarded('APP01', <ApprovalQueuePage entityType="DCR" titleKey="approval.dcr.title" />)} />
+        <Route path="monthlyRTP/approval" element={guarded('TRN02', <ApprovalQueuePage entityType="RTP" titleKey="approval.rtp.title" />)} />
+        <Route path="pendingWeeklyPlan" element={guarded('APP04', <ApprovalQueuePage entityType="WEEKLY_PLAN" titleKey="approval.weekly.title" />)} />
+        <Route path="leaveApplication" element={guarded('TRN09', <LeaveApplicationPage />)} />
+        <Route path="leave/approval" element={guarded('TRN10', <ApprovalQueuePage entityType="LEAVE" titleKey="approval.leave.title" />)} />
+        <Route path="expenseStatement" element={guarded('TRN20', <ExpenseStatementPage />)} />
+        <Route path="expenseStatement/approval" element={guarded('TRN21', <ApprovalQueuePage entityType="EXPENSE" titleKey="approval.expense.title" />)} />
+        <Route path="leavePolicy" element={guarded('SET03', <LeavePolicyPage />)} />
+        <Route path="report/dcr-summary" element={guarded('REP01', <ReportPage reportKey="dcr-summary" />)} />
+        <Route path="report/monthlyExpenseSummary" element={guarded('REP05', <ReportPage reportKey="expense-summary" />)} />
+        <Route path="report/employee-pob" element={guarded('REP12', <ReportPage reportKey="employee-pob" />)} />
+        <Route path="pob/add" element={guarded('TRN04', <PobPage />)} />
+        <Route path="roleMaster" element={guarded('ADM01', <RoleMasterPage />)} />
+        <Route path="roleSetting" element={guarded('ADM04', <RoleSettingPage />)} />
         <Route path="*" element={<DashboardHome titleKey="dashboard.default" />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

@@ -9,6 +9,7 @@ import { MpinUnlockScreen } from './src/features/auth/MpinUnlockScreen';
 import { DashboardScreen } from './src/features/dashboard/DashboardScreen';
 import { DcrListScreen } from './src/features/dcr/DcrListScreen';
 import { DcrCreateScreen } from './src/features/dcr/DcrCreateScreen';
+import { RtpCalendarScreen } from './src/features/rtp/RtpCalendarScreen';
 import { I18nProvider } from './src/i18n/I18nProvider';
 import { getMpinHash, loadSession } from './src/lib/auth-store';
 import type { RootStackParamList } from './src/navigation/types';
@@ -56,6 +57,7 @@ export default function App() {
           <Stack.Screen name="Dashboard" component={DashboardScreen} />
           <Stack.Screen name="DcrList" component={DcrListScreen} />
           <Stack.Screen name="DcrCreate" component={DcrCreateScreen} />
+          <Stack.Screen name="RtpCalendar" component={RtpCalendarScreen} options={{ title: 'RTP' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </I18nProvider>

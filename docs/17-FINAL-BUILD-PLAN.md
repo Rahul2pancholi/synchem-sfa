@@ -305,12 +305,14 @@ Full platform: **152 pages, 327 APIs**. MVP subset for 500 users:
 | Approvals | DCR, RTP, Weekly Plan, Leave, Expense (minimum) |
 | Dashboards | FS, Manager, Management (basic KPIs) |
 | Reports | **10–15 key** (DCR summary, missed calls, target achievement, attendance, POB, sales summary) |
-| Admin | Role master, role permissions, company info, DCR settings, leave policy |
+| Admin | Role master, role permissions ([Phase 1.5](./22-ROLE-ACCESS-CONFIG-PLAN.md)), company info, DCR settings, leave policy |
 
 ### Phase 2 after go-live (Month 7–10)
 
 - Remaining ~45 reports
 - All 15 approval types
+- **Admin Role & Access UI** — configure menus/features per role ([22-ROLE-ACCESS-CONFIG-PLAN.md](./22-ROLE-ACCESS-CONFIG-PLAN.md)) — **Phase 1.5, pre go-live**
+- **Admin Workflow & Rules Builder** — drag-and-drop approvals + business rules ([21-WORKFLOW-BUILDER-PLAN.md](./21-WORKFLOW-BUILDER-PLAN.md))
 - Internal mail, e-detailing, chat
 - Infiltration, focused activity, input/sales plan
 - AI features (voice DCR)

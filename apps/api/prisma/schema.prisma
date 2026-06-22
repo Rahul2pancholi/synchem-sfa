@@ -45,6 +45,7 @@ model Company {
   holidays     Holiday[]
   expenseHeads ExpenseHead[]
   expenseTemplates ExpenseTemplate[]
+  leavePolicies LeavePolicy[]
   syncBatches  SyncBatch[]
 
   @@map("companies")
@@ -215,6 +216,12 @@ model Employee {
   directReports    Employee[]     @relation("EmployeeReportsTo")
   refreshTokens    RefreshToken[]
   dailyCallReports DailyCallReport[]
+  tourProgrammes   TourProgramme[]
+  weeklyPlans      WeeklyPlan[]
+  personalOrders   PersonalOrderBooking[]
+  leaveApplications LeaveApplication[]
+  leaveBalances    LeaveBalance[]
+  expenseStatements ExpenseStatement[]
   syncBatches      SyncBatch[]
   gpsCheckIns      GpsCheckIn[]
   auditLogs        AuditLog[]
@@ -410,6 +417,7 @@ model ExpenseHead {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   company Company @relation(fields: [compCode], references: [compCode])
+  lines   ExpenseStatementLine[]
 
   @@unique([compCode, headName])
   @@index([compCode])
@@ -592,6 +600,215 @@ model DcrRetailerVisit {
   @@unique([compCode, clientId])
   @@index([compCode, dcrId])
   @@map("dcr_retailer_visits")
+}
+
+model TourProgramme {
+  id            String    @id @default(uuid()) @db.Uuid
+  compCode      String    @map("comp_code") @db.VarChar(10)
+  empId         String    @map("emp_id") @db.Uuid
+  planMonth     Int       @map("plan_month")
+  planYear      Int       @map("plan_year")
+  approveStatus String    @default("DRAFT") @map("approve_status") @db.VarChar(20)
+  version       Int       @default(1)
+  submittedAt   DateTime? @map("submitted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  employee Employee           @relation(fields: [empId], references: [id])
+  days     TourProgrammeDay[]
+
+  @@unique([compCode, empId, planMonth, planYear])
+  @@index([compCode, empId])
+  @@map("tour_programmes")
+}
+
+model TourProgrammeDay {
+  id              String   @id @default(uuid()) @db.Uuid
+  compCode        String   @map("comp_code") @db.VarChar(10)
+  tourProgrammeId String   @map("tour_programme_id") @db.Uuid
+  dayOfMonth      Int      @map("day_of_month")
+  routeId         String?  @map("route_id") @db.Uuid
+  workType        String   @default("FIELD") @map("work_type") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tourProgramme TourProgramme @relation(fields: [tourProgrammeId], references: [id], onDelete: Cascade)
+
+  @@unique([tourProgrammeId, dayOfMonth])
+  @@index([compCode, tourProgrammeId])
+  @@map("tour_programme_days")
+}
+
+model WeeklyPlan {
+  id            String    @id @default(uuid()) @db.Uuid
+  compCode      String    @map("comp_code") @db.VarChar(10)
+  empId         String    @map("emp_id") @db.Uuid
+  weekStartDate DateTime  @map("week_start_date") @db.Date
+  approveStatus String    @default("DRAFT") @map("approve_status") @db.VarChar(20)
+  version       Int       @default(1)
+  submittedAt   DateTime? @map("submitted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  employee Employee          @relation(fields: [empId], references: [id])
+  entries  WeeklyPlanEntry[]
+
+  @@unique([compCode, empId, weekStartDate])
+  @@index([compCode, empId])
+  @@map("weekly_plans")
+}
+
+model WeeklyPlanEntry {
+  id           String   @id @default(uuid()) @db.Uuid
+  compCode     String   @map("comp_code") @db.VarChar(10)
+  weeklyPlanId String   @map("weekly_plan_id") @db.Uuid
+  planDate     DateTime @map("plan_date") @db.Date
+  doctorId     String?  @map("doctor_id") @db.Uuid
+  notes        String?  @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  weeklyPlan WeeklyPlan @relation(fields: [weeklyPlanId], references: [id], onDelete: Cascade)
+
+  @@index([compCode, weeklyPlanId, planDate])
+  @@map("weekly_plan_entries")
+}
+
+model PersonalOrderBooking {
+  id            String    @id @default(uuid()) @db.Uuid
+  compCode      String    @map("comp_code") @db.VarChar(10)
+  empId         String    @map("emp_id") @db.Uuid
+  partyType     String    @map("party_type") @db.VarChar(20)
+  partyId       String    @map("party_id") @db.Uuid
+  orderDate     DateTime  @map("order_date") @db.Date
+  dcrId         String?   @map("dcr_id") @db.Uuid
+  totalAmount   Decimal   @default(0) @map("total_amount") @db.Decimal(14, 2)
+  approveStatus String    @default("DRAFT") @map("approve_status") @db.VarChar(20)
+  version       Int       @default(1)
+  submittedAt   DateTime? @map("submitted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  employee Employee             @relation(fields: [empId], references: [id])
+  lines    PersonalOrderLine[]
+
+  @@index([compCode, empId, orderDate])
+  @@map("personal_order_bookings")
+}
+
+model PersonalOrderLine {
+  id        String   @id @default(uuid()) @db.Uuid
+  compCode  String   @map("comp_code") @db.VarChar(10)
+  pobId     String   @map("pob_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  qty       Int
+  rate      Decimal  @db.Decimal(12, 2)
+  amount    Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pob PersonalOrderBooking @relation(fields: [pobId], references: [id], onDelete: Cascade)
+
+  @@index([compCode, pobId])
+  @@map("personal_order_lines")
+}
+
+// =============================================================================
+// PHASE 5 — MONTHLY CYCLE (Leave + Expense)
+// =============================================================================
+
+model LeavePolicy {
+  id                String   @id @default(uuid()) @db.Uuid
+  compCode          String   @map("comp_code") @db.VarChar(10)
+  leaveType         String   @map("leave_type") @db.VarChar(10)
+  annualQuota       Int      @map("annual_quota")
+  carryForwardLimit Int      @default(0) @map("carry_forward_limit")
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@unique([compCode, leaveType])
+  @@index([compCode])
+  @@map("leave_policies")
+}
+
+model LeaveBalance {
+  id         String   @id @default(uuid()) @db.Uuid
+  compCode   String   @map("comp_code") @db.VarChar(10)
+  empId      String   @map("emp_id") @db.Uuid
+  leaveType  String   @map("leave_type") @db.VarChar(10)
+  policyYear Int      @map("policy_year")
+  balance    Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [empId], references: [id])
+
+  @@unique([compCode, empId, leaveType, policyYear])
+  @@index([compCode, empId])
+  @@map("leave_balances")
+}
+
+model LeaveApplication {
+  id            String    @id @default(uuid()) @db.Uuid
+  compCode      String    @map("comp_code") @db.VarChar(10)
+  empId         String    @map("emp_id") @db.Uuid
+  leaveType     String    @map("leave_type") @db.VarChar(10)
+  fromDate      DateTime  @map("from_date") @db.Date
+  toDate        DateTime  @map("to_date") @db.Date
+  totalDays     Int       @map("total_days")
+  reason        String?   @db.Text
+  balanceBefore Int?      @map("balance_before")
+  approveStatus String    @default("DRAFT") @map("approve_status") @db.VarChar(20)
+  version       Int       @default(1)
+  submittedAt   DateTime? @map("submitted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [empId], references: [id])
+
+  @@index([compCode, empId, fromDate])
+  @@map("leave_applications")
+}
+
+model ExpenseStatement {
+  id            String    @id @default(uuid()) @db.Uuid
+  compCode      String    @map("comp_code") @db.VarChar(10)
+  empId         String    @map("emp_id") @db.Uuid
+  claimMonth    Int       @map("claim_month")
+  claimYear     Int       @map("claim_year")
+  totalAmount   Decimal   @default(0) @map("total_amount") @db.Decimal(14, 2)
+  approveStatus String    @default("DRAFT") @map("approve_status") @db.VarChar(20)
+  version       Int       @default(1)
+  submittedAt   DateTime? @map("submitted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  employee Employee               @relation(fields: [empId], references: [id])
+  lines    ExpenseStatementLine[]
+
+  @@unique([compCode, empId, claimMonth, claimYear])
+  @@index([compCode, empId])
+  @@map("expense_statements")
+}
+
+model ExpenseStatementLine {
+  id            String  @id @default(uuid()) @db.Uuid
+  compCode      String  @map("comp_code") @db.VarChar(10)
+  statementId   String  @map("statement_id") @db.Uuid
+  expenseHeadId String? @map("expense_head_id") @db.Uuid
+  description   String  @db.VarChar(255)
+  amount        Decimal @db.Decimal(14, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  statement   ExpenseStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  expenseHead ExpenseHead?     @relation(fields: [expenseHeadId], references: [id])
+
+  @@index([compCode, statementId])
+  @@map("expense_statement_lines")
 }
 
 // =============================================================================

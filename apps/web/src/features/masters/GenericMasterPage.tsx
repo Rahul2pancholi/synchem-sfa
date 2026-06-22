@@ -1,21 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
-  Card,
   DatePicker,
   Empty,
   Form,
   Input,
   Select,
-  Space,
   Spin,
-  Table,
   Tag,
-  Typography,
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { PageLayout } from '../../components/ui/PageLayout';
+import { PageSection } from '../../components/ui/PageSection';
+import { ResponsiveTable } from '../../components/ui/ResponsiveTable';
 import { useI18n } from '../../i18n/I18nProvider';
 import { authHeaders, fetchApi } from '../../lib/api-client';
 import type { FormField, MasterPageConfig } from './masterPageConfig';
@@ -172,39 +171,34 @@ export function GenericMasterPage({ config }: { config: MasterPageConfig }) {
   }
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      <Typography.Title level={3} style={{ margin: 0 }}>
-        {t(config.titleKey)}
-      </Typography.Title>
-
-      <Card title={t(config.createTitleKey)}>
-        <Form form={form} layout="vertical" onFinish={onFinish} style={{ maxWidth: 720 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+    <PageLayout title={t(config.titleKey)}>
+      <PageSection title={t(config.createTitleKey)}>
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <div className="form-grid">
             {config.formFields.map(renderFormItem)}
           </div>
-          <Form.Item>
+          <Form.Item style={{ marginTop: 8, marginBottom: 0 }}>
             <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
               {t('common.create')}
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </PageSection>
 
-      <Card>
+      <PageSection>
         {listQuery.isLoading ? (
           <Spin />
         ) : listQuery.isError ? (
           <Empty description={t(config.loadFailedKey)} />
         ) : (
-          <Table
+          <ResponsiveTable
             rowKey="id"
             columns={columns}
             dataSource={listQuery.data ?? []}
-            pagination={{ pageSize: 20 }}
             locale={{ emptyText: <Empty description={t(config.loadFailedKey)} /> }}
           />
         )}
-      </Card>
-    </Space>
+      </PageSection>
+    </PageLayout>
   );
 }

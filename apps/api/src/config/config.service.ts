@@ -16,6 +16,8 @@ export class AppConfigService {
       JWT_SECRET: this.configService.get('JWT_SECRET'),
       JWT_EXPIRES_IN: this.configService.get('JWT_EXPIRES_IN'),
       LOG_LEVEL: this.configService.get('LOG_LEVEL'),
+      SENTRY_DSN: this.configService.get('SENTRY_DSN'),
+      CORS_ORIGINS: this.configService.get('CORS_ORIGINS'),
     });
 
     if (!parsed.success) {
@@ -51,5 +53,15 @@ export class AppConfigService {
 
   get redisUrl(): string | undefined {
     return this.env.REDIS_URL;
+  }
+
+  get sentryDsn(): string | undefined {
+    return this.env.SENTRY_DSN;
+  }
+
+  get corsOrigins(): string[] | true {
+    const raw = this.env.CORS_ORIGINS?.trim();
+    if (!raw) return true;
+    return raw.split(',').map((o) => o.trim()).filter(Boolean);
   }
 }

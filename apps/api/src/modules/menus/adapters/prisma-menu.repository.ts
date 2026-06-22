@@ -21,7 +21,41 @@ export class PrismaMenuRepository implements MenuRepositoryPort {
       orderBy: { menu: { sortOrder: 'asc' } },
     });
 
-    return permissions.map((perm) => ({
+    return permissions.map((perm) => this.toRecord(perm));
+  }
+
+  async findAllPermissionsForRole(compCode: string, roleId: string): Promise<MenuPermissionRecord[]> {
+    const permissions = await this.prisma.roleMenuPermission.findMany({
+      where: {
+        compCode,
+        roleId,
+        menu: { active: true },
+      },
+      include: { menu: true },
+      orderBy: { menu: { sortOrder: 'asc' } },
+    });
+
+    return permissions.map((perm) => this.toRecord(perm));
+  }
+
+  private toRecord(perm: {
+    canView: boolean;
+    canAdd: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canPreview: boolean;
+    canPrint: boolean;
+    menu: {
+      id: string;
+      menuCode: string;
+      menuName: string;
+      menuUrl: string | null;
+      menuType: string | null;
+      parentMenuId: string | null;
+      sortOrder: number;
+    };
+  }): MenuPermissionRecord {
+    return {
       menuId: perm.menu.id,
       menuCode: perm.menu.menuCode,
       menuName: perm.menu.menuName,
@@ -35,6 +69,6 @@ export class PrismaMenuRepository implements MenuRepositoryPort {
       canDelete: perm.canDelete,
       canPreview: perm.canPreview,
       canPrint: perm.canPrint,
-    }));
+    };
   }
 }

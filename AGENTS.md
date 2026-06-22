@@ -62,10 +62,11 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 - Phase 1+ features: add message keys in the same PR as the UI/API change
 
 ### UI design (web)
-- Professional **enterprise admin** look — consistent spacing, loading/empty/error states, accessible labels
-- **Reuse** shared components from `apps/web/src/components/ui/`; page = thin wrapper, logic in hooks
-- **Desktop-first** master/transaction screens; dates `DD-MM-YYYY`; details: `docs/18-DEVELOPMENT-STANDARDS.md` §1.5
-- Full rules: `.cursor/rules/sfa-ui-design.mdc`
+- **Mobile-friendly + desktop** — responsive shell (drawer menu on phone), `PageLayout` / `PageSection` / `ResponsiveTable`
+- Modern simple palette via `apps/web/src/theme/sfa-theme.ts` — teal primary, slate neutrals
+- Loading / empty / error states on every list; dates `DD-MM-YYYY`; touch targets ≥ 40px
+- Reuse `apps/web/src/components/ui/` — page = thin wrapper, logic in hooks
+- Full rules: `.cursor/rules/sfa-ui-design.mdc` (always apply)
 
 ### Library-first (speed + standards)
 - **Do not reinvent** tables, forms, date pickers, CSV parse, API caching if a stable OSS lib fits
@@ -89,6 +90,18 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 - `.env.example` committed; secrets gitignored
 - `/health` + `/ready` endpoints from Phase 0
 - Branches: `develop`→dev, `release/*`→uat, `main`→prod
+
+### Future: Admin Workflow Builder (Phase 11)
+- Planned **after Phase 4** — see [docs/21-WORKFLOW-BUILDER-PLAN.md](docs/21-WORKFLOW-BUILDER-PLAN.md)
+- Drag-and-drop approval flows + business validation rules per tenant (`compCode`)
+- Runtime uses generic `ApprovalService` — designer is config UI, not duplicate engine logic
+- Do **not** start workflow builder until core transactions + hardcoded approvals exist
+
+### Planned: Role & Access Configuration (Phase 1.5)
+- **Before Phase 4 go-live** — see [docs/22-ROLE-ACCESS-CONFIG-PLAN.md](docs/22-ROLE-ACCESS-CONFIG-PLAN.md)
+- Admin UI: Role Master (`ADM01`) + Role Setting permission matrix (`ADM04`)
+- Controls sidebar visibility, button actions (Add/Edit/Delete), API guards, mobile feature tiles
+- Do **not** ship production MR rollout without AD/MAN/FS permission templates (seed fix in 1.5E)
 
 ### CI/CD & migrations
 - PR must pass: lint → typecheck → test → build

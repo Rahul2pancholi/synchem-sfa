@@ -130,11 +130,6 @@ export class TenantService {
     return apiSuccess(toSummary(updated));
   }
 
-  async listRoles(compCode: string) {
-    const items = await this.employeeRepo.listRoles(compCode);
-    return apiSuccess({ items });
-  }
-
   private async assertEmployee(compCode: string, empId: string) {
     const employee = await this.employeeRepo.findMasterById(compCode, empId);
     if (!employee || !employee.active) {

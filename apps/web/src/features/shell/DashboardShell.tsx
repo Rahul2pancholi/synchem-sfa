@@ -1,7 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Layout, Menu, Typography, Button, Space, theme } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Drawer, Grid, Layout, Menu, Typography } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -41,17 +42,106 @@ function toMenuItems(items: LegacyMenuItem[]): NonNullable<MenuProps['items']> {
   });
 }
 
+function findOpenKeysForPath(
+  items: LegacyMenuItem[],
+  pathname: string,
+  trail: string[] = [],
+): string[] | null {
+  for (const item of items) {
+    const href = item.MenuBehaviour === 'FILE' ? menuHref(item.MenuUrl) : null;
+    if (href === pathname) return trail;
+    if (item.ChildMenus?.length) {
+      const nested = findOpenKeysForPath(item.ChildMenus, pathname, [...trail, item.MenuCode]);
+      if (nested) return nested;
+    }
+  }
+  return null;
+}
+
+function SidebarNav({
+  menuItems,
+  pathname,
+  openKeys,
+  onOpenChange,
+  onNavigate,
+}: {
+  menuItems: NonNullable<MenuProps['items']>;
+  pathname: string;
+  openKeys: string[];
+  onOpenChange: (keys: string[]) => void;
+  onNavigate?: () => void;
+}) {
+  const { t } = useI18n();
+  const compCode = localStorage.getItem('compCode') ?? '';
+  const compName = localStorage.getItem('compName') ?? compCode;
+
+  return (
+    <>
+      <div className="app-sider__brand">
+        <Typography.Text strong className="app-sider__brand-title">
+          {t('shell.brand')}
+        </Typography.Text>
+        <Typography.Paragraph className="app-sider__brand-meta">
+          {compName}
+          <br />
+          {compCode}
+        </Typography.Paragraph>
+      </div>
+      {menuItems.length === 0 ? (
+        <Typography.Text type="secondary" style={{ padding: 16, display: 'block' }}>
+          {t('shell.noMenus')}
+        </Typography.Text>
+      ) : (
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[pathname]}
+          openKeys={openKeys}
+          onOpenChange={onOpenChange}
+          items={menuItems}
+          style={{ borderInlineEnd: 0 }}
+          onClick={onNavigate}
+        />
+      )}
+    </>
+  );
+}
+
+function openKeysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((key, i) => key === b[i]);
+}
+
+function mergeOpenKeys(prev: string[], pathKeys: string[]): string[] {
+  if (pathKeys.length === 0) return prev;
+  const merged = Array.from(new Set([...prev, ...pathKeys]));
+  return openKeysEqual(merged, prev) ? prev : merged;
+}
+
 export function DashboardShell() {
   const { t } = useI18n();
   const location = useLocation();
-  const { token } = theme.useToken();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const compCode = localStorage.getItem('compCode') ?? '';
   const compName = localStorage.getItem('compName') ?? compCode;
   const employeeRaw = localStorage.getItem('employeeObj');
   const employee = employeeRaw ? JSON.parse(employeeRaw) : null;
-  const menuRaw = localStorage.getItem('menuList');
-  const menus: LegacyMenuItem[] = menuRaw ? JSON.parse(menuRaw) : [];
-  const menuItems = toMenuItems(menus);
+  const menuRaw = localStorage.getItem('menuList') ?? '';
+  const menus = useMemo<LegacyMenuItem[]>(
+    () => (menuRaw ? JSON.parse(menuRaw) : []),
+    [menuRaw],
+  );
+  const menuItems = useMemo(() => toMenuItems(menus), [menus]);
+  const [openKeys, setOpenKeys] = useState<string[]>(() =>
+    findOpenKeysForPath(menus, location.pathname) ?? [],
+  );
+
+  useEffect(() => {
+    const pathKeys = findOpenKeysForPath(menus, location.pathname) ?? [];
+    setOpenKeys((prev) => mergeOpenKeys(prev, pathKeys));
+  }, [location.pathname, menuRaw, menus]);
 
   function logout() {
     const language = localStorage.getItem('appLanguage');
@@ -60,64 +150,73 @@ export function DashboardShell() {
     window.location.href = '/login';
   }
 
+  const closeDrawer = () => setDrawerOpen(false);
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={260} theme="dark" style={{ background: '#001529' }}>
-        <div style={{ padding: '16px 16px 8px' }}>
-          <Typography.Text strong style={{ color: '#fff', fontSize: 16 }}>
-            {t('shell.brand')}
-          </Typography.Text>
-          <Typography.Paragraph style={{ color: token.colorTextSecondary, margin: '4px 0 0', fontSize: 12 }}>
-            {compName}
-            <br />
-            {compCode}
-          </Typography.Paragraph>
-        </div>
-        {menuItems.length === 0 ? (
-          <Typography.Text type="secondary" style={{ padding: 16, display: 'block' }}>
-            {t('shell.noMenus')}
-          </Typography.Text>
-        ) : (
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            defaultOpenKeys={menus.map((m) => m.MenuCode)}
-            items={menuItems}
-            style={{ borderInlineEnd: 0 }}
+    <Layout className="app-layout" hasSider={!isMobile}>
+      {!isMobile && (
+        <Sider width={260} className="app-sider" breakpoint="lg" collapsedWidth={0}>
+          <SidebarNav
+            menuItems={menuItems}
+            pathname={location.pathname}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
           />
-        )}
-      </Sider>
-      <Layout>
-        <Header
-          style={{
-            background: token.colorBgContainer,
-            padding: '0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: `1px solid ${token.colorBorderSecondary}`,
-          }}
-        >
-          <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              {compName}
-            </Typography.Title>
-            <Typography.Text type="secondary">
-              {employee?.firstName} {employee?.lastName ?? ''} · {employee?.roleName}
-            </Typography.Text>
+        </Sider>
+      )}
+
+      <Layout className="app-layout__main">
+        <Header className="app-header">
+          <div className="app-header__left">
+            {isMobile ? (
+              <Button
+                type="text"
+                aria-label={t('shell.openMenu')}
+                icon={<MenuOutlined />}
+                onClick={() => setDrawerOpen(true)}
+              />
+            ) : null}
+            <div className="app-header__titles">
+              <Typography.Title level={4} className="app-header__title">
+                {compName}
+              </Typography.Title>
+              <span className="app-header__meta">
+                {employee?.firstName} {employee?.lastName ?? ''} · {employee?.roleName}
+              </span>
+            </div>
           </div>
-          <Space>
+          <div className="app-header__actions">
             <LanguageSwitcher />
             <Button icon={<LogoutOutlined />} onClick={logout}>
-              {t('common.logout')}
+              {!isMobile ? t('common.logout') : null}
             </Button>
-          </Space>
+          </div>
         </Header>
-        <Content style={{ padding: 24, background: '#f5f5f5', minHeight: 280 }}>
+
+        <Content className="app-content">
           <Outlet />
         </Content>
       </Layout>
+
+      {isMobile ? (
+        <Drawer
+          title={t('shell.brand')}
+          placement="left"
+          size={280}
+          open={drawerOpen}
+          onClose={closeDrawer}
+          styles={{ body: { padding: 0, background: '#0f172a' } }}
+          className="app-drawer"
+        >
+          <SidebarNav
+            menuItems={menuItems}
+            pathname={location.pathname}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
+            onNavigate={closeDrawer}
+          />
+        </Drawer>
+      ) : null}
     </Layout>
   );
 }

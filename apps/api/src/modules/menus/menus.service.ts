@@ -24,13 +24,20 @@ export class MenusService {
     return JSON.stringify(legacy);
   }
 
+  async getMyMenus(compCode: string, roleId: string) {
+    const flat = await this.menuRepo.findMenusForRole(compCode, roleId);
+    const tree = this.buildTree(flat);
+    const menuList = JSON.stringify(tree.map((node, index) => this.toLegacyMenu(node, index + 1)));
+    return apiSuccess({ menuList, tree });
+  }
+
   async hasPermission(
     compCode: string,
     roleId: string,
     menuCode: string,
     action: 'view' | 'add' | 'edit' | 'delete',
   ): Promise<boolean> {
-    const flat = await this.menuRepo.findMenusForRole(compCode, roleId);
+    const flat = await this.menuRepo.findAllPermissionsForRole(compCode, roleId);
     const menu = flat.find((item) => item.menuCode === menuCode);
     if (!menu) {
       return false;

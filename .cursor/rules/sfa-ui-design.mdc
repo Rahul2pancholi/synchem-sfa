@@ -1,38 +1,43 @@
 ---
-description: Web UI design standards — consistent, professional, fast to build
+description: Web UI design — mobile-friendly, modern, simple SFA screens
 alwaysApply: true
 ---
 
 # SFA UI Design Standards
 
 ## Goal
-Professional **pharma enterprise admin** UI — clean, readable, consistent. Desktop-first (MR/manager use laptops). Not generic AI slop.
+Clean **pharma enterprise** UI — modern teal/slate palette, simple layouts, **mobile-friendly** (MR/manager use phones + laptops).
+
+## Theme (do not override per page)
+- Tokens live in `apps/web/src/theme/sfa-theme.ts` + `apps/web/src/index.css` (`--sfa-*`)
+- Primary `#0891b2`, background `#f1f5f9`, surface `#ffffff`, text `#0f172a`
+- Change colors only in theme file — never one-off hex in feature pages
 
 ## MUST (every new/changed screen)
-- Use **shared layout**: `DashboardShell` sidebar + header; page title via `t('…')` from `@synchem-sfa/shared-i18n`
-- **Reuse UI components** from `apps/web/src/components/ui/` (create there when used 2+ times)
-- **Loading, empty, and error states** on every list/form — never blank screen
-- **Tables**: library Table component (see `sfa-library-first.mdc`) — sortable header, row actions, status badge
-- **Forms**: labeled fields, required marker, validation message under field, primary action right/bottom
-- **Spacing**: 8px grid — page padding 24px, section gap 16–24px, form field gap 12–16px
-- **Dates**: display `DD-MM-YYYY`; use shared date helper + library DatePicker
-- **Trilingual**: all labels/buttons/toasts via `useI18n().t()` — no hardcoded English
-- **Accessibility**: every input has `<label>` or `aria-label`; visible focus ring; contrast WCAG AA
+- **Shell:** `DashboardShell` — desktop sidebar, mobile drawer menu (`Grid.useBreakpoint`, `< md` = mobile)
+- **Layout:** wrap pages in `PageLayout` + `PageSection` from `apps/web/src/components/ui/`
+- **Tables:** use `ResponsiveTable` (horizontal scroll + compact rows on mobile)
+- **Forms:** `layout="vertical"`, fields in `.form-grid` (1 col mobile, auto-fit desktop)
+- **Grids:** Ant `Row`/`Col` with `xs={12}` or `xs={24}` — never fixed `span={6}` without breakpoints
+- **States:** loading (`Spin`), empty (`Empty`), error toast — no blank screens
+- **i18n:** all labels/buttons via `useI18n().t()` — en / hi / hinglish
+- **Touch:** min control height 40px; action buttons use `Space wrap` on narrow screens
+- **A11y:** labels on inputs; visible focus; WCAG AA contrast
 
 ## MUST NOT
-- Raw `<table className="tenant-table">` for **new** screens — migrate to design-system Table when touching file
-- Inline styles except one-off layout; prefer shared CSS module or UI kit tokens
-- Different button styles per page — use shared Button variants (primary / default / danger)
-- Tiny touch targets — buttons min height 32px, nav items easy to click
-- Mix 3+ font sizes on one page — title, body, caption only
+- Inline `style={{ … }}` for layout/colors (except truly one-off)
+- Raw `<table>` for new screens
+- Desktop-only fixed sidebar without mobile drawer
+- Hardcoded English strings
+- 3+ font sizes on one page (title / body / caption only)
 
-## Screen patterns (SFA)
-| Pattern | Rule |
-|---------|------|
-| Master list | Title + Create button → filter bar (optional) → table → pagination |
-| Master create/edit | Modal or drawer from list; save + cancel; success toast |
-| Bulk upload | CSV hint row, textarea/file drop, result summary (created/skipped) |
-| Approval queue | Status chip + action buttons in row |
+## Screen patterns
+| Pattern | Structure |
+|---------|-----------|
+| Master / txn list | `PageLayout` → create `PageSection` → list `PageSection` + `ResponsiveTable` |
+| Dashboard stats | `StatCard` in responsive `Row`/`Col` |
+| Approval queue | `PageLayout` → `ResponsiveTable` + row actions |
+| Auth | `.login-page` + `.login-card` (full width mobile, max 420px desktop) |
 
-## When refactoring Phase 0/1 screens
-Prioritize: login/shell → master lists → transaction forms. One feature folder at a time; keep diff focused.
+## When touching existing pages
+Migrate to shared components when editing — do not leave old `Card`+`Typography.Title` stacks.

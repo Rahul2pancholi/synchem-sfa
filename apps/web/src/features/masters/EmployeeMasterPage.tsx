@@ -16,6 +16,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { EmployeeSummary, RoleSummary } from '@synchem-sfa/shared-types';
 import { useI18n } from '../../i18n/I18nProvider';
+import { PermissionGate } from '../../components/PermissionGate';
 import { authHeaders, fetchApi } from '../../lib/api-client';
 
 interface EmployeeListResponse {
@@ -42,7 +43,7 @@ export function EmployeeMasterPage() {
   const rolesQuery = useQuery({
     queryKey: ['roles'],
     queryFn: async () => {
-      const data = await fetchApi<RoleListResponse>('/api/v1/roles', languageHeader);
+      const data = await fetchApi<RoleListResponse>('/api/v1/roles/options', languageHeader);
       return data.data.items;
     },
   });
@@ -102,9 +103,11 @@ export function EmployeeMasterPage() {
       key: 'actions',
       render: (_, row) =>
         row.active && row.userName !== 'admin' ? (
-          <Button danger size="small" onClick={() => deleteMutation.mutate(row.id)}>
-            {t('common.delete')}
-          </Button>
+          <PermissionGate menuCode="MAS07" action="delete">
+            <Button danger size="small" onClick={() => deleteMutation.mutate(row.id)}>
+              {t('common.delete')}
+            </Button>
+          </PermissionGate>
         ) : null,
     },
   ];
@@ -124,59 +127,61 @@ export function EmployeeMasterPage() {
         {t('masters.employee.title')}
       </Typography.Title>
 
-      <Card title={t('masters.employee.createTitle')}>
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{ roleId: roles[0]?.id }}
-          onFinish={(values) =>
-            createMutation.mutate({
-              ...values,
-              reportingManagerId: values.reportingManagerId || null,
-            })
-          }
-        >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            <Form.Item name="userName" label={t('masters.employee.userName')} rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="password" label={t('masters.employee.password')} rules={[{ required: true }]}>
-              <Input.Password />
-            </Form.Item>
-            <Form.Item name="employeeCode" label={t('masters.employee.employeeCode')}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="firstName" label={t('masters.employee.firstName')} rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="lastName" label={t('masters.employee.lastName')}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="email" label={t('masters.employee.email')}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="mobileNo" label={t('masters.employee.mobile')}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="roleId" label={t('masters.employee.role')} rules={[{ required: true }]}>
-              <Select options={roles.map((r) => ({ value: r.id, label: `${r.roleName} (${r.roleType})` }))} />
-            </Form.Item>
-            <Form.Item name="reportingManagerId" label={t('masters.employee.reportingManager')}>
-              <Select
-                allowClear
-                placeholder={t('masters.employee.none')}
-                options={managers.map((m) => ({
-                  value: m.id,
-                  label: `${m.firstName} ${m.lastName ?? ''} (${m.userName})`,
-                }))}
-              />
-            </Form.Item>
-          </div>
-          <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
-            {t('common.create')}
-          </Button>
-        </Form>
-      </Card>
+      <PermissionGate menuCode="MAS07" action="add">
+        <Card title={t('masters.employee.createTitle')}>
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ roleId: roles[0]?.id }}
+            onFinish={(values) =>
+              createMutation.mutate({
+                ...values,
+                reportingManagerId: values.reportingManagerId || null,
+              })
+            }
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+              <Form.Item name="userName" label={t('masters.employee.userName')} rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="password" label={t('masters.employee.password')} rules={[{ required: true }]}>
+                <Input.Password />
+              </Form.Item>
+              <Form.Item name="employeeCode" label={t('masters.employee.employeeCode')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="firstName" label={t('masters.employee.firstName')} rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="lastName" label={t('masters.employee.lastName')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="email" label={t('masters.employee.email')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="mobileNo" label={t('masters.employee.mobile')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="roleId" label={t('masters.employee.role')} rules={[{ required: true }]}>
+                <Select options={roles.map((r) => ({ value: r.id, label: `${r.roleName} (${r.roleType})` }))} />
+              </Form.Item>
+              <Form.Item name="reportingManagerId" label={t('masters.employee.reportingManager')}>
+                <Select
+                  allowClear
+                  placeholder={t('masters.employee.none')}
+                  options={managers.map((m) => ({
+                    value: m.id,
+                    label: `${m.firstName} ${m.lastName ?? ''} (${m.userName})`,
+                  }))}
+                />
+              </Form.Item>
+            </div>
+            <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+              {t('common.create')}
+            </Button>
+          </Form>
+        </Card>
+      </PermissionGate>
 
       <Card>
         {employeesQuery.isLoading ? (

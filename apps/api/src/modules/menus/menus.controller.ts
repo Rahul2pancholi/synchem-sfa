@@ -13,4 +13,9 @@ export class MenusController {
   getMenus(@CurrentUser() user: JwtPayload) {
     return this.menusService.getMenuTree(user.compCode!, user.roleId!);
   }
+
+  @Get('me')
+  getMyMenus(@CurrentUser() user: JwtPayload) {
+    return this.menusService.getMyMenus(user.compCode!, user.roleId!);
+  }
 }

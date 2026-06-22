@@ -16,11 +16,24 @@ import { TenantModule } from './modules/tenant/tenant.module';
 import { HierarchiesModule } from './modules/hierarchies/hierarchies.module';
 import { MasterDataModule } from './modules/master-data/master-data.module';
 import { SyncModule } from './modules/sync/sync.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { AccessControlModule } from './modules/access-control/access-control.module';
+import { ApprovalsModule } from './modules/approvals/approvals.module';
+import { MonthlyCycleModule } from './modules/monthly-cycle/monthly-cycle.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
     AppConfigModule,
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit:
+          process.env.LOAD_TEST === '1' || process.env.APP_ENV === 'dev'
+            ? 10_000
+            : 100,
+      },
+    ]),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.LOG_LEVEL ?? 'info',
@@ -51,6 +64,11 @@ import { SyncModule } from './modules/sync/sync.module';
     HierarchiesModule,
     MasterDataModule,
     SyncModule,
+    TransactionsModule,
+    AccessControlModule,
+    ApprovalsModule,
+    MonthlyCycleModule,
+    ReportsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

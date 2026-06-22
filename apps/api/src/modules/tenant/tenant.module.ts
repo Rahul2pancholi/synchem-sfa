@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaEmployeeRepository } from './adapters/prisma-employee.repository';
-import { RolesController, TenantController } from './tenant.controller';
+import { TenantController } from './tenant.controller';
 import { TenantService } from './tenant.service';
 import { EMPLOYEE_REPOSITORY } from './ports/employee.repository.port';
 
 @Module({
-  controllers: [TenantController, RolesController],
+  controllers: [TenantController],
   providers: [
     TenantService,
     { provide: EMPLOYEE_REPOSITORY, useClass: PrismaEmployeeRepository },

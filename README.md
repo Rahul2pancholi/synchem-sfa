@@ -24,6 +24,8 @@ This repository is the **specification + build plan** for a SaaS SFA platform:
 | **[18-DEVELOPMENT-STANDARDS.md](./docs/18-DEVELOPMENT-STANDARDS.md)** | **Strict coding rules — modularity, tests, data safety** |
 | [19-MVP-SCREEN-LIST.md](./docs/19-MVP-SCREEN-LIST.md) | MVP screens checklist |
 | [20-OFFLINE-SYNC-PROTOCOL.md](./docs/20-OFFLINE-SYNC-PROTOCOL.md) | Mobile sync protocol |
+| [21-WORKFLOW-BUILDER-PLAN.md](./docs/21-WORKFLOW-BUILDER-PLAN.md) | **Future — admin drag-and-drop workflows & business rules** |
+| [22-ROLE-ACCESS-CONFIG-PLAN.md](./docs/22-ROLE-ACCESS-CONFIG-PLAN.md) | **Phase 1.5 — admin role & menu permission UI** |
 | [openapi/sfa-api-v1.yaml](./openapi/sfa-api-v1.yaml) | OpenAPI v1 draft |
 | [prisma/schema.prisma](./prisma/schema.prisma) | Database schema v1 |
 | [AGENTS.md](./AGENTS.md) | AI coding instructions |

@@ -160,8 +160,8 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 
 | # | Screen | Code | Route |
 |---|--------|------|-------|
-| 57 | Role Master | ADM01 | `/app/roleMaster` |
-| 58 | Role Setting (permissions) | ADM04 | `/app/roleSetting` |
+| 57 | Role Master | ADM01 | `/app/roleMaster` | Web | **Phase 1.5** |
+| 58 | Role Setting (permissions) | ADM04 | `/app/roleSetting` | Web | **Phase 1.5** |
 | 59 | Company Info | SET02 | `/app/companyInfo` |
 | 60 | DCR Setting | SET01 | `/app/dcrSetting` |
 | 61 | Leave Policy | SET03 | `/app/leavePolicy` |

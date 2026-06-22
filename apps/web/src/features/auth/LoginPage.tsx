@@ -56,7 +56,7 @@ export function LoginPage() {
 
   return (
     <div className="login-page">
-      <Card style={{ width: 400 }} title={t('auth.login.title')}>
+      <Card className="login-card" title={t('auth.login.title')}>
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <LanguageSwitcher />
@@ -67,6 +67,7 @@ export function LoginPage() {
           <Form
             form={form}
             layout="vertical"
+            size="large"
             initialValues={{ userName: 'admin', password: 'Admin@123', compCode: 'SYN' }}
             onFinish={handleSubmit}
           >
@@ -75,21 +76,21 @@ export function LoginPage() {
               label={t('auth.login.userName')}
               rules={[{ required: true }]}
             >
-              <Input />
+              <Input autoComplete="username" />
             </Form.Item>
             <Form.Item
               name="password"
               label={t('auth.login.password')}
               rules={[{ required: true }]}
             >
-              <Input.Password />
+              <Input.Password autoComplete="current-password" />
             </Form.Item>
             <Form.Item
               name="compCode"
               label={t('auth.login.compCode')}
               rules={[{ required: true }]}
             >
-              <Input />
+              <Input autoComplete="organization" />
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" block>

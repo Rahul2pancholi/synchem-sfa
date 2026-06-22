@@ -7,6 +7,8 @@ import { database } from '../../database';
 import type { DailyCallReport, GpsCheckIn } from '../../database/models';
 import { recordGpsCheckIn } from '../../lib/location-service';
 import { pushPendingChanges } from '../../lib/sync-service';
+import { useAutoSync } from '../../hooks/useAutoSync';
+import { useMobilePermission } from '../../hooks/useMobilePermission';
 import { clearSession } from '../../lib/auth-store';
 import { useSessionStore } from '../../store/session-store';
 import type { RootStackParamList } from '../../navigation/types';
@@ -20,6 +22,10 @@ export function DashboardScreen({ navigation }: Props) {
   const setMpinVerified = useSessionStore((state) => state.setMpinVerified);
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
+
+  useAutoSync(session?.accessToken, language);
+  const { allowed: canDcr } = useMobilePermission('TRN03', 'view');
+  const { allowed: canRtp } = useMobilePermission('TRN01', 'view');
 
   const refreshPending = useCallback(async () => {
     const dcrs = await database.get<DailyCallReport>('daily_call_reports').query().fetch();
@@ -93,12 +99,21 @@ export function DashboardScreen({ navigation }: Props) {
       <Pressable style={styles.secondaryButton} onPress={() => handleGps('CHECK_OUT')}>
         <Text style={styles.secondaryText}>{t('mobile.dashboard.checkOut')}</Text>
       </Pressable>
-      <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('DcrCreate')}>
-        <Text style={styles.secondaryText}>{t('mobile.dashboard.newDcr')}</Text>
-      </Pressable>
-      <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('DcrList')}>
-        <Text style={styles.secondaryText}>{t('mobile.dashboard.viewDcrs')}</Text>
-      </Pressable>
+      {canDcr ? (
+        <>
+          <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('DcrCreate')}>
+            <Text style={styles.secondaryText}>{t('mobile.dashboard.newDcr')}</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('DcrList')}>
+            <Text style={styles.secondaryText}>{t('mobile.dashboard.viewDcrs')}</Text>
+          </Pressable>
+        </>
+      ) : null}
+      {canRtp ? (
+        <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('RtpCalendar')}>
+          <Text style={styles.secondaryText}>{t('mobile.dashboard.viewRtp')}</Text>
+        </Pressable>
+      ) : null}
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>{t('mobile.dashboard.logout')}</Text>
       </Pressable>

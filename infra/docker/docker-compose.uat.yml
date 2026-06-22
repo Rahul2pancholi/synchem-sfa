@@ -1,0 +1,38 @@
+# UAT / staging — Postgres + Redis + API + Web
+# Usage: docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.uat.yml up -d --build
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: synchem-sfa-api
+    env_file:
+      - ../../apps/api/.env.uat
+    environment:
+      DATABASE_URL: postgresql://sfa:sfa_dev_password@postgres:5432/synchem_sfa
+      REDIS_URL: redis://redis:6379
+      APP_ENV: uat
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - '3002:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.web
+      args:
+        VITE_API_URL: ''
+    container_name: synchem-sfa-web
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
+    restart: unless-stopped
