@@ -5,6 +5,8 @@ import type { MenuProps } from 'antd';
 import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
+import { loadMenuListFromStorage } from '../../lib/menu-permissions';
+import { refreshMenusFromApi } from '../../lib/refresh-menus';
 
 const { Header, Sider, Content } = Layout;
 
@@ -118,21 +120,23 @@ function mergeOpenKeys(prev: string[], pathKeys: string[]): string[] {
 }
 
 export function DashboardShell() {
-  const { t } = useI18n();
+  const { t, languageHeader } = useI18n();
   const location = useLocation();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [menus, setMenus] = useState<LegacyMenuItem[]>(() => loadMenuListFromStorage());
+
+  useEffect(() => {
+    void refreshMenusFromApi(languageHeader).then((ok) => {
+      if (ok) setMenus(loadMenuListFromStorage());
+    });
+  }, [languageHeader]);
 
   const compCode = localStorage.getItem('compCode') ?? '';
   const compName = localStorage.getItem('compName') ?? compCode;
   const employeeRaw = localStorage.getItem('employeeObj');
   const employee = employeeRaw ? JSON.parse(employeeRaw) : null;
-  const menuRaw = localStorage.getItem('menuList') ?? '';
-  const menus = useMemo<LegacyMenuItem[]>(
-    () => (menuRaw ? JSON.parse(menuRaw) : []),
-    [menuRaw],
-  );
   const menuItems = useMemo(() => toMenuItems(menus), [menus]);
   const [openKeys, setOpenKeys] = useState<string[]>(() =>
     findOpenKeysForPath(menus, location.pathname) ?? [],
@@ -141,7 +145,7 @@ export function DashboardShell() {
   useEffect(() => {
     const pathKeys = findOpenKeysForPath(menus, location.pathname) ?? [];
     setOpenKeys((prev) => mergeOpenKeys(prev, pathKeys));
-  }, [location.pathname, menuRaw, menus]);
+  }, [location.pathname, menus]);
 
   function logout() {
     const language = localStorage.getItem('appLanguage');

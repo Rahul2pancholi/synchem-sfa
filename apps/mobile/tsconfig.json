@@ -1,13 +1,21 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "strict": true,
     "experimentalDecorators": true,
+    "jsx": "react-native",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2022"],
     "paths": {
       "@synchem-sfa/shared-i18n": ["../../packages/shared-i18n/src/index.ts"],
       "@synchem-sfa/shared-types": ["../../packages/shared-types/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "ios", "android"]
 }

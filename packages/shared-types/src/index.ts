@@ -11,6 +11,9 @@ export * from './access-control';
 export * from './approvals';
 export * from './monthly-cycle';
 export * from './reports';
+export * from './sales-insights';
+export * from './insights-config';
+export * from './security/login-analytics';
 export {
   TokenRequestSchema,
   RoleTypeSchema,

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
 import { LoginScreen } from './src/features/auth/LoginScreen';
 import { MpinSetupScreen } from './src/features/auth/MpinSetupScreen';
 import { MpinUnlockScreen } from './src/features/auth/MpinUnlockScreen';
@@ -21,7 +20,6 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('Login');
   const setSession = useSessionStore((state) => state.setSession);
-  const setMpinVerified = useSessionStore((state) => state.setMpinVerified);
 
   useEffect(() => {
     void (async () => {
@@ -49,7 +47,7 @@ export default function App() {
   return (
     <I18nProvider>
       <NavigationContainer>
-        <StatusBar style="auto" />
+        <StatusBar barStyle="dark-content" />
         <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: true }}>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="MpinSetup" component={MpinSetupScreen} />

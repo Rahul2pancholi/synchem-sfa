@@ -10,7 +10,7 @@ export interface RefreshTokenRepositoryPort {
     empId: string;
     tokenHash: string;
     expiresAt: Date;
-  }): Promise<void>;
+  }): Promise<string>;
   findValidByHash(tokenHash: string): Promise<RefreshTokenRecord | null>;
   revoke(id: string): Promise<void>;
 }

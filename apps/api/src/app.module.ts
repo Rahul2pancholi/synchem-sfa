@@ -21,6 +21,9 @@ import { AccessControlModule } from './modules/access-control/access-control.mod
 import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { MonthlyCycleModule } from './modules/monthly-cycle/monthly-cycle.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SalesInsightsModule } from './modules/sales-insights/sales-insights.module';
+import { InsightsConfigModule } from './modules/insights-config/insights-config.module';
+import { SecurityModule } from './modules/security/security.module';
 
 @Module({
   imports: [
@@ -69,6 +72,9 @@ import { ReportsModule } from './modules/reports/reports.module';
     ApprovalsModule,
     MonthlyCycleModule,
     ReportsModule,
+    SalesInsightsModule,
+    InsightsConfigModule,
+    SecurityModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

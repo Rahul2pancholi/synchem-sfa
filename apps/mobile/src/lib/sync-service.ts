@@ -2,7 +2,7 @@ import type { SyncBootstrapMasters, SyncChange } from '@synchem-sfa/shared-types
 import { database, getSyncMeta, setSyncMeta } from '../database';
 import type { DailyCallReport, DcrDoctorVisit, Doctor, GpsCheckIn, Retailer, Route } from '../database/models';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+import { API_BASE } from '../config/api-base';
 
 interface ApiEnvelope<T> {
   responseCode: number;

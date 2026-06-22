@@ -235,18 +235,20 @@ See [15-mobile-stack.md](./15-mobile-stack.md) for full mobile spec.
 
 ## 9. AI Strategy (Phase 8+ — Optional)
 
-AI runs in **NestJS `ai` module** calling external APIs — **not a separate Python backend** initially.
+**Analytics chatbot** runs in **`apps/insights-service`** (extractable microservice) — Knowledge Graph + Semantic Layer + LLM (intent only) + SQL Validation. See [25-AI-ANALYTICS-CHATBOT-PLAN.md](./25-AI-ANALYTICS-CHATBOT-PLAN.md).
 
-| Feature | API | Priority |
-|---------|-----|----------|
-| Voice → DCR | Whisper + GPT-4o-mini | High differentiator |
-| Pre-call doctor brief | LLM + DB history | Medium |
-| Receipt OCR | Vision API | Medium |
-| Manager approval summary | LLM | Medium |
-| NL report queries | LLM + safe SQL | Later |
-| MR chatbot (RAG) | pgvector + LLM | Later |
+**Field AI features** (voice DCR, OCR) may live in main API + worker; not in insights-service.
 
-**Rules:** AI async (queue), MR must confirm before submit, audit log all suggestions.
+| Feature | Where | Priority |
+|---------|-------|----------|
+| NL analytics chat (POB, coverage, missed calls) | `insights-service` | Month 9–10 |
+| Voice → DCR | API + worker + Whisper | High differentiator |
+| Pre-call doctor brief | insights-service + KG | Medium |
+| Receipt OCR | Vision API (API/worker) | Medium |
+| Manager approval summary | LLM (API or insights) | Medium |
+| Help chatbot (RAG on docs) | Separate module / later | Low |
+
+**Rules:** LLM must **not** emit free-form SQL — semantic layer templates only. AI async where possible; MR confirms before submit; audit log all suggestions.
 
 Optional future: Python FastAPI sidecar for custom ML only.
 
@@ -309,13 +311,21 @@ Full platform: **152 pages, 327 APIs**. MVP subset for 500 users:
 
 ### Phase 2 after go-live (Month 7–10)
 
+| Phase | Focus |
+|-------|--------|
+| **7** | Remaining approvals & transactions |
+| **8** | Reports batch — **sales P0 reports feed Phase 10B** |
+| **9** | Communication (mail, e-detailing) |
+| **10** | **AI Analytics Chatbot** (10A done → 10B–10F) — [25-AI-ANALYTICS-CHATBOT-PLAN.md](./25-AI-ANALYTICS-CHATBOT-PLAN.md) |
+| **11** | Workflow & rules builder |
+
+Also:
+
 - Remaining ~45 reports
 - All 15 approval types
 - **Admin Role & Access UI** — configure menus/features per role ([22-ROLE-ACCESS-CONFIG-PLAN.md](./22-ROLE-ACCESS-CONFIG-PLAN.md)) — **Phase 1.5, pre go-live**
-- **Admin Workflow & Rules Builder** — drag-and-drop approvals + business rules ([21-WORKFLOW-BUILDER-PLAN.md](./21-WORKFLOW-BUILDER-PLAN.md))
-- Internal mail, e-detailing, chat
+- Internal mail, e-detailing
 - Infiltration, focused activity, input/sales plan
-- AI features (voice DCR)
 - Full parity with Salestrip (152 screens)
 
 See [16-page-tree.md](./16-page-tree.md) for complete page list.

@@ -1,0 +1,189 @@
+import type { MissedCallsReportRow, MissedCallsTotals } from '@synchem-sfa/shared-types';
+import { useQuery } from '@tanstack/react-query';
+import { Button, Col, InputNumber, Row, Select, Space, Spin } from 'antd';
+import dayjs from 'dayjs';
+import { useMemo, useState } from 'react';
+import { PageLayout } from '../../components/ui/PageLayout';
+import { PageSection } from '../../components/ui/PageSection';
+import { ReportExportButton } from '../../components/ui/ReportExportButton';
+import { ResponsiveTable } from '../../components/ui/ResponsiveTable';
+import { StatCard } from '../../components/ui/StatCard';
+import { useI18n } from '../../i18n/I18nProvider';
+import { fetchApi } from '../../lib/api-client';
+import { reportCsvFilename } from '../../lib/export-csv';
+import { usePermission } from '../../hooks/usePermission';
+
+interface MissedCallsResponse {
+  data: {
+    summary: MissedCallsTotals;
+    items: MissedCallsReportRow[];
+  };
+}
+
+interface EmployeeOption {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+}
+
+interface HeadQuarterOption {
+  id: string;
+  hqName: string;
+}
+
+function buildQueryString(filters: Record<string, string | number | undefined>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== '') {
+      params.set(key, String(value));
+    }
+  }
+  return params.toString();
+}
+
+export function MissedCallsReportPage() {
+  const { t, languageHeader } = useI18n();
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
+  const [empId, setEmpId] = useState<string | undefined>();
+  const [headQuarterId, setHeadQuarterId] = useState<string | undefined>();
+  const [applied, setApplied] = useState({ month: now.getMonth() + 1, year: now.getFullYear() });
+
+  const canFilterEmployees = usePermission('MAS07', 'view');
+  const canFilterHq = usePermission('MAS20103', 'view');
+
+  const employeesQuery = useQuery({
+    queryKey: ['report-filter-employees'],
+    queryFn: async () => {
+      const res = await fetchApi<{ data: { items: EmployeeOption[] } }>(
+        '/api/v1/employees?pageSize=200',
+        languageHeader,
+      );
+      return res.data.items;
+    },
+    enabled: canFilterEmployees,
+  });
+
+  const hqQuery = useQuery({
+    queryKey: ['report-filter-hq'],
+    queryFn: async () => {
+      const res = await fetchApi<{ data: { items: HeadQuarterOption[] } }>(
+        '/api/v1/head-quarters?pageSize=200',
+        languageHeader,
+      );
+      return res.data.items;
+    },
+    enabled: canFilterHq,
+  });
+
+  const reportQuery = useQuery({
+    queryKey: ['report', 'missed-calls', applied.month, applied.year, empId, headQuarterId],
+    queryFn: async () => {
+      const qs = buildQueryString({
+        month: applied.month,
+        year: applied.year,
+        empId,
+        headQuarterId,
+      });
+      const res = await fetchApi<MissedCallsResponse>(`/api/v1/reports/missed-calls?${qs}`, languageHeader);
+      return res.data;
+    },
+  });
+
+  const summary = reportQuery.data?.summary;
+  const items = reportQuery.data?.items ?? [];
+
+  const exportColumns = useMemo(
+    () => [
+      { header: t('report.employee'), value: (row: MissedCallsReportRow) => row.employeeName },
+      { header: t('report.employeeCode'), value: (row: MissedCallsReportRow) => row.employeeCode },
+      { header: t('report.headQuarter'), value: (row: MissedCallsReportRow) => row.headQuarterName },
+      { header: t('report.doctorName'), value: (row: MissedCallsReportRow) => row.doctorName },
+      { header: t('report.plannedDate'), value: (row: MissedCallsReportRow) => row.plannedDate },
+    ],
+    [t],
+  );
+
+  return (
+    <PageLayout title={t('report.missedCalls')}>
+      <PageSection>
+        <Space wrap>
+          <InputNumber min={1} max={12} value={month} onChange={(v) => setMonth(v ?? 1)} addonBefore={t('monthly.expense.month')} />
+          <InputNumber min={2020} max={2100} value={year} onChange={(v) => setYear(v ?? now.getFullYear())} addonBefore={t('monthly.expense.year')} />
+          {canFilterEmployees ? (
+            <Select
+              allowClear
+              placeholder={t('report.allEmployees')}
+              style={{ minWidth: 200 }}
+              value={empId}
+              onChange={setEmpId}
+              options={(employeesQuery.data ?? []).map((e) => ({
+                value: e.id,
+                label: `${e.firstName} ${e.lastName ?? ''}`.trim(),
+              }))}
+            />
+          ) : null}
+          {canFilterHq ? (
+            <Select
+              allowClear
+              placeholder={t('report.allHeadQuarters')}
+              style={{ minWidth: 200 }}
+              value={headQuarterId}
+              onChange={setHeadQuarterId}
+              options={(hqQuery.data ?? []).map((hq) => ({ value: hq.id, label: hq.hqName }))}
+            />
+          ) : null}
+          <Button type="primary" onClick={() => setApplied({ month, year })}>
+            {t('report.generate')}
+          </Button>
+          <ReportExportButton
+            filename={reportCsvFilename('missed-calls', applied.month, applied.year)}
+            columns={exportColumns}
+            rows={items}
+            loading={reportQuery.isFetching}
+          />
+        </Space>
+      </PageSection>
+
+      {reportQuery.isLoading ? (
+        <Spin />
+      ) : summary ? (
+        <>
+          <PageSection>
+            <Row gutter={[16, 16]}>
+              <Col xs={12} md={8}>
+                <StatCard label={t('report.missedCallCount')} value={summary.missedCallCount} />
+              </Col>
+              <Col xs={12} md={8}>
+                <StatCard label={t('report.uniqueDoctorsMissed')} value={summary.uniqueDoctors} />
+              </Col>
+              <Col xs={12} md={8}>
+                <StatCard label={t('report.employeesWithMisses')} value={summary.uniqueEmployees} />
+              </Col>
+            </Row>
+          </PageSection>
+
+          <PageSection title={t('report.missedCalls')}>
+            <ResponsiveTable
+              rowKey={(row) => `${row.empId}-${row.doctorId}-${row.plannedDate}`}
+              dataSource={items}
+              columns={[
+                { title: t('report.employee'), dataIndex: 'employeeName', key: 'employeeName' },
+                { title: t('report.employeeCode'), dataIndex: 'employeeCode', key: 'employeeCode' },
+                { title: t('report.headQuarter'), dataIndex: 'headQuarterName', key: 'headQuarterName' },
+                { title: t('report.doctorName'), dataIndex: 'doctorName', key: 'doctorName' },
+                {
+                  title: t('report.plannedDate'),
+                  dataIndex: 'plannedDate',
+                  key: 'plannedDate',
+                  render: (v: string) => dayjs(v).format('DD-MM-YYYY'),
+                },
+              ]}
+            />
+          </PageSection>
+        </>
+      ) : null}
+    </PageLayout>
+  );
+}

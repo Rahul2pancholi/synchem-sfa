@@ -27,4 +27,34 @@ export class ReportsController {
   employeePob(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
     return this.reports.employeePob(user.compCode!, query);
   }
+
+  @Get('sales-summary')
+  @RequirePermission('REP41712', 'view')
+  salesSummary(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.salesSummary(user.compCode!, query);
+  }
+
+  @Get('target-achievement')
+  @RequirePermission('REP20', 'view')
+  targetAchievement(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.targetAchievement(user.compCode!, query);
+  }
+
+  @Get('visit-summary')
+  @RequirePermission('REP02', 'view')
+  visitSummary(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.visitSummary(user.compCode!, query);
+  }
+
+  @Get('missed-calls')
+  @RequirePermission('REP22', 'view')
+  missedCalls(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.missedCalls(user.compCode!, query);
+  }
+
+  @Get('manager-kpis')
+  @RequirePermission('REP20', 'view')
+  managerSalesKpis(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.reports.managerSalesKpis(user.compCode!, query);
+  }
 }

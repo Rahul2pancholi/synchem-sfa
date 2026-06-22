@@ -1,21 +1,20 @@
-import * as LocalAuthentication from 'expo-local-authentication';
+import ReactNativeBiometrics from 'react-native-biometrics';
+
+const biometrics = new ReactNativeBiometrics();
 
 export async function canUseBiometric(): Promise<boolean> {
-  const compatible = await LocalAuthentication.hasHardwareAsync();
-  if (!compatible) return false;
-  const enrolled = await LocalAuthentication.isEnrolledAsync();
-  return enrolled;
+  const { available } = await biometrics.isSensorAvailable();
+  return available;
 }
 
 export async function authenticateWithBiometric(promptMessage: string): Promise<boolean> {
   const canUse = await canUseBiometric();
   if (!canUse) return false;
 
-  const result = await LocalAuthentication.authenticateAsync({
+  const { success } = await biometrics.simplePrompt({
     promptMessage,
-    cancelLabel: 'Cancel',
-    disableDeviceFallback: true,
+    cancelButtonText: 'Cancel',
   });
 
-  return result.success;
+  return success;
 }

@@ -36,8 +36,8 @@ describe('message catalogs', () => {
     }
   });
 
-  it('returns Hindi copy for auth errors', () => {
-    expect(translate('auth.login.invalidCredentials', 'hi')).toContain('गलत');
+  it('returns mixed Hindi copy for auth errors', () => {
+    expect(translate('auth.login.invalidCredentials', 'hi')).toContain('Galat');
   });
 
   it('returns Hinglish copy for forgot password link', () => {

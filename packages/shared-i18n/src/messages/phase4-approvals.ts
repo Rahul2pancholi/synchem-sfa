@@ -16,6 +16,12 @@ export const PHASE4_MESSAGE_KEYS = [
   'approval.empty',
   'approval.pendingSummary',
   'approval.totalPending',
+  'approval.statHelp.dcr',
+  'approval.statHelp.rtp',
+  'approval.statHelp.weekly',
+  'approval.statHelp.leave',
+  'approval.statHelp.expense',
+  'approval.statHelp.total',
 ] as const;
 
 export type Phase4MessageKey = (typeof PHASE4_MESSAGE_KEYS)[number];
@@ -37,6 +43,18 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'No pending approvals',
     'approval.pendingSummary': 'Pending approvals',
     'approval.totalPending': 'Total pending',
+    'approval.statHelp.dcr':
+      'Daily call reports from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.rtp':
+      'Monthly tour programmes from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.weekly':
+      'Weekly field work plans from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.leave':
+      'Leave applications from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.expense':
+      'Expense claims from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.total':
+      'Total of all pending approvals — DCR, tour plan, weekly plan, leave, and expense combined.',
   },
   hi: {
     'approval.dcr.title': 'DCR अनुमोदन',
@@ -54,6 +72,18 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'कोई लंबित अनुमोदन नहीं',
     'approval.pendingSummary': 'लंबित अनुमोदन',
     'approval.totalPending': 'कुल लंबित',
+    'approval.statHelp.dcr':
+      'आपकी टीम के डेली कॉल रिपोर्ट जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.rtp':
+      'आपकी टीम के मासिक टूर प्रोग्राम जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.weekly':
+      'आपकी टीम की साप्ताहिक फील्ड योजनाएँ जो जमा हो चुकी हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.leave':
+      'आपकी टीम के अवकाश आवेदन जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.expense':
+      'आपकी टीम के व्यय दावे जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.total':
+      'सभी लंबित अनुमोदनों का कुल योग — DCR, टूर, साप्ताहिक योजना, अवकाश और व्यय।',
   },
   hinglish: {
     'approval.dcr.title': 'DCR Approval',
@@ -71,5 +101,17 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'Koi pending approval nahi',
     'approval.pendingSummary': 'Pending approvals',
     'approval.totalPending': 'Total pending',
+    'approval.statHelp.dcr':
+      'Team ke daily call reports jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
+    'approval.statHelp.rtp':
+      'Team ke monthly tour programmes jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
+    'approval.statHelp.weekly':
+      'Team ki weekly field plans jo submit ho chuki hain aur aapke approve ka wait kar rahi hain.',
+    'approval.statHelp.leave':
+      'Team ki leave applications jo submit ho chuki hain aur aapke approve ka wait kar rahi hain.',
+    'approval.statHelp.expense':
+      'Team ke expense claims jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
+    'approval.statHelp.total':
+      'Saare pending approvals ka total — DCR, tour plan, weekly plan, leave aur expense mila kar.',
   },
 };

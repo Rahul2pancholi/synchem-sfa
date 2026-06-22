@@ -7,6 +7,22 @@ import { PHASE2_MESSAGES, PHASE2_MESSAGE_KEYS, type Phase2MessageKey } from './p
 import { PHASE3_MESSAGES, PHASE3_MESSAGE_KEYS, type Phase3MessageKey } from './phase3-mobile';
 import { PHASE4_MESSAGES, PHASE4_MESSAGE_KEYS, type Phase4MessageKey } from './phase4-approvals';
 import { PHASE5_MESSAGES, PHASE5_MESSAGE_KEYS, type Phase5MessageKey } from './phase5-monthly';
+import { PHASE6_INSIGHTS_MESSAGES, PHASE6_INSIGHTS_MESSAGE_KEYS, type Phase6InsightsMessageKey } from './phase6-insights';
+import {
+  PHASE6_SECURITY_MESSAGES,
+  PHASE6_SECURITY_MESSAGE_KEYS,
+  type Phase6SecurityMessageKey,
+} from './phase6-security';
+import {
+  PHASE_SPRINT1_DASHBOARD_MESSAGES,
+  PHASE_SPRINT1_DASHBOARD_KEYS,
+  type PhaseSprint1DashboardKey,
+} from './phase-sprint1-dashboard';
+import {
+  PHASE9_SALES_INSIGHTS_MESSAGES,
+  PHASE9_SALES_INSIGHTS_KEYS,
+  type Phase9SalesInsightsKey,
+} from './phase9-sales-insights';
 
 export const MESSAGE_KEYS = [
   ...PHASE0_MESSAGE_KEYS,
@@ -17,6 +33,10 @@ export const MESSAGE_KEYS = [
   ...PHASE3_MESSAGE_KEYS,
   ...PHASE4_MESSAGE_KEYS,
   ...PHASE5_MESSAGE_KEYS,
+  ...PHASE6_INSIGHTS_MESSAGE_KEYS,
+  ...PHASE6_SECURITY_MESSAGE_KEYS,
+  ...PHASE_SPRINT1_DASHBOARD_KEYS,
+  ...PHASE9_SALES_INSIGHTS_KEYS,
 ] as const;
 
 export type MessageKey =
@@ -27,7 +47,26 @@ export type MessageKey =
   | Phase2MessageKey
   | Phase3MessageKey
   | Phase4MessageKey
-  | Phase5MessageKey;
+  | Phase5MessageKey
+  | Phase6InsightsMessageKey
+  | Phase6SecurityMessageKey
+  | PhaseSprint1DashboardKey
+  | Phase9SalesInsightsKey;
+
+const hinglishCatalog: Record<MessageKey, string> = {
+  ...PHASE0_MESSAGES.hinglish,
+  ...PHASE1_MESSAGES.hinglish,
+  ...PHASE1_EXTENDED_MESSAGES.hinglish,
+  ...PHASE15_MESSAGES.hinglish,
+  ...PHASE2_MESSAGES.hinglish,
+  ...PHASE3_MESSAGES.hinglish,
+  ...PHASE4_MESSAGES.hinglish,
+  ...PHASE5_MESSAGES.hinglish,
+  ...PHASE6_INSIGHTS_MESSAGES.hinglish,
+  ...PHASE6_SECURITY_MESSAGES.hinglish,
+  ...PHASE_SPRINT1_DASHBOARD_MESSAGES.hinglish,
+  ...PHASE9_SALES_INSIGHTS_MESSAGES.hinglish,
+};
 
 export const MESSAGES: Record<AppLanguage, Record<MessageKey, string>> = {
   en: {
@@ -39,27 +78,14 @@ export const MESSAGES: Record<AppLanguage, Record<MessageKey, string>> = {
     ...PHASE3_MESSAGES.en,
     ...PHASE4_MESSAGES.en,
     ...PHASE5_MESSAGES.en,
+    ...PHASE6_INSIGHTS_MESSAGES.en,
+    ...PHASE6_SECURITY_MESSAGES.en,
+    ...PHASE_SPRINT1_DASHBOARD_MESSAGES.en,
+    ...PHASE9_SALES_INSIGHTS_MESSAGES.en,
   },
-  hi: {
-    ...PHASE0_MESSAGES.hi,
-    ...PHASE1_MESSAGES.hi,
-    ...PHASE1_EXTENDED_MESSAGES.hi,
-    ...PHASE15_MESSAGES.hi,
-    ...PHASE2_MESSAGES.hi,
-    ...PHASE3_MESSAGES.hi,
-    ...PHASE4_MESSAGES.hi,
-    ...PHASE5_MESSAGES.hi,
-  },
-  hinglish: {
-    ...PHASE0_MESSAGES.hinglish,
-    ...PHASE1_MESSAGES.hinglish,
-    ...PHASE1_EXTENDED_MESSAGES.hinglish,
-    ...PHASE15_MESSAGES.hinglish,
-    ...PHASE2_MESSAGES.hinglish,
-    ...PHASE3_MESSAGES.hinglish,
-    ...PHASE4_MESSAGES.hinglish,
-    ...PHASE5_MESSAGES.hinglish,
-  },
+  /** Mixed Roman Hindi for field users — not literary Devanagari. */
+  hi: hinglishCatalog,
+  hinglish: hinglishCatalog,
 };
 
 export {
@@ -71,4 +97,8 @@ export {
   PHASE3_MESSAGE_KEYS,
   PHASE4_MESSAGE_KEYS,
   PHASE5_MESSAGE_KEYS,
+  PHASE6_INSIGHTS_MESSAGE_KEYS,
+  PHASE6_SECURITY_MESSAGE_KEYS,
+  PHASE_SPRINT1_DASHBOARD_KEYS,
+  PHASE9_SALES_INSIGHTS_KEYS,
 };

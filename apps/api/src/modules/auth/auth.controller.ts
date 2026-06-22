@@ -1,7 +1,9 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Post, Req, UnauthorizedException } from '@nestjs/common';
+import type { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { TokenRequestSchema } from '@synchem-sfa/shared-types';
 import { AppLanguageParam } from '../../common/decorators/app-language.decorator';
+import { extractDeviceContext } from '../../common/http/device-context';
 import { Public } from '../../common/decorators/public.decorator';
 import type { AppLanguage } from '@synchem-sfa/shared-i18n';
 import { AuthService } from './auth.service';
@@ -16,12 +18,14 @@ export class AuthController {
   async token(
     @Body() body: Record<string, string>,
     @AppLanguageParam() language: AppLanguage,
+    @Req() req: Request,
   ) {
     const parsed = TokenRequestSchema.safeParse(body);
     if (!parsed.success) {
       throw new UnauthorizedException('Invalid token request');
     }
 
-    return this.authService.login(parsed.data.username, parsed.data.password, language);
+    const device = extractDeviceContext(req);
+    return this.authService.login(parsed.data.username, parsed.data.password, language, device);
   }
 }

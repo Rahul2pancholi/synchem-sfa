@@ -9,6 +9,7 @@ import { PlatformLoginPage } from './features/platform/PlatformLoginPage';
 import { PlatformTenantsPage } from './features/platform/PlatformTenantsPage';
 import { DashboardShell } from './features/shell/DashboardShell';
 import { DashboardHome } from './features/shell/DashboardHome';
+import { FieldStaffDashboardHome } from './features/shell/FieldStaffDashboardHome';
 import { HierarchyMasterPage } from './features/masters/HierarchyMasterPage';
 import { EmployeeMasterPage } from './features/masters/EmployeeMasterPage';
 import { BulkPageByKey, LovPageByKey, MasterPageByKey } from './features/masters/MasterPageRouter';
@@ -22,6 +23,12 @@ import { LeaveApplicationPage } from './features/monthly/LeaveApplicationPage';
 import { ExpenseStatementPage } from './features/monthly/ExpenseStatementPage';
 import { LeavePolicyPage } from './features/monthly/LeavePolicyPage';
 import { ReportPage } from './features/reports/ReportPage';
+import { SalesSummaryReportPage } from './features/reports/SalesSummaryReportPage';
+import { TargetAchievementReportPage } from './features/reports/TargetAchievementReportPage';
+import { VisitSummaryReportPage } from './features/reports/VisitSummaryReportPage';
+import { MissedCallsReportPage } from './features/reports/MissedCallsReportPage';
+import { InsightsChatConfigPage } from './features/admin/InsightsChatConfigPage';
+import { LoginAnalyticsPage } from './features/admin/LoginAnalyticsPage';
 
 function RequireTenantToken({ children }: { children: ReactNode }) {
   const token = localStorage.getItem('access_token');
@@ -49,7 +56,7 @@ export function App() {
       >
         <Route path="management/dashboard" element={guarded('DSH03', <ManagerDashboardHome titleKey="dashboard.management" />)} />
         <Route path="manager/dashboard" element={guarded('DSH02', <ManagerDashboardHome titleKey="dashboard.manager" />)} />
-        <Route path="fieldStaff/dashboard" element={guarded('DSH01', <DashboardHome titleKey="dashboard.fieldStaff" />)} />
+        <Route path="fieldStaff/dashboard" element={guarded('DSH01', <FieldStaffDashboardHome />)} />
         <Route path="hierachy" element={guarded('MAS06', <HierarchyMasterPage />)} />
         <Route path="employees" element={guarded('MAS07', <EmployeeMasterPage />)} />
         <Route path="city" element={guarded('MAS20102', <MasterPageByKey pageKey="city" />)} />
@@ -89,9 +96,15 @@ export function App() {
         <Route path="report/dcr-summary" element={guarded('REP01', <ReportPage reportKey="dcr-summary" />)} />
         <Route path="report/monthlyExpenseSummary" element={guarded('REP05', <ReportPage reportKey="expense-summary" />)} />
         <Route path="report/employee-pob" element={guarded('REP12', <ReportPage reportKey="employee-pob" />)} />
+        <Route path="report/salesSummary" element={guarded('REP41712', <SalesSummaryReportPage />)} />
+        <Route path="report/employeeTargetAchievement" element={guarded('REP20', <TargetAchievementReportPage />)} />
+        <Route path="report/visit-summary" element={guarded('REP02', <VisitSummaryReportPage />)} />
+        <Route path="report/missedCallReport" element={guarded('REP22', <MissedCallsReportPage />)} />
         <Route path="pob/add" element={guarded('TRN04', <PobPage />)} />
         <Route path="roleMaster" element={guarded('ADM01', <RoleMasterPage />)} />
         <Route path="roleSetting" element={guarded('ADM04', <RoleSettingPage />)} />
+        <Route path="insightsChatConfig" element={guarded('ADM05', <InsightsChatConfigPage />)} />
+        <Route path="security/loginAnalytics" element={guarded('ADM06', <LoginAnalyticsPage />)} />
         <Route path="*" element={<DashboardHome titleKey="dashboard.default" />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

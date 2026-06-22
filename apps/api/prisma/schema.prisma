@@ -47,6 +47,7 @@ model Company {
   expenseTemplates ExpenseTemplate[]
   leavePolicies LeavePolicy[]
   syncBatches  SyncBatch[]
+  insightsChatConfig InsightsChatConfig?
 
   @@map("companies")
 }
@@ -65,6 +66,25 @@ model CompanySetting {
   @@unique([compCode, settingKey])
   @@index([compCode])
   @@map("company_settings")
+}
+
+model InsightsChatConfig {
+  compCode           String   @id @map("comp_code") @db.VarChar(10)
+  enabled            Boolean  @default(false)
+  provider           String   @default("openai") @db.VarChar(20) // openai | gemini
+  model              String   @default("gpt-4o-mini") @db.VarChar(100)
+  apiKeyCiphertext   String?  @map("api_key_ciphertext") @db.Text
+  apiKeyIv           String?  @map("api_key_iv") @db.VarChar(32)
+  systemPrompt       String   @default("") @map("system_prompt") @db.Text
+  intentPrompt       String   @default("") @map("intent_prompt") @db.Text
+  narrationPrompt    String   @default("") @map("narration_prompt") @db.Text
+  updatedByEmployeeId String? @map("updated_by_employee_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode])
+
+  @@map("insights_chat_configs")
 }
 
 model PlatformUser {
@@ -219,12 +239,14 @@ model Employee {
   tourProgrammes   TourProgramme[]
   weeklyPlans      WeeklyPlan[]
   personalOrders   PersonalOrderBooking[]
+  monthlyTargets   EmployeeMonthlyTarget[]
   leaveApplications LeaveApplication[]
   leaveBalances    LeaveBalance[]
   expenseStatements ExpenseStatement[]
   syncBatches      SyncBatch[]
   gpsCheckIns      GpsCheckIn[]
   auditLogs        AuditLog[]
+  loginEvents      LoginEvent[]
 
   @@unique([compCode, userName])
   @@index([compCode, headQuarterId])
@@ -713,6 +735,25 @@ model PersonalOrderLine {
   @@map("personal_order_lines")
 }
 
+model EmployeeMonthlyTarget {
+  id           String   @id @default(uuid()) @db.Uuid
+  compCode     String   @map("comp_code") @db.VarChar(10)
+  empId        String   @map("emp_id") @db.Uuid
+  targetMonth  Int      @map("target_month")
+  targetYear   Int      @map("target_year")
+  amountTarget Decimal  @map("amount_target") @db.Decimal(14, 2)
+  callTarget   Int?     @map("call_target")
+  pobTarget    Int?     @map("pob_target")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [empId], references: [id])
+
+  @@unique([compCode, empId, targetMonth, targetYear])
+  @@index([compCode, targetMonth, targetYear])
+  @@map("employee_monthly_targets")
+}
+
 // =============================================================================
 // PHASE 5 — MONTHLY CYCLE (Leave + Expense)
 // =============================================================================
@@ -909,4 +950,34 @@ model AuditLog {
   @@index([compCode, entityType, entityId])
   @@index([compCode, createdAt])
   @@map("audit_logs")
+}
+
+model LoginEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  compCode       String   @map("comp_code") @db.VarChar(10)
+  empId          String?  @map("emp_id") @db.Uuid
+  userName       String?  @map("user_name") @db.VarChar(100)
+  loginStatus    String   @map("login_status") @db.VarChar(20)
+  channel        String   @default("web") @db.VarChar(20)
+  deviceId       String?  @map("device_id") @db.VarChar(100)
+  deviceType     String?  @map("device_type") @db.VarChar(20)
+  osName         String?  @map("os_name") @db.VarChar(50)
+  osVersion      String?  @map("os_version") @db.VarChar(50)
+  browserName    String?  @map("browser_name") @db.VarChar(50)
+  browserVersion String?  @map("browser_version") @db.VarChar(50)
+  appVersion     String?  @map("app_version") @db.VarChar(50)
+  ipAddress      String?  @map("ip_address") @db.VarChar(45)
+  userAgent      String?  @map("user_agent") @db.VarChar(500)
+  acceptLanguage String?  @map("accept_language") @db.VarChar(100)
+  requestId      String?  @map("request_id") @db.VarChar(100)
+  refreshTokenId String?  @map("refresh_token_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  employee Employee? @relation(fields: [empId], references: [id])
+
+  @@index([compCode, empId, createdAt])
+  @@index([compCode, createdAt])
+  @@index([compCode, deviceId])
+  @@index([compCode, loginStatus, createdAt])
+  @@map("login_events")
 }

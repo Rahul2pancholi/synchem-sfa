@@ -8,13 +8,17 @@ services:
       dockerfile: infra/docker/Dockerfile.api
     container_name: synchem-sfa-api
     env_file:
-      - ../../apps/api/.env.uat
+      - path: ../../apps/api/.env.uat
+        required: false
     environment:
       DATABASE_URL: postgresql://sfa:sfa_dev_password@postgres:5432/synchem_sfa
       REDIS_URL: redis://redis:6379
       APP_ENV: uat
       NODE_ENV: production
       PORT: 3000
+      JWT_SECRET: uat-local-jwt-secret-minimum-32-characters-long
+      JWT_EXPIRES_IN: 12h
+      LOG_LEVEL: info
     ports:
       - '3002:3000'
     depends_on:
@@ -34,5 +38,6 @@ services:
     ports:
       - '8080:80'
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped

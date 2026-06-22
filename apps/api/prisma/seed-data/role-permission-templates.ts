@@ -77,7 +77,7 @@ export function templatePermission(
   }
 
   // MAN
-  if (menuCode === 'ADM01' || menuCode === 'ADM04') {
+  if (menuCode === 'ADM01' || menuCode === 'ADM04' || menuCode === 'ADM05' || menuCode === 'ADM06') {
     return NONE;
   }
 

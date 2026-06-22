@@ -23,7 +23,11 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 | Mobile-only | 8 | — | — |
 | **Web total** | **~52** | **146 menu** | **~36%** |
 
-**Out of MVP (Month 7+):** Mail, e-detailing, chat, GPS map, infiltration, focused activity, input/sales plan, manager DCR, remaining 48 reports, 9 approval types.
+**Out of MVP (Month 7+):** Mail, e-detailing, **analytics chat UI (Phase 10D)**, GPS map, infiltration, focused activity, input/sales plan, manager DCR, remaining 48 reports, 9 approval types.  
+**Phase 10A in MVP-adjacent:** Admin chatbot **config** only (`ADM05`) — not the chat itself.
+
+**Current build focus (P0):** MR journey (mobile DCR, sync, RTP, POB) + sales reports — see [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md).  
+**Low priority (P3):** Leave mobile, leave UI polish, advanced leave policy — minimal API already exists.
 
 ---
 
@@ -111,10 +115,10 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 |---|--------|------|-------|----------|
 | 33 | Tour Programme (RTP) | TRN01 | `/app/monthlyRTP` | Web |
 | 34 | Weekly Plan | TRN24 | `/app/weeklyPlan` | Web |
-| 35 | Daily Call Report | TRN03 | `/app/dcrRecord` | Web + **Mobile** |
-| 36 | Personal Order Booking | TRN04 | `/app/pob/add` | Web |
-| 37 | Leave Application | TRN09 | `/app/leaveApplication` | Web |
-| 38 | Expense Statement | TRN20 | `app/expenseStatement` | Web |
+| 35 | Daily Call Report | TRN03 | `/app/dcrRecord` | Web + **Mobile** | **P0** |
+| 36 | Personal Order Booking | TRN04 | `/app/pob/add` | Web | **P0** — sales |
+| 37 | Leave Application | TRN09 | `/app/leaveApplication` | Web | **P3 (Low)** — MVP only, defer polish |
+| 38 | Expense Statement | TRN20 | `app/expenseStatement` | Web | P1 |
 
 **Deferred:** Gift/sample, stock statement, infiltration, manager RTP, pool distribution, unlock/revise flows (except unlock DCR approval if needed).
 
@@ -127,7 +131,7 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 | 39 | DCR Approval | APP01 | `/app/dcrRecord/approval/admin` |
 | 40 | Tour Programme Approval | TRN02 | `/app/monthlyRTP/approval` |
 | 41 | Weekly Plan Approval | APP04 | `/app/pendingWeeklyPlan` |
-| 42 | Leave Approval | TRN10 | `/app/leave/approval` |
+| 42 | Leave Approval | TRN10 | `/app/leave/approval` | **P3 (Low)** — basic only |
 | 43 | Expense Approval | TRN21 | `/app/expenseStatement/approval` |
 | 44 | Doctor Approval | MAS11 | `/app/doctor-approval` |
 
@@ -162,9 +166,11 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 |---|--------|------|-------|
 | 57 | Role Master | ADM01 | `/app/roleMaster` | Web | **Phase 1.5** |
 | 58 | Role Setting (permissions) | ADM04 | `/app/roleSetting` | Web | **Phase 1.5** |
+| 59 | AI Chatbot Settings | ADM05 | `/app/insightsChatConfig` | Web | **Phase 10A** ✅ |
+| — | Analytics chat UI (modal) | — | Manager/Admin dashboard | Web | **Phase 10D** (post-MVP) |
 | 59 | Company Info | SET02 | `/app/companyInfo` |
 | 60 | DCR Setting | SET01 | `/app/dcrSetting` |
-| 61 | Leave Policy | SET03 | `/app/leavePolicy` |
+| 61 | Leave Policy | SET03 | `/app/leavePolicy` | **P3 (Low)** |
 
 ---
 
@@ -181,7 +187,7 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 | M7 | GPS check-in / check-out | P0 | Queue offline |
 | M8 | Push notification inbox | P1 | No |
 
-**Deferred mobile:** POB offline, leave, expense, manager approvals, e-detailing.
+**Deferred mobile:** POB offline, **leave (P3)**, expense, manager approvals, e-detailing.
 
 ---
 

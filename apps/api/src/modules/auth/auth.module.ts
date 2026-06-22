@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AppConfigService } from '../../config/config.service';
 import { AuditModule } from '../audit/audit.module';
+import { SecurityModule } from '../security/security.module';
 import { MenusModule } from '../menus/menus.module';
 import { PrismaTenantSettingsRepository } from '../tenant/adapters/prisma-tenant-settings.repository';
 import { TENANT_SETTINGS_REPOSITORY } from '../tenant/ports/tenant-settings.repository.port';
@@ -17,6 +18,7 @@ import { REFRESH_TOKEN_REPOSITORY } from './ports/refresh-token.repository.port'
   imports: [
     MenusModule,
     AuditModule,
+    SecurityModule,
     JwtModule.registerAsync({
       global: true,
       inject: [AppConfigService],

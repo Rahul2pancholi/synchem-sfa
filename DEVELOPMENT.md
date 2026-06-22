@@ -87,13 +87,23 @@ pnpm dev:web
 
 | App | URL |
 |-----|-----|
-| API health | http://localhost:3000/health |
+| API health | http://localhost:3001/health |
 | Web login | http://localhost:5173/login |
+| Insights service (optional) | http://localhost:3010/api/v1/health |
+| AI chatbot admin | http://localhost:5173/app/insightsChatConfig (admin login) |
+
+### AI chatbot config (local, no Docker required for UI)
+
+1. Add to `apps/api/.env.local`: `INTERNAL_API_KEY=dev-internal-key-change-me` (same value in `apps/insights-service/.env` if running insights service)
+2. Run migration: `pnpm db:migrate:deploy`
+3. Re-seed menus (once): `pnpm db:seed`
+4. Login as `admin` / `Admin@123` → **Admin → AI Chatbot Settings**
+5. Set provider, API key, model, prompts → **Save** → **Test API connection**
 
 ## 5. Test login (curl)
 
 ```bash
-curl -X POST http://localhost:3000/token \
+curl -X POST http://localhost:3001/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password&username=admin,SYN&password=Admin@123"
 ```
@@ -114,6 +124,7 @@ curl -X POST http://localhost:3000/token \
 apps/api/              NestJS API
 apps/web/              React + Vite
 apps/worker/           pg-boss job skeleton (Phase 0)
+apps/insights-service/ AI analytics chatbot scaffold (Phase 10 — extractable)
 apps/mobile/           Placeholder — starts Phase 3
 packages/shared-types/
 infra/docker/          docker-compose (Colima / CI)
@@ -153,7 +164,18 @@ apps/api/prisma/       Canonical DB schema + migrations
 | OpenAPI Masters tag (Phase 1 endpoints) | Done |
 | Master screens: antd Table/Form/Card | Done |
 
-**Next:** Phase 6 — Go-live prep
+**Next:** MR journey + sales (P0) — see [docs/24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOURNEY-SALES-PRIORITIES.md)
+
+## Current focus (June 2026)
+
+| Priority | Area | Notes |
+|----------|------|-------|
+| **P0** | MR journey | Mobile DCR, sync, GPS, RTP, Weekly, **POB polish**, FS dashboard |
+| **P0** | Sales improvement | Sales Summary, Target vs Achievement, Visit Summary, Missed Calls reports |
+| **P1** | Expense month-end | MVP done |
+| **P3 (Low)** | **Leave** | API MVP done — **no more leave work** until P0 complete (mobile, UI polish deferred) |
+
+Full sprint order: [24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOURNEY-SALES-PRIORITIES.md)
 
 ## Phase 6 checklist (in progress)
 
@@ -181,20 +203,37 @@ pnpm load-test              # API load gate
 cp apps/api/.env.uat.example apps/api/.env.uat && pnpm docker:uat
 ```
 
-## Phase 5 checklist (MVP — complete)
+## Phase 10 — AI Chatbot (post go-live)
 
-| Item | Status |
-|------|--------|
-| Leave Application API + web (`TRN09`) | Done |
-| Leave Approval queue (`TRN10`) + balance deduction | Done |
-| Leave Policy admin (`SET03`) | Done |
-| Expense Statement API + web (`TRN20`) | Done |
-| Expense Approval queue (`TRN21`) | Done |
-| Key reports: DCR Summary (`REP01`), Expense Summary (`REP05`), Employee POB (`REP12`) | Done |
-| Stock statement, Gift/Sample | Deferred |
-| Full 12-report suite + Excel export | Deferred |
+> **Spec:** [25-AI-ANALYTICS-CHATBOT-PLAN.md](./docs/25-AI-ANALYTICS-CHATBOT-PLAN.md) · **Roadmap:** [08-clone-roadmap.md](./docs/08-clone-roadmap.md) Phase 10
 
-**Test flow:** `mr1` applies leave → `rm1` approves → balance reduces · `mr1` creates expense claim → submit → approve
+| Sub-phase | Status | Notes |
+|-----------|--------|-------|
+| **10A** Admin config + `insights-service` scaffold | **Done** | `ADM05`, encrypted API keys |
+| **10B** Semantic layer | Pending | After sales P0 reports |
+| **10C** Knowledge graph | Pending | Month 8–9 |
+| **10D** Chat UI + real answers | Pending | Admin + Manager dashboards |
+| **10E–10F** Hardening + field AI | Pending | Month 10+ |
+
+Do **not** start 10B until [24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOURNEY-SALES-PRIORITIES.md) sales P0 items ship.
+
+---
+
+## Phase 5 checklist (MVP — partial; reprioritized)
+
+| Item | Priority | Status |
+|------|----------|--------|
+| Leave Application API + web (`TRN09`) | **P3** | MVP done — **defer** polish |
+| Leave Approval (`TRN10`) + balance deduction | **P3** | MVP done — **defer** |
+| Leave Policy admin (`SET03`) | **P3** | MVP done — **defer** |
+| Mobile leave | **P3** | Not started — deferred |
+| Expense Statement API + web (`TRN20`) | P1 | Done |
+| Expense Approval queue (`TRN21`) | P1 | Done |
+| Key reports: DCR Summary (`REP01`), Expense (`REP05`), Employee POB (`REP12`) | **P0** | Done — **next:** sales reports |
+| Stock statement, Gift/Sample | — | Deferred |
+| Full 12-report suite + Excel export | P1 | Deferred |
+
+**Test focus:** DCR → sync → POB (not leave).
 
 ## Phase 4 checklist (MVP — complete)
 
@@ -206,7 +245,8 @@ cp apps/api/.env.uat.example apps/api/.env.uat && pnpm docker:uat
 | Web: DCR Approval (`APP01`), RTP Approval (`TRN02`), Weekly Plan (`APP04`) | Done |
 | Manager dashboard pending counts (`DSH02`, `DSH03`) | Done |
 | Seed: APP menus, RM role + `rm1` user, `mr1` → `rm1` reporting | Done |
-| Leave / Expense / Doctor approval | Deferred (no entity schema yet) |
+| Leave / Expense approval (API) | Leave **P3** MVP done; Expense P1 done |
+| Doctor approval | Deferred |
 | Firebase push on pending approval | Deferred |
 
 **Test users:** `admin` / `Admin@123` / `SYN` (all pending) · `rm1` / `Rm@123` / `SYN` (team only)
@@ -251,7 +291,7 @@ pnpm dev:api
 pnpm dev:mobile
 ```
 
-Set `EXPO_PUBLIC_API_URL` if API is not on `http://localhost:3000` (use machine LAN IP for physical device).
+Set `EXPO_PUBLIC_API_URL` to your Mac LAN IP + port **3001** for physical device (e.g. `http://192.168.1.30:3001`). Default API port is **3001** if another app uses 3000.
 
 **Mobile login:** `mr1` / `Mr@123` / `SYN`
 

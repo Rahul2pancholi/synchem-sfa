@@ -1,4 +1,6 @@
 module.exports = {
-  preset: 'jest-expo',
   testMatch: ['**/*.spec.ts'],
+  transform: {
+    '^.+\\.[tj]s$': 'babel-jest',
+  },
 };

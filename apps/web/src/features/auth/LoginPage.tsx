@@ -3,6 +3,7 @@ import { Button, Card, Form, Input, Space, Typography, message } from 'antd';
 import { ROLE_DASHBOARD_ROUTES } from '@synchem-sfa/shared-types';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
+import { getOrCreateDeviceId } from '../../lib/device-id';
 
 interface LoginFormValues {
   userName: string;
@@ -27,6 +28,8 @@ export function LoginPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Device-Id': getOrCreateDeviceId(),
+          'X-App-Channel': 'web',
           ...languageHeader,
         },
         body,

@@ -2,8 +2,14 @@
 .env
 .env.*
 !.env.example
+!.env.live-pull.example
+.env.live-pull
 credentials.*
 secrets.*
+
+# Live API dumps (PII — local only)
+data/live-pull/raw/
+*.har
 
 # Dependencies & build
 node_modules/

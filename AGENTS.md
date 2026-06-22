@@ -6,6 +6,10 @@ Full details: [docs/18-DEVELOPMENT-STANDARDS.md](docs/18-DEVELOPMENT-STANDARDS.m
 
 Build context: [docs/17-FINAL-BUILD-PLAN.md](docs/17-FINAL-BUILD-PLAN.md)
 
+**Current P0 focus:** [docs/24-MR-JOURNEY-SALES-PRIORITIES.md](docs/24-MR-JOURNEY-SALES-PRIORITIES.md) — MR journey + sales; **leave = P3 (defer)**.
+
+**AI chatbot:** [docs/25-AI-ANALYTICS-CHATBOT-PLAN.md](docs/25-AI-ANALYTICS-CHATBOT-PLAN.md) — **Phase 10 only** (10A done; 10B+ after sales P0). Do not build chat UI or semantic layer ahead of roadmap.
+
 Feature specs: [docs/modules/](docs/modules/)
 
 ---
@@ -139,6 +143,7 @@ Multi-tenant **Pharma SFA SaaS** — NestJS API + React web + React Native mobil
 | Web | React 18 + Vite + TypeScript |
 | Mobile | React Native + Expo + WatermelonDB |
 | Shared | `packages/shared-types`, `packages/api-client` |
+| AI analytics (later) | `apps/insights-service` — separate microservice; see [docs/25-AI-ANALYTICS-CHATBOT-PLAN.md](docs/25-AI-ANALYTICS-CHATBOT-PLAN.md) |
 
 ---
 

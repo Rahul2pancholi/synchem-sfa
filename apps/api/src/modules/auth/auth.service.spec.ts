@@ -9,6 +9,7 @@ import { REFRESH_TOKEN_REPOSITORY } from './ports/refresh-token.repository.port'
 import { TENANT_SETTINGS_REPOSITORY } from '../tenant/ports/tenant-settings.repository.port';
 import { MenusService } from '../menus/menus.service';
 import { AuditService } from '../audit/audit.service';
+import { LoginTrackingService } from '../security/login-tracking.service';
 import { RedisService } from '../../infrastructure/cache/redis.module';
 
 describe('AuthService', () => {
@@ -28,7 +29,11 @@ describe('AuthService', () => {
         { provide: EMPLOYEE_AUTH_REPOSITORY, useValue: repo },
         {
           provide: REFRESH_TOKEN_REPOSITORY,
-          useValue: { create: jest.fn(), findValidByHash: jest.fn(), revoke: jest.fn() },
+          useValue: {
+            create: jest.fn().mockResolvedValue('refresh-1'),
+            findValidByHash: jest.fn(),
+            revoke: jest.fn(),
+          },
         },
         {
           provide: TENANT_SETTINGS_REPOSITORY,
@@ -45,6 +50,10 @@ describe('AuthService', () => {
         {
           provide: AuditService,
           useValue: { log: jest.fn() },
+        },
+        {
+          provide: LoginTrackingService,
+          useValue: { recordSuccess: jest.fn(), recordFailure: jest.fn() },
         },
         {
           provide: RedisService,
@@ -67,7 +76,7 @@ describe('AuthService', () => {
 
   it('returns localized Hindi auth error when requested', async () => {
     repo.findByUserNameAndCompCode.mockResolvedValue(null);
-    await expect(service.login('admin,SYN', 'pass', 'hi')).rejects.toThrow('गलत');
+    await expect(service.login('admin,SYN', 'pass', 'hi')).rejects.toThrow('Galat');
   });
 
   it('should return token for valid credentials', async () => {

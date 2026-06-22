@@ -8,6 +8,9 @@
     "dev:api": "pnpm --filter @synchem-sfa/api dev",
     "dev:web": "pnpm --filter @synchem-sfa/web dev",
     "dev:mobile": "pnpm --filter @synchem-sfa/mobile start",
+    "mobile:ios": "pnpm --filter @synchem-sfa/mobile ios:device",
+    "mobile:ios:install": "bash scripts/mobile-ios-device.sh",
+    "dev:insights": "pnpm --filter @synchem-sfa/insights-service dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -24,7 +27,13 @@
     "test:api-flow": "bash scripts/test-api-flow.sh",
     "go-live:check": "bash scripts/go-live-check.sh",
     "load-test": "node scripts/load-test/mvp-load.mjs",
-    "docker:uat": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.uat.yml up -d --build"
+    "live-pull:quick": "node scripts/live-pull/pull-live-data.mjs --quick",
+    "live-pull:full": "node scripts/live-pull/pull-live-data.mjs",
+    "live-pull:masters": "node scripts/live-pull/pull-live-data.mjs --only=masters",
+    "live-pull:retry": "node scripts/live-pull/pull-live-data.mjs --retry-failed",
+    "live-pull:dashboard": "node scripts/live-pull/pull-live-data.mjs --only=dashboard,manager-dashboard,management-dashboard,reports,roles,doctor,transactions",
+    "live-pull:har": "node scripts/live-pull/pull-live-data.mjs --only=har",
+    "docker:uat": "cp -n apps/api/.env.uat.example apps/api/.env.uat 2>/dev/null || true && docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.uat.yml up -d --build"
   },
   "devDependencies": {
     "turbo": "^2.5.4",

@@ -431,6 +431,33 @@ async function main() {
     });
   }
 
+  const targetMonth = new Date().getMonth() + 1;
+  const targetYear = new Date().getFullYear();
+  await prisma.employeeMonthlyTarget.upsert({
+    where: {
+      compCode_empId_targetMonth_targetYear: {
+        compCode: 'SYN',
+        empId: mrEmployee.id,
+        targetMonth,
+        targetYear,
+      },
+    },
+    update: {
+      amountTarget: 200000,
+      callTarget: 160,
+      pobTarget: 50,
+    },
+    create: {
+      compCode: 'SYN',
+      empId: mrEmployee.id,
+      targetMonth,
+      targetYear,
+      amountTarget: 200000,
+      callTarget: 160,
+      pobTarget: 50,
+    },
+  });
+
   for (const headName of ['Travel', 'Fixed Allowance', 'Daily Allowance']) {
     await prisma.expenseHead.upsert({
       where: { compCode_headName: { compCode: 'SYN', headName } },

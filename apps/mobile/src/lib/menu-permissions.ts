@@ -1,5 +1,5 @@
 import type { LegacyMenuItem } from '@synchem-sfa/shared-types';
-import * as SecureStore from 'expo-secure-store';
+import { getSecureItem, setSecureItem } from './secure-storage';
 
 const MENU_LIST_KEY = 'menuList';
 
@@ -15,11 +15,11 @@ const ACTION_KEY: Record<PermissionAction, keyof LegacyMenuItem> = {
 };
 
 export async function saveMenuList(menuListJson: string) {
-  await SecureStore.setItemAsync(MENU_LIST_KEY, menuListJson);
+  await setSecureItem(MENU_LIST_KEY, menuListJson);
 }
 
 export async function loadMenuList(): Promise<LegacyMenuItem[]> {
-  const raw = await SecureStore.getItemAsync(MENU_LIST_KEY);
+  const raw = await getSecureItem(MENU_LIST_KEY);
   if (!raw) return [];
   try {
     return JSON.parse(raw) as LegacyMenuItem[];

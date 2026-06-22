@@ -19,10 +19,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/token': 'http://localhost:3000',
-      '/health': 'http://localhost:3000',
-      '/ready': 'http://localhost:3000',
-      '/api': 'http://localhost:3000',
+      '/token': 'http://localhost:3001',
+      '/health': 'http://localhost:3001',
+      '/ready': 'http://localhost:3001',
+      '/api': 'http://localhost:3001',
     },
   },
 });

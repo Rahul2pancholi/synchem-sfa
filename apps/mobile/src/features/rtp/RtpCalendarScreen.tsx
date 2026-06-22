@@ -6,7 +6,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { useSessionStore } from '../../store/session-store';
 import type { RootStackParamList } from '../../navigation/types';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+import { API_BASE } from '../../config/api-base';
 
 interface TourDay {
   dayOfMonth: number;

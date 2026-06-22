@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { deleteSecureItem, getSecureItem, setSecureItem } from './secure-storage';
 
 const KEYS = {
   accessToken: 'access_token',
@@ -27,40 +27,28 @@ export interface StoredSession {
   };
 }
 
-async function setItem(key: string, value: string) {
-  await SecureStore.setItemAsync(key, value);
-}
-
-async function getItem(key: string) {
-  return SecureStore.getItemAsync(key);
-}
-
-async function deleteItem(key: string) {
-  await SecureStore.deleteItemAsync(key);
-}
-
 export async function saveSession(session: StoredSession) {
   await Promise.all([
-    setItem(KEYS.accessToken, session.accessToken),
-    setItem(KEYS.refreshToken, session.refreshToken),
-    setItem(KEYS.compCode, session.compCode),
-    setItem(KEYS.compName, session.compName),
-    setItem(KEYS.empId, session.empId),
-    setItem(KEYS.employeeJson, JSON.stringify(session.employee)),
-    session.headQuarterId ? setItem(KEYS.headQuarterId, session.headQuarterId) : Promise.resolve(),
+    setSecureItem(KEYS.accessToken, session.accessToken),
+    setSecureItem(KEYS.refreshToken, session.refreshToken),
+    setSecureItem(KEYS.compCode, session.compCode),
+    setSecureItem(KEYS.compName, session.compName),
+    setSecureItem(KEYS.empId, session.empId),
+    setSecureItem(KEYS.employeeJson, JSON.stringify(session.employee)),
+    session.headQuarterId ? setSecureItem(KEYS.headQuarterId, session.headQuarterId) : Promise.resolve(),
   ]);
 }
 
 export async function loadSession(): Promise<StoredSession | null> {
   const [accessToken, refreshToken, compCode, compName, empId, employeeJson, headQuarterId] =
     await Promise.all([
-      getItem(KEYS.accessToken),
-      getItem(KEYS.refreshToken),
-      getItem(KEYS.compCode),
-      getItem(KEYS.compName),
-      getItem(KEYS.empId),
-      getItem(KEYS.employeeJson),
-      getItem(KEYS.headQuarterId),
+      getSecureItem(KEYS.accessToken),
+      getSecureItem(KEYS.refreshToken),
+      getSecureItem(KEYS.compCode),
+      getSecureItem(KEYS.compName),
+      getSecureItem(KEYS.empId),
+      getSecureItem(KEYS.employeeJson),
+      getSecureItem(KEYS.headQuarterId),
     ]);
 
   if (!accessToken || !refreshToken || !compCode || !compName || !empId || !employeeJson) {
@@ -79,23 +67,23 @@ export async function loadSession(): Promise<StoredSession | null> {
 }
 
 export async function clearSession() {
-  await Promise.all(Object.values(KEYS).map((key) => deleteItem(key)));
+  await Promise.all(Object.values(KEYS).map((key) => deleteSecureItem(key)));
 }
 
 export async function saveMpinHash(hash: string) {
-  await setItem(KEYS.mpinHash, hash);
+  await setSecureItem(KEYS.mpinHash, hash);
 }
 
 export async function getMpinHash() {
-  return getItem(KEYS.mpinHash);
+  return getSecureItem(KEYS.mpinHash);
 }
 
 export async function saveLanguage(language: string) {
-  await setItem(KEYS.language, language);
+  await setSecureItem(KEYS.language, language);
 }
 
 export async function loadLanguage() {
-  return getItem(KEYS.language);
+  return getSecureItem(KEYS.language);
 }
 
 export function hashMpin(mpin: string) {

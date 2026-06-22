@@ -14,10 +14,12 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepositoryPort 
     empId: string;
     tokenHash: string;
     expiresAt: Date;
-  }): Promise<void> {
-    await this.prisma.refreshToken.create({
+  }): Promise<string> {
+    const row = await this.prisma.refreshToken.create({
       data: params,
+      select: { id: true },
     });
+    return row.id;
   }
 
   async findValidByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {

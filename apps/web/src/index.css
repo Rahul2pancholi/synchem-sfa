@@ -225,6 +225,41 @@ a {
   color: var(--sfa-text-muted);
 }
 
+.stat-card__title {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.stat-card__title-text {
+  line-height: 1.4;
+}
+
+.stat-card__info {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  margin: -4px -6px -4px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sfa-text-muted);
+  cursor: help;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: color 0.15s ease;
+}
+
+.stat-card__info:hover,
+.stat-card__info:focus-visible {
+  color: var(--sfa-primary);
+  outline: none;
+}
+
 .stat-card .ant-statistic-content {
   font-size: clamp(1.25rem, 4vw, 1.75rem);
 }

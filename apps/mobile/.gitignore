@@ -1,22 +1,9 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
 # dependencies
 node_modules/
 
-# Expo
+# Expo (removed — keep cache out if folder reappears)
 .expo/
-dist/
-web-build/
 expo-env.d.ts
-
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
 
 # Metro
 .metro-health-check*
@@ -31,11 +18,30 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-/ios
-/android
+# Android / iOS build artifacts
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.kotlin/
+*.orig.*
+ios/build/
+ios/Pods/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+android/app/build/
+android/build/
+android/.gradle/
+android/.idea/
+android/local.properties
+
+# Jest localStorage shim
+.jest-localstorage

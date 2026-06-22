@@ -263,12 +263,17 @@ Tune `ThrottlerModule` in `app.module.ts` if load test hits 429 — increase lim
 
 ## 8. Known MVP gaps (accept or fix before go-live)
 
+> **Build priority:** [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md) — MR journey + sales **P0**; leave **P3 low**.
+
 | Item | Risk | Decision |
 |------|------|----------|
-| Doctor Approval screen | Low if no new doctor onboarding at launch | Defer / build |
-| 9 of 12 MVP reports | Medium for HO | Prioritize top 3 post-launch |
-| Excel export on reports | Medium | Defer or quick win |
-| Firebase push | Low | Defer — email/WhatsApp interim |
+| **Sales reports** (summary, target, visits, missed calls) | **High** | **P0 — build next** |
+| POB / FS dashboard polish | Medium | **P0** |
+| 9 of 12 MVP reports | Medium | Sales-related first |
+| **Leave** (mobile, UI polish, advanced policy) | Low | **P3 — defer** (API MVP exists) |
+| Doctor Approval screen | Low | P1 after sales |
+| Excel export on reports | Medium | P1 |
+| Firebase push | Low | Defer |
 | Company Info / DCR Setting | Low | Defer if defaults OK |
 
 ---

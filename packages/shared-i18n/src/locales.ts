@@ -1,4 +1,4 @@
-/** Supported UI languages — English, Hindi (Devanagari), Hinglish (Roman mix). */
+/** Supported UI languages — English, Hindi (mixed Roman), Hinglish (Roman mix). */
 export const APP_LANGUAGES = ['en', 'hi', 'hinglish'] as const;
 
 export type AppLanguage = (typeof APP_LANGUAGES)[number];
@@ -7,7 +7,7 @@ export const DEFAULT_APP_LANGUAGE: AppLanguage = 'en';
 
 export const APP_LANGUAGE_LABELS: Record<AppLanguage, string> = {
   en: 'English',
-  hi: 'हिन्दी',
+  hi: 'Hindi',
   hinglish: 'Hinglish',
 };
 

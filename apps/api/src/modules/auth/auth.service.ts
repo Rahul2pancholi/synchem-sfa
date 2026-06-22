@@ -18,6 +18,8 @@ import type { AppLanguage, MessageKey } from '@synchem-sfa/shared-i18n';
 import { apiTranslate } from '../../common/i18n/language.util';
 import { RedisService } from '../../infrastructure/cache/redis.module';
 import { AuditService } from '../audit/audit.service';
+import { LoginTrackingService } from '../security/login-tracking.service';
+import type { DeviceContext } from '../../common/http/device-context';
 import {
   EMPLOYEE_AUTH_REPOSITORY,
   type EmployeeAuthRepositoryPort,
@@ -74,10 +76,16 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly menusService: MenusService,
     private readonly auditService: AuditService,
+    private readonly loginTracking: LoginTrackingService,
     private readonly redis: RedisService,
   ) {}
 
-  async login(usernameField: string, password: string, language: AppLanguage = 'en'): Promise<TokenResult> {
+  async login(
+    usernameField: string,
+    password: string,
+    language: AppLanguage = 'en',
+    device?: DeviceContext,
+  ): Promise<TokenResult> {
     const [userName, compCode] = usernameField.split(',').map((s) => s.trim());
 
     if (!userName || !compCode) {
@@ -89,26 +97,51 @@ export class AuthService {
       compCode,
     );
 
+    const deviceContext = device ?? {
+      channel: 'web',
+      deviceId: null,
+      deviceType: null,
+      osName: null,
+      osVersion: null,
+      browserName: null,
+      browserVersion: null,
+      appVersion: null,
+      ipAddress: null,
+      userAgent: null,
+      acceptLanguage: null,
+      requestId: null,
+    };
+
     if (!employee) {
       this.logger.warn({ compCode, userName, module: 'auth', action: 'loginFailed' });
+      await this.loginTracking.recordFailure({
+        compCode,
+        userName,
+        device: deviceContext,
+      });
       throw new UnauthorizedException(this.msg('auth.login.invalidCredentials', language));
     }
 
     const passwordValid = await bcrypt.compare(password, employee.passwordHash);
     if (!passwordValid) {
       this.logger.warn({ compCode, userName, module: 'auth', action: 'loginFailed' });
+      await this.loginTracking.recordFailure({
+        compCode,
+        userName,
+        empId: employee.id,
+        device: deviceContext,
+      });
       throw new UnauthorizedException(this.msg('auth.login.invalidCredentials', language));
     }
 
-    const result = await this.issueTenantTokens(employee);
+    const { result, refreshTokenId } = await this.issueTenantTokens(employee);
 
-    await this.auditService.log({
+    await this.loginTracking.recordSuccess({
       compCode: employee.compCode,
       empId: employee.id,
-      entityType: 'employee',
-      entityId: employee.id,
-      action: 'LOGIN',
-      newValues: { userName: employee.userName },
+      userName: employee.userName,
+      device: deviceContext,
+      refreshTokenId,
     });
 
     this.logger.log({
@@ -139,7 +172,8 @@ export class AuthService {
     }
 
     await this.refreshTokenRepo.revoke(stored.id);
-    return this.issueTenantTokens(employee);
+    const { result } = await this.issueTenantTokens(employee);
+    return result;
   }
 
   async forgotPassword(body: unknown, language: AppLanguage = 'en') {
@@ -228,7 +262,9 @@ export class AuthService {
     return apiTranslate(key, language);
   }
 
-  private async issueTenantTokens(employee: AuthEmployeeRecord): Promise<TokenResult> {
+  private async issueTenantTokens(
+    employee: AuthEmployeeRecord,
+  ): Promise<{ result: TokenResult; refreshTokenId: string }> {
     const payload: JwtPayload = {
       sub: employee.userName,
       empId: employee.id,
@@ -245,7 +281,7 @@ export class AuthService {
     const refreshToken = generateRefreshToken();
     const expiresAt = addSeconds(new Date(), REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60);
 
-    await this.refreshTokenRepo.create({
+    const refreshTokenId = await this.refreshTokenRepo.create({
       compCode: employee.compCode,
       empId: employee.id,
       tokenHash: hashToken(refreshToken),
@@ -271,21 +307,24 @@ export class AuthService {
     const expiredAt = addSeconds(new Date(), ACCESS_TOKEN_SECONDS).toISOString();
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      token_type: 'bearer',
-      expires_in: ACCESS_TOKEN_SECONDS,
-      expiredAt,
-      empId: employee.id,
-      roleType: employee.roleType,
-      compCode: employee.compCode,
-      compName: employee.companyName,
-      menuList,
-      employeeObj: JSON.stringify(employeeObj),
-      configurationSetting: JSON.stringify(settings),
-      isFirstLogin: 'false',
-      isMpin: false,
-      isCheckIn: false,
+      result: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        token_type: 'bearer',
+        expires_in: ACCESS_TOKEN_SECONDS,
+        expiredAt,
+        empId: employee.id,
+        roleType: employee.roleType,
+        compCode: employee.compCode,
+        compName: employee.companyName,
+        menuList,
+        employeeObj: JSON.stringify(employeeObj),
+        configurationSetting: JSON.stringify(settings),
+        isFirstLogin: 'false',
+        isMpin: false,
+        isCheckIn: false,
+      },
+      refreshTokenId,
     };
   }
 
