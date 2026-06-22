@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Drawer, Grid, Layout, Menu, Typography } from 'antd';
+import { Avatar, Button, Drawer, Grid, Layout, Menu, Tag, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
@@ -119,6 +119,18 @@ function mergeOpenKeys(prev: string[], pathKeys: string[]): string[] {
   return openKeysEqual(merged, prev) ? prev : merged;
 }
 
+function employeeDisplayName(employee: { firstName?: string; lastName?: string } | null): string {
+  if (!employee) return '';
+  return [employee.firstName, employee.lastName].filter(Boolean).join(' ');
+}
+
+function employeeInitials(employee: { firstName?: string; lastName?: string } | null): string {
+  const first = employee?.firstName?.[0] ?? '';
+  const last = employee?.lastName?.[0] ?? '';
+  const initials = `${first}${last}`.toUpperCase();
+  return initials || '?';
+}
+
 export function DashboardShell() {
   const { t, languageHeader } = useI18n();
   const location = useLocation();
@@ -155,6 +167,7 @@ export function DashboardShell() {
   }
 
   const closeDrawer = () => setDrawerOpen(false);
+  const displayName = employeeDisplayName(employee);
 
   return (
     <Layout className="app-layout" hasSider={!isMobile}>
@@ -175,23 +188,40 @@ export function DashboardShell() {
             {isMobile ? (
               <Button
                 type="text"
+                className="app-header__menu-btn"
                 aria-label={t('shell.openMenu')}
                 icon={<MenuOutlined />}
                 onClick={() => setDrawerOpen(true)}
               />
             ) : null}
+            <Avatar className="app-header__avatar" size={40}>
+              {employeeInitials(employee)}
+            </Avatar>
             <div className="app-header__titles">
-              <Typography.Title level={4} className="app-header__title">
-                {compName}
-              </Typography.Title>
-              <span className="app-header__meta">
-                {employee?.firstName} {employee?.lastName ?? ''} · {employee?.roleName}
-              </span>
+              <div className="app-header__name-row">
+                <span className="app-header__name">{displayName || compName}</span>
+                {employee?.roleName ? (
+                  <Tag bordered={false} className="app-header__role">
+                    {employee.roleName}
+                  </Tag>
+                ) : null}
+              </div>
+              {isMobile ? (
+                <span className="app-header__meta">{compName}</span>
+              ) : (
+                <span className="app-header__meta app-header__meta--desktop">{t('shell.brand')}</span>
+              )}
             </div>
           </div>
           <div className="app-header__actions">
-            <LanguageSwitcher />
-            <Button icon={<LogoutOutlined />} onClick={logout}>
+            <LanguageSwitcher compact={isMobile} />
+            <Button
+              type="text"
+              className="app-header__logout"
+              icon={<LogoutOutlined />}
+              aria-label={t('common.logout')}
+              onClick={logout}
+            >
               {!isMobile ? t('common.logout') : null}
             </Button>
           </div>
