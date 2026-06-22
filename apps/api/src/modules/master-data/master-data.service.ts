@@ -21,6 +21,7 @@ import {
 } from '@synchem-sfa/shared-types';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
+import { ApprovalService } from '../approvals/approval.service';
 
 type LovType =
   | 'designations'
@@ -33,7 +34,10 @@ type LovType =
 
 @Injectable()
 export class MasterDataService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly approvals: ApprovalService,
+  ) {}
 
   // --- Geography ---
   async listStates(compCode: string) {
@@ -278,6 +282,61 @@ export class MasterDataService {
     if (parsed.data.routeId) await this.findRoute(compCode, parsed.data.routeId);
     const item = await this.prisma.doctor.create({ data: { compCode, ...parsed.data } });
     return apiSuccess(item, 201);
+  }
+
+  async listDoctorRequests(compCode: string, empId: string) {
+    const items = await this.prisma.doctor.findMany({
+      where: { compCode, submittedBy: empId, deletedAt: null },
+      include: {
+        route: { select: { routeName: true } },
+        specialist: { select: { specialistName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return apiSuccess({
+      items: items.map((row) => ({
+        id: row.id,
+        doctorName: row.doctorName,
+        routeName: row.route?.routeName ?? null,
+        specialistName: row.specialist?.specialistName ?? null,
+        mobileNo: row.mobileNo,
+        approveStatus: row.approveStatus,
+        active: row.active,
+      })),
+    });
+  }
+
+  async createDoctorRequest(compCode: string, empId: string, body: Record<string, unknown>) {
+    const parsed = CreateDoctorRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    if (parsed.data.routeId) await this.findRoute(compCode, parsed.data.routeId);
+
+    const item = await this.prisma.doctor.create({
+      data: {
+        compCode,
+        ...parsed.data,
+        approveStatus: 'DRAFT',
+        active: false,
+        submittedBy: empId,
+      },
+    });
+    return apiSuccess(
+      {
+        id: item.id,
+        doctorName: item.doctorName,
+        approveStatus: item.approveStatus,
+      },
+      201,
+    );
+  }
+
+  async submitDoctorRequest(compCode: string, empId: string, id: string) {
+    const row = await this.prisma.doctor.findFirst({
+      where: { compCode, id, submittedBy: empId, deletedAt: null },
+    });
+    if (!row) throw new NotFoundException('Doctor request not found');
+    await this.approvals.submitForApproval(compCode, 'DOCTOR', id, empId);
+    return apiSuccess({ id, approveStatus: 'SUBMITTED' });
   }
 
   async deactivateDoctor(compCode: string, id: string) {

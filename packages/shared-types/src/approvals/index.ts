@@ -6,6 +6,7 @@ export const ApprovalEntityTypeSchema = z.enum([
   'WEEKLY_PLAN',
   'LEAVE',
   'EXPENSE',
+  'DOCTOR',
 ]);
 
 export const ApprovalDecisionRequestSchema = z.object({
@@ -30,6 +31,7 @@ export const APPROVAL_ENTITY_CONFIG: Record<ApprovalEntityType, ApprovalEntityCo
   },
   LEAVE: { entityType: 'LEAVE', menuCode: 'TRN10', labelKey: 'approval.leave.title' },
   EXPENSE: { entityType: 'EXPENSE', menuCode: 'TRN21', labelKey: 'approval.expense.title' },
+  DOCTOR: { entityType: 'DOCTOR', menuCode: 'MAS11', labelKey: 'approval.doctor.title' },
 };
 
 export interface ApprovalPendingItem {
@@ -51,5 +53,19 @@ export interface ApprovalSummary {
   weeklyPlan: number;
   leave: number;
   expense: number;
+  doctor: number;
   total: number;
+}
+
+export interface ApprovalEntityDetailLine {
+  description: string;
+  amount: number;
+}
+
+export interface ApprovalEntityDetail {
+  entityType: ApprovalEntityType;
+  entityId: string;
+  summary: string;
+  attributes: Array<{ key: string; value: string }>;
+  lines?: ApprovalEntityDetailLine[];
 }

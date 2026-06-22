@@ -10,6 +10,7 @@ import { PlatformTenantsPage } from './features/platform/PlatformTenantsPage';
 import { DashboardShell } from './features/shell/DashboardShell';
 import { DashboardHome } from './features/shell/DashboardHome';
 import { FieldStaffDashboardHome } from './features/shell/FieldStaffDashboardHome';
+import { DoctorCreationRequestPage } from './features/masters/DoctorCreationRequestPage';
 import { HierarchyMasterPage } from './features/masters/HierarchyMasterPage';
 import { EmployeeMasterPage } from './features/masters/EmployeeMasterPage';
 import { BulkPageByKey, LovPageByKey, MasterPageByKey } from './features/masters/MasterPageRouter';
@@ -95,6 +96,8 @@ export function App() {
         <Route path="pendingWeeklyPlan" element={guarded('APP04', <ApprovalQueuePage entityType="WEEKLY_PLAN" titleKey="approval.weekly.title" />)} />
         <Route path="leaveApplication" element={guarded('TRN09', <LeaveApplicationPage />)} />
         <Route path="leave/approval" element={guarded('TRN10', <ApprovalQueuePage entityType="LEAVE" titleKey="approval.leave.title" />)} />
+        <Route path="doctor-creation-request" element={guarded('MAS10', <DoctorCreationRequestPage />)} />
+        <Route path="doctor-approval" element={guarded('MAS11', <ApprovalQueuePage entityType="DOCTOR" titleKey="approval.doctor.title" />)} />
         <Route path="expenseStatement" element={guarded('TRN20', <ExpenseStatementPage />)} />
         <Route path="expenseStatement/approval" element={guarded('TRN21', <ApprovalQueuePage entityType="EXPENSE" titleKey="approval.expense.title" />)} />
         <Route path="leavePolicy" element={guarded('SET03', <LeavePolicyPage />)} />

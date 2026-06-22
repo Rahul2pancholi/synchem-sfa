@@ -1,6 +1,7 @@
-import type { ApprovalEntityType, ApprovalPendingItem } from '@synchem-sfa/shared-types';
+import type { ApprovalEntityDetail, ApprovalEntityType, ApprovalPendingItem } from '@synchem-sfa/shared-types';
+import type { MessageKey } from '@synchem-sfa/shared-i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Input, Modal, Space, Spin, message } from 'antd';
+import { Button, Descriptions, Input, Modal, Space, Spin, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState } from 'react';
 import { PageLayout } from '../../components/ui/PageLayout';
@@ -13,22 +14,43 @@ interface ListResponse {
   data: { items: ApprovalPendingItem[] };
 }
 
+interface DetailResponse {
+  data: ApprovalEntityDetail;
+}
+
+const DETAIL_LABEL_KEYS: Record<string, MessageKey> = {
+  doctorName: 'approval.detail.doctorName',
+  routeName: 'approval.detail.routeName',
+  specialistName: 'approval.detail.specialistName',
+  qualificationName: 'approval.detail.qualificationName',
+  mobileNo: 'approval.detail.mobileNo',
+  claimMonth: 'approval.detail.claimMonth',
+  claimYear: 'approval.detail.claimYear',
+  totalAmount: 'approval.detail.totalAmount',
+};
+
+type ApprovalTitleKey =
+  | 'approval.dcr.title'
+  | 'approval.rtp.title'
+  | 'approval.weekly.title'
+  | 'approval.leave.title'
+  | 'approval.expense.title'
+  | 'approval.doctor.title';
+
+const DETAIL_ENTITY_TYPES = new Set<ApprovalEntityType>(['EXPENSE', 'DOCTOR']);
+
 export function ApprovalQueuePage({
   entityType,
   titleKey,
 }: {
   entityType: ApprovalEntityType;
-  titleKey:
-    | 'approval.dcr.title'
-    | 'approval.rtp.title'
-    | 'approval.weekly.title'
-    | 'approval.leave.title'
-    | 'approval.expense.title';
+  titleKey: ApprovalTitleKey;
 }) {
   const { t, languageHeader } = useI18n();
   const queryClient = useQueryClient();
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [remarks, setRemarks] = useState('');
+  const [detailEntityId, setDetailEntityId] = useState<string | null>(null);
 
   const listQuery = useQuery({
     queryKey: ['approvals', entityType],
@@ -39,6 +61,18 @@ export function ApprovalQueuePage({
       );
       return res.data.items;
     },
+  });
+
+  const detailQuery = useQuery({
+    queryKey: ['approval-detail', entityType, detailEntityId],
+    queryFn: async () => {
+      const res = await fetchApi<DetailResponse>(
+        `/api/v1/approvals/entities/${entityType}/${detailEntityId}`,
+        languageHeader,
+      );
+      return res.data;
+    },
+    enabled: detailEntityId !== null && DETAIL_ENTITY_TYPES.has(entityType),
   });
 
   const approveMutation = useMutation({
@@ -52,6 +86,7 @@ export function ApprovalQueuePage({
       }),
     onSuccess: async () => {
       message.success(t('approval.approveSuccess'));
+      setDetailEntityId(null);
       await queryClient.invalidateQueries({ queryKey: ['approvals'] });
       await queryClient.invalidateQueries({ queryKey: ['approval-summary'] });
     },
@@ -71,6 +106,7 @@ export function ApprovalQueuePage({
       message.success(t('approval.rejectSuccess'));
       setRejectId(null);
       setRemarks('');
+      setDetailEntityId(null);
       await queryClient.invalidateQueries({ queryKey: ['approvals'] });
       await queryClient.invalidateQueries({ queryKey: ['approval-summary'] });
     },
@@ -92,6 +128,9 @@ export function ApprovalQueuePage({
       fixed: 'right',
       render: (_, row) => (
         <Space wrap>
+          {DETAIL_ENTITY_TYPES.has(entityType) ? (
+            <Button onClick={() => setDetailEntityId(row.entityId)}>{t('approval.viewDetail')}</Button>
+          ) : null}
           <Button
             type="primary"
             loading={approveMutation.isPending}
@@ -107,6 +146,8 @@ export function ApprovalQueuePage({
     },
   ];
 
+  const detail = detailQuery.data;
+
   return (
     <PageLayout title={t(titleKey)}>
       <PageSection>
@@ -119,6 +160,48 @@ export function ApprovalQueuePage({
           />
         </Spin>
       </PageSection>
+
+      <Modal
+        title={t('approval.detailTitle')}
+        open={detailEntityId !== null}
+        onCancel={() => setDetailEntityId(null)}
+        footer={null}
+        width={640}
+      >
+        <Spin spinning={detailQuery.isLoading}>
+          {detail ? (
+            <>
+              <Descriptions column={1} size="small" bordered>
+                {detail.attributes.map((attr) => (
+                  <Descriptions.Item
+                    key={attr.key}
+                    label={t(DETAIL_LABEL_KEYS[attr.key] ?? 'approval.summary')}
+                  >
+                    {attr.key === 'totalAmount' ? `₹${Number(attr.value).toLocaleString('en-IN')}` : attr.value}
+                  </Descriptions.Item>
+                ))}
+              </Descriptions>
+              {detail.lines?.length ? (
+                <Table
+                  style={{ marginTop: 16 }}
+                  size="small"
+                  rowKey={(_, i) => String(i)}
+                  pagination={false}
+                  columns={[
+                    { title: t('monthly.expense.description'), dataIndex: 'description' },
+                    {
+                      title: t('approval.detail.amount'),
+                      dataIndex: 'amount',
+                      render: (v: number) => `₹${v.toLocaleString('en-IN')}`,
+                    },
+                  ]}
+                  dataSource={detail.lines}
+                />
+              ) : null}
+            </>
+          ) : null}
+        </Spin>
+      </Modal>
 
       <Modal
         title={t('approval.rejectTitle')}

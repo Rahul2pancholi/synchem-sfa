@@ -137,6 +137,24 @@ export class MasterDataController {
     return this.masterData.deactivateDoctor(user.compCode!, id);
   }
 
+  @Get('doctor-requests')
+  @RequirePermission('MAS10', 'view')
+  listDoctorRequests(@CurrentUser() user: JwtPayload) {
+    return this.masterData.listDoctorRequests(user.compCode!, user.empId!);
+  }
+
+  @Post('doctor-requests')
+  @RequirePermission('MAS10', 'add')
+  createDoctorRequest(@CurrentUser() user: JwtPayload, @Body() body: Record<string, unknown>) {
+    return this.masterData.createDoctorRequest(user.compCode!, user.empId!, body);
+  }
+
+  @Post('doctor-requests/:id/submit')
+  @RequirePermission('MAS10', 'edit')
+  submitDoctorRequest(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.masterData.submitDoctorRequest(user.compCode!, user.empId!, id);
+  }
+
   @Get('retailers')
   @RequirePermission('MAS03', 'view')
   listRetailers(@CurrentUser() user: JwtPayload) {

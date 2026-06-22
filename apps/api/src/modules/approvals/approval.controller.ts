@@ -22,6 +22,15 @@ export class ApprovalController {
     return this.approvals.getSummary(user.compCode!, user);
   }
 
+  @Get('entities/:entityType/:entityId')
+  getEntityDetail(
+    @CurrentUser() user: JwtPayload,
+    @Param('entityType') entityType: ApprovalEntityType,
+    @Param('entityId') entityId: string,
+  ) {
+    return this.approvals.getEntityDetail(user.compCode!, user, entityType, entityId);
+  }
+
   @Post(':id/approve')
   approve(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() body: unknown) {
     return this.approvals.approve(user.compCode!, id, user, body);

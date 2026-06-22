@@ -38,8 +38,9 @@ export function ManagerDashboardHome({
   const canViewWeekly = usePermission('APP04', 'view');
   const canViewLeave = usePermission('TRN10', 'view');
   const canViewExpense = usePermission('TRN21', 'view');
+  const canViewDoctor = usePermission('MAS11', 'view');
   const canViewSummary =
-    canViewDcr || canViewRtp || canViewWeekly || canViewLeave || canViewExpense;
+    canViewDcr || canViewRtp || canViewWeekly || canViewLeave || canViewExpense || canViewDoctor;
   const canViewSalesKpis = usePermission('REP20', 'view');
   const canViewMissedCalls = usePermission('REP22', 'view');
 
@@ -173,6 +174,14 @@ export function ManagerDashboardHome({
                   info={t('approval.statHelp.expense')}
                   value={summary?.expense ?? 0}
                   to="/app/expenseStatement/approval"
+                />
+              </Col>
+              <Col xs={12} sm={12} md={8} lg={6}>
+                <StatCard
+                  title={t('approval.doctor.title')}
+                  info={t('approval.statHelp.doctor')}
+                  value={summary?.doctor ?? 0}
+                  to="/app/doctor-approval"
                 />
               </Col>
               <Col xs={12} sm={12} md={8} lg={6}>

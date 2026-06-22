@@ -491,6 +491,8 @@ model Doctor {
   qualificationId String? @map("qualification_id") @db.Uuid
   mobileNo      String?   @map("mobile_no") @db.VarChar(20)
   approveStatus String    @default("APPROVED") @map("approve_status") @db.VarChar(20)
+  submittedBy   String?   @map("submitted_by") @db.Uuid
+  submittedAt   DateTime? @map("submitted_at")
   active        Boolean   @default(true)
   version       Int       @default(1)
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -503,6 +505,7 @@ model Doctor {
   qualification Qualification? @relation(fields: [qualificationId], references: [id])
 
   @@index([compCode, routeId])
+  @@index([compCode, approveStatus])
   @@map("doctors")
 }
 

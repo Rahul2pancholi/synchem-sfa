@@ -1,8 +1,12 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Form, Input, InputNumber, Select, Space, Spin, Table, Typography, message } from 'antd';
+import { Button, Descriptions, Form, Input, InputNumber, Modal, Select, Spin, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { ExpenseStatementSummary } from '@synchem-sfa/shared-types';
+import { useState } from 'react';
+import { PageLayout } from '../../components/ui/PageLayout';
+import { PageSection } from '../../components/ui/PageSection';
+import { ResponsiveTable } from '../../components/ui/ResponsiveTable';
 import { useI18n } from '../../i18n/I18nProvider';
 import { authHeaders, fetchApi } from '../../lib/api-client';
 import { StatusTag } from '../transactions/StatusTag';
@@ -11,9 +15,24 @@ interface ListResponse {
   data: { items: ExpenseStatementSummary[] };
 }
 
+interface DetailResponse {
+  data: {
+    id: string;
+    claimMonth: number;
+    claimYear: number;
+    totalAmount: number;
+    approveStatus: string;
+    lines: Array<{ description: string; amount: number }>;
+  };
+}
+
 interface ExpenseHeadOption {
   id: string;
   headName: string;
+}
+
+function isDraft(status: string) {
+  return status === 'DRAFT' || status === 'REJECTED';
 }
 
 export function ExpenseStatementPage() {
@@ -21,6 +40,7 @@ export function ExpenseStatementPage() {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const now = new Date();
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const listQuery = useQuery({
     queryKey: ['expense-statements'],
@@ -28,6 +48,15 @@ export function ExpenseStatementPage() {
       const res = await fetchApi<ListResponse>('/api/v1/expense-statements', languageHeader);
       return res.data.items;
     },
+  });
+
+  const detailQuery = useQuery({
+    queryKey: ['expense-statement', detailId],
+    queryFn: async () => {
+      const res = await fetchApi<DetailResponse>(`/api/v1/expense-statements/${detailId}`, languageHeader);
+      return res.data;
+    },
+    enabled: detailId !== null,
   });
 
   const headsQuery = useQuery({
@@ -73,27 +102,34 @@ export function ExpenseStatementPage() {
   const columns: ColumnsType<ExpenseStatementSummary> = [
     { title: t('monthly.expense.month'), dataIndex: 'claimMonth', key: 'claimMonth' },
     { title: t('monthly.expense.year'), dataIndex: 'claimYear', key: 'claimYear' },
-    { title: t('monthly.expense.total'), dataIndex: 'totalAmount', key: 'totalAmount' },
+    {
+      title: t('monthly.expense.total'),
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+      render: (v: number) => `₹${Number(v).toLocaleString('en-IN')}`,
+    },
     { title: t('txn.common.status'), key: 'status', render: (_, row) => <StatusTag status={row.approveStatus} /> },
     {
       title: t('common.actions'),
       key: 'actions',
-      render: (_, row) =>
-        row.approveStatus === 'DRAFT' || row.approveStatus === 'REJECTED' ? (
-          <Button size="small" loading={submitMutation.isPending} onClick={() => submitMutation.mutate(row.id)}>
-            {t('monthly.expense.submit')}
+      render: (_, row) => (
+        <>
+          <Button size="small" type="link" onClick={() => setDetailId(row.id)}>
+            {t('approval.viewDetail')}
           </Button>
-        ) : null,
+          {isDraft(row.approveStatus) ? (
+            <Button size="small" loading={submitMutation.isPending} onClick={() => submitMutation.mutate(row.id)}>
+              {t('monthly.expense.submit')}
+            </Button>
+          ) : null}
+        </>
+      ),
     },
   ];
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      <Typography.Title level={3} style={{ margin: 0 }}>
-        {t('monthly.expense.title')}
-      </Typography.Title>
-
-      <Card title={t('monthly.expense.createTitle')}>
+    <PageLayout title={t('monthly.expense.title')}>
+      <PageSection title={t('monthly.expense.createTitle')}>
         <Form
           form={form}
           layout="vertical"
@@ -110,24 +146,24 @@ export function ExpenseStatementPage() {
             });
           }}
         >
-          <Space>
+          <div className="form-grid">
             <Form.Item name="claimMonth" label={t('monthly.expense.month')} rules={[{ required: true }]}>
-              <InputNumber min={1} max={12} />
+              <InputNumber min={1} max={12} style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item name="claimYear" label={t('monthly.expense.year')} rules={[{ required: true }]}>
-              <InputNumber min={2020} max={2100} />
+              <InputNumber min={2020} max={2100} style={{ width: '100%' }} />
             </Form.Item>
-          </Space>
+          </div>
 
           <Form.List name="lines">
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...rest }) => (
-                  <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
+                  <div key={key} className="form-grid" style={{ marginBottom: 8 }}>
                     <Form.Item {...rest} name={[name, 'expenseHeadId']} label={t('monthly.expense.head')}>
                       <Select
                         allowClear
-                        style={{ width: 180 }}
+                        loading={headsQuery.isLoading}
                         options={(headsQuery.data ?? []).map((h) => ({ value: h.id, label: h.headName }))}
                       />
                     </Form.Item>
@@ -137,7 +173,7 @@ export function ExpenseStatementPage() {
                       label={t('monthly.expense.description')}
                       rules={[{ required: true }]}
                     >
-                      <Input style={{ width: 220 }} />
+                      <Input />
                     </Form.Item>
                     <Form.Item
                       {...rest}
@@ -145,15 +181,15 @@ export function ExpenseStatementPage() {
                       label={t('monthly.expense.amount')}
                       rules={[{ required: true }]}
                     >
-                      <InputNumber min={0} style={{ width: 120 }} />
+                      <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
                     {fields.length > 1 ? (
-                      <MinusCircleOutlined onClick={() => remove(name)} />
+                      <Button type="text" icon={<MinusCircleOutlined />} onClick={() => remove(name)} />
                     ) : null}
-                  </Space>
+                  </div>
                 ))}
                 <Form.Item>
-                  <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
+                  <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} block>
                     {t('monthly.expense.addLine')}
                   </Button>
                 </Form.Item>
@@ -165,13 +201,58 @@ export function ExpenseStatementPage() {
             {t('common.create')}
           </Button>
         </Form>
-      </Card>
+      </PageSection>
 
-      <Card title={t('monthly.expense.listTitle')}>
+      <PageSection title={t('monthly.expense.listTitle')}>
         <Spin spinning={listQuery.isLoading}>
-          <Table rowKey="id" columns={columns} dataSource={listQuery.data ?? []} />
+          <ResponsiveTable
+            rowKey="id"
+            columns={columns}
+            dataSource={listQuery.data ?? []}
+            locale={{ emptyText: t('approval.empty') }}
+          />
         </Spin>
-      </Card>
-    </Space>
+      </PageSection>
+
+      <Modal
+        title={t('approval.detailTitle')}
+        open={detailId !== null}
+        onCancel={() => setDetailId(null)}
+        footer={null}
+      >
+        <Spin spinning={detailQuery.isLoading}>
+          {detailQuery.data ? (
+            <>
+              <Descriptions column={1} size="small" bordered>
+                <Descriptions.Item label={t('approval.detail.claimMonth')}>
+                  {detailQuery.data.claimMonth}
+                </Descriptions.Item>
+                <Descriptions.Item label={t('approval.detail.claimYear')}>
+                  {detailQuery.data.claimYear}
+                </Descriptions.Item>
+                <Descriptions.Item label={t('approval.detail.totalAmount')}>
+                  ₹{detailQuery.data.totalAmount.toLocaleString('en-IN')}
+                </Descriptions.Item>
+              </Descriptions>
+              <div style={{ marginTop: 16 }}>
+                <ResponsiveTable
+                  rowKey={(_, i) => String(i)}
+                  pagination={false}
+                  columns={[
+                  { title: t('monthly.expense.description'), dataIndex: 'description' },
+                  {
+                    title: t('approval.detail.amount'),
+                    dataIndex: 'amount',
+                    render: (v: number) => `₹${v.toLocaleString('en-IN')}`,
+                  },
+                ]}
+                dataSource={detailQuery.data.lines}
+              />
+              </div>
+            </>
+          ) : null}
+        </Spin>
+      </Modal>
+    </PageLayout>
   );
 }

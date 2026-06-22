@@ -210,12 +210,12 @@ cp apps/api/.env.uat.example apps/api/.env.uat && pnpm docker:uat
 | Sub-phase | Status | Notes |
 |-----------|--------|-------|
 | **10A** Admin config + `insights-service` scaffold | **Done** | `ADM05`, encrypted API keys |
-| **10B** Semantic layer | Pending | After sales P0 reports |
+| **10B** Semantic layer | **Done** | 8 metrics + SQL validator in `insights-service` |
 | **10C** Knowledge graph | Pending | Month 8–9 |
 | **10D** Chat UI + real answers | Pending | Admin + Manager dashboards |
 | **10E–10F** Hardening + field AI | Pending | Month 10+ |
 
-Do **not** start 10B until [24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOURNEY-SALES-PRIORITIES.md) sales P0 items ship.
+Do **not** start 10C until MVP go-live UAT is complete.
 
 ---
 
@@ -245,9 +245,9 @@ Do **not** start 10B until [24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOUR
 | Web: DCR Approval (`APP01`), RTP Approval (`TRN02`), Weekly Plan (`APP04`) | Done |
 | Manager dashboard pending counts (`DSH02`, `DSH03`) | Done |
 | Seed: APP menus, RM role + `rm1` user, `mr1` → `rm1` reporting | Done |
-| Leave / Expense approval (API) | Leave **P3** MVP done; Expense P1 done |
-| Doctor approval | Deferred |
-| Firebase push on pending approval | Deferred |
+| Leave / Expense approval (API) | Leave **P3** MVP done; Expense **Done** (polished UI) |
+| Doctor approval (`MAS10` + `MAS11`) | **Done** |
+| Firebase push on pending approval | **Done (MVP)** — API logs or FCM when key set; mobile SDK pending |
 
 **Test users:** `admin` / `Admin@123` / `SYN` (all pending) · `rm1` / `Rm@123` / `SYN` (team only)
 
@@ -278,7 +278,7 @@ Do **not** start 10B until [24-MR-JOURNEY-SALES-PRIORITIES.md](./docs/24-MR-JOUR
 | Auto-sync on app foreground | Done |
 | Mobile RTP calendar read view | Done |
 | Expo push token registration + API save | Done |
-| Firebase push delivery (server-side) | Deferred |
+| Firebase push delivery (server-side) | **Done (MVP)** — `PushNotificationService`; set `FIREBASE_SERVER_KEY` for FCM |
 | Load test: 100 concurrent syncs | Deferred |
 
 ### Run mobile (dev)

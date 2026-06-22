@@ -24,7 +24,12 @@ describe('ApprovalService', () => {
     hasPermission: jest.fn().mockResolvedValue(true),
   } as unknown as MenusService;
 
-  const service = new ApprovalService(prisma, menusService);
+  const pushNotifications = {
+    notifyApprovalSubmitted: jest.fn(),
+    notifyApprovalDecision: jest.fn(),
+  };
+
+  const service = new ApprovalService(prisma, menusService, pushNotifications as never);
 
   const adminUser: JwtPayload = {
     sub: 'admin',

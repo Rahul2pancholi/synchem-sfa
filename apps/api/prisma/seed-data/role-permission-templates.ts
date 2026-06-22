@@ -36,9 +36,10 @@ const FS_VIEW_CODES = new Set([
   'TRN04',
   'TRN09',
   'TRN20',
+  'MAS10',
 ]);
 
-const FS_WRITE_CODES = new Set(['TRN01', 'TRN03', 'TRN24', 'TRN04', 'TRN09', 'TRN20']);
+const FS_WRITE_CODES = new Set(['TRN01', 'TRN03', 'TRN24', 'TRN04', 'TRN09', 'TRN20', 'MAS10']);
 
 /** Manager — dashboards, masters (no delete), transactions, reports folder. */
 const MAN_VIEW_PREFIXES = ['DSH', 'MAS', 'TRN', 'REP', 'ADM', 'SET', 'APP'];

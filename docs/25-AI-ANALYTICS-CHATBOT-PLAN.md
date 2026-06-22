@@ -1,7 +1,7 @@
 # AI Analytics Chatbot — Phase 10 Plan
 
 **Roadmap phase:** [08-clone-roadmap.md](./08-clone-roadmap.md) **Phase 10** (10A–10F)  
-**Status:** **10A complete** — scaffold + admin config. **10B–10F** not started.  
+**Status:** **10A + 10B complete** — scaffold, admin config, semantic layer v0. **10C–10F** pending.  
 **Priority:** After MVP go-live + sales reports P0 (Month 8–10)  
 **Does NOT block:** MR journey P0, Phase 6 go-live
 
@@ -131,14 +131,14 @@ Keep them separate modules inside `insights-service` or split in v2.
 
 **Not in 10A:** Chat UI for end users, SQL execution, real analytics answers.
 
-### Phase 10B — Semantic layer v0 (Month 8)
+### Phase 10B — Semantic layer v0 (Month 8) ✅ Done
 
 **Depends on:** Phase 8 / sales P0 reports stable (Sales Summary, Target vs Achievement, Visit Summary, Missed Calls).
 
-- Define 8–12 metrics in `semantic-layer/definitions/`:
-  - `pob_value`, `pob_achievement_pct`, `dcr_count`, `doctor_coverage_pct`, `missed_calls_count`, `rtp_adherence_pct`, etc.
-- Each metric: dimensions (mr, rm, hq, route, doctor, month), filters, SQL template
-- Unit tests: every template injects `comp_code = :compCode`
+- [x] 8 metrics in `apps/insights-service/src/semantic-definitions/metrics.ts`
+- [x] `SemanticLayerAdapter` + `SemanticSqlValidatorAdapter` (tenant filter enforced)
+- [x] Unit tests: every template injects `:compCode`
+- [ ] Query executor + read-only DB user (Phase 10D)
 
 ### Phase 10C — Knowledge graph v0 (Month 8–9)
 

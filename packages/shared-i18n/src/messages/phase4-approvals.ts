@@ -21,7 +21,20 @@ export const PHASE4_MESSAGE_KEYS = [
   'approval.statHelp.weekly',
   'approval.statHelp.leave',
   'approval.statHelp.expense',
+  'approval.statHelp.doctor',
   'approval.statHelp.total',
+  'approval.doctor.title',
+  'approval.viewDetail',
+  'approval.detailTitle',
+  'approval.detail.amount',
+  'approval.detail.doctorName',
+  'approval.detail.routeName',
+  'approval.detail.specialistName',
+  'approval.detail.qualificationName',
+  'approval.detail.mobileNo',
+  'approval.detail.claimMonth',
+  'approval.detail.claimYear',
+  'approval.detail.totalAmount',
 ] as const;
 
 export type Phase4MessageKey = (typeof PHASE4_MESSAGE_KEYS)[number];
@@ -53,8 +66,22 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
       'Leave applications from your team that are submitted and waiting for your approval.',
     'approval.statHelp.expense':
       'Expense claims from your team that are submitted and waiting for your approval.',
+    'approval.statHelp.doctor':
+      'New doctor creation requests from your team that are submitted and waiting for your approval.',
     'approval.statHelp.total':
-      'Total of all pending approvals — DCR, tour plan, weekly plan, leave, and expense combined.',
+      'Total of all pending approvals — DCR, tour plan, weekly plan, leave, expense, and doctor requests combined.',
+    'approval.doctor.title': 'Doctor Approval',
+    'approval.viewDetail': 'View details',
+    'approval.detailTitle': 'Approval details',
+    'approval.detail.amount': 'Amount',
+    'approval.detail.doctorName': 'Doctor name',
+    'approval.detail.routeName': 'Route',
+    'approval.detail.specialistName': 'Specialty',
+    'approval.detail.qualificationName': 'Qualification',
+    'approval.detail.mobileNo': 'Mobile',
+    'approval.detail.claimMonth': 'Month',
+    'approval.detail.claimYear': 'Year',
+    'approval.detail.totalAmount': 'Total amount',
   },
   hi: {
     'approval.dcr.title': 'DCR अनुमोदन',
@@ -82,8 +109,22 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
       'आपकी टीम के अवकाश आवेदन जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
     'approval.statHelp.expense':
       'आपकी टीम के व्यय दावे जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
+    'approval.statHelp.doctor':
+      'आपकी टीम के नए डॉक्टर अनुरोध जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
     'approval.statHelp.total':
-      'सभी लंबित अनुमोदनों का कुल योग — DCR, टूर, साप्ताहिक योजना, अवकाश और व्यय।',
+      'सभी लंबित अनुमोदनों का कुल योग — DCR, टूर, साप्ताहिक योजना, अवकाश, व्यय और डॉक्टर अनुरोध।',
+    'approval.doctor.title': 'डॉक्टर अनुमोदन',
+    'approval.viewDetail': 'विवरण देखें',
+    'approval.detailTitle': 'अनुमोदन विवरण',
+    'approval.detail.amount': 'राशि',
+    'approval.detail.doctorName': 'डॉक्टर का नाम',
+    'approval.detail.routeName': 'रूट',
+    'approval.detail.specialistName': 'विशेषता',
+    'approval.detail.qualificationName': 'योग्यता',
+    'approval.detail.mobileNo': 'मोबाइल',
+    'approval.detail.claimMonth': 'महीना',
+    'approval.detail.claimYear': 'वर्ष',
+    'approval.detail.totalAmount': 'कुल राशि',
   },
   hinglish: {
     'approval.dcr.title': 'DCR Approval',
@@ -111,7 +152,21 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
       'Team ki leave applications jo submit ho chuki hain aur aapke approve ka wait kar rahi hain.',
     'approval.statHelp.expense':
       'Team ke expense claims jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
+    'approval.statHelp.doctor':
+      'Team ke naye doctor requests jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
     'approval.statHelp.total':
-      'Saare pending approvals ka total — DCR, tour plan, weekly plan, leave aur expense mila kar.',
+      'Saare pending approvals ka total — DCR, tour plan, weekly plan, leave, expense aur doctor requests mila kar.',
+    'approval.doctor.title': 'Doctor Approval',
+    'approval.viewDetail': 'Details dekho',
+    'approval.detailTitle': 'Approval details',
+    'approval.detail.amount': 'Amount',
+    'approval.detail.doctorName': 'Doctor name',
+    'approval.detail.routeName': 'Route',
+    'approval.detail.specialistName': 'Specialty',
+    'approval.detail.qualificationName': 'Qualification',
+    'approval.detail.mobileNo': 'Mobile',
+    'approval.detail.claimMonth': 'Month',
+    'approval.detail.claimYear': 'Year',
+    'approval.detail.totalAmount': 'Total amount',
   },
 };

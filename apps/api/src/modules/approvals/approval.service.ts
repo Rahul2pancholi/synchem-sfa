@@ -17,6 +17,7 @@ import {
 } from '@synchem-sfa/shared-types';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 import { MenusService } from '../menus/menus.service';
+import { PushNotificationService } from '../notifications/push-notification.service';
 
 @Injectable()
 export class ApprovalService {
@@ -25,6 +26,7 @@ export class ApprovalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly menusService: MenusService,
+    private readonly pushNotifications: PushNotificationService,
   ) {}
 
   async submitForApproval(
@@ -47,6 +49,14 @@ export class ApprovalService {
         },
       });
     });
+
+    const summary = await this.buildSummary(compCode, entityType, entityId);
+    void this.pushNotifications.notifyApprovalSubmitted(
+      compCode,
+      entityType,
+      submittedBy,
+      summary,
+    );
   }
 
   async listPending(
@@ -129,6 +139,7 @@ export class ApprovalService {
       weeklyPlan: 0,
       leave: 0,
       expense: 0,
+      doctor: 0,
       total: 0,
     };
     for (const row of rows) {
@@ -137,10 +148,28 @@ export class ApprovalService {
       if (row.entityType === 'WEEKLY_PLAN') summary.weeklyPlan = row._count._all;
       if (row.entityType === 'LEAVE') summary.leave = row._count._all;
       if (row.entityType === 'EXPENSE') summary.expense = row._count._all;
+      if (row.entityType === 'DOCTOR') summary.doctor = row._count._all;
       summary.total += row._count._all;
     }
 
     return apiSuccess(summary);
+  }
+
+  async getEntityDetail(
+    compCode: string,
+    user: JwtPayload,
+    entityType: ApprovalEntityType,
+    entityId: string,
+  ) {
+    const parsed = ApprovalEntityTypeSchema.safeParse(entityType);
+    if (!parsed.success) throw new BadRequestException('Invalid entity type');
+
+    await this.assertPermission(user, parsed.data, 'view');
+
+    const detail = await this.buildEntityDetail(compCode, parsed.data, entityId);
+    if (!detail) throw new NotFoundException('Entity not found');
+
+    return apiSuccess(detail);
   }
 
   async approve(compCode: string, queueId: string, user: JwtPayload, body: unknown) {
@@ -215,6 +244,19 @@ export class ApprovalService {
       entityType: queueItem.entityType,
       approverId: user.empId,
     });
+
+    const summary = await this.buildSummary(
+      compCode,
+      queueItem.entityType as ApprovalEntityType,
+      queueItem.entityId,
+    );
+    void this.pushNotifications.notifyApprovalDecision(
+      compCode,
+      queueItem.entityType as ApprovalEntityType,
+      queueItem.submittedBy,
+      summary,
+      decision,
+    );
   }
 
   private async resolveVisibleSubmitterIds(
@@ -279,8 +321,71 @@ export class ApprovalService {
         ? `Leave ${row.leaveType} ${row.fromDate.toISOString().slice(0, 10)}`
         : entityId;
     }
-    const row = await this.prisma.expenseStatement.findFirst({ where: { compCode, id: entityId } });
-    return row ? `Expense ${row.claimMonth}/${row.claimYear}` : entityId;
+    if (entityType === 'EXPENSE') {
+      const row = await this.prisma.expenseStatement.findFirst({ where: { compCode, id: entityId } });
+      return row ? `Expense ${row.claimMonth}/${row.claimYear}` : entityId;
+    }
+    const row = await this.prisma.doctor.findFirst({
+      where: { compCode, id: entityId },
+      include: { specialist: { select: { specialistName: true } } },
+    });
+    return row
+      ? `Doctor ${row.doctorName}${row.specialist ? ` (${row.specialist.specialistName})` : ''}`
+      : entityId;
+  }
+
+  private async buildEntityDetail(
+    compCode: string,
+    entityType: ApprovalEntityType,
+    entityId: string,
+  ) {
+    if (entityType === 'EXPENSE') {
+      const row = await this.prisma.expenseStatement.findFirst({
+        where: { compCode, id: entityId },
+        include: { lines: true },
+      });
+      if (!row) return null;
+      return {
+        entityType,
+        entityId,
+        summary: `Expense ${row.claimMonth}/${row.claimYear}`,
+        attributes: [
+          { key: 'claimMonth', value: String(row.claimMonth) },
+          { key: 'claimYear', value: String(row.claimYear) },
+          { key: 'totalAmount', value: String(Number(row.totalAmount)) },
+        ],
+        lines: row.lines.map((line) => ({
+          description: line.description,
+          amount: Number(line.amount),
+        })),
+      };
+    }
+
+    if (entityType === 'DOCTOR') {
+      const row = await this.prisma.doctor.findFirst({
+        where: { compCode, id: entityId },
+        include: {
+          route: { select: { routeName: true } },
+          specialist: { select: { specialistName: true } },
+          qualification: { select: { qualificationName: true } },
+        },
+      });
+      if (!row) return null;
+      return {
+        entityType,
+        entityId,
+        summary: `Doctor ${row.doctorName}`,
+        attributes: [
+          { key: 'doctorName', value: row.doctorName },
+          { key: 'routeName', value: row.route?.routeName ?? '—' },
+          { key: 'specialistName', value: row.specialist?.specialistName ?? '—' },
+          { key: 'qualificationName', value: row.qualification?.qualificationName ?? '—' },
+          { key: 'mobileNo', value: row.mobileNo ?? '—' },
+        ],
+      };
+    }
+
+    return null;
   }
 
   private async assertEntitySubmittable(
@@ -318,7 +423,11 @@ export class ApprovalService {
       const row = await tx.leaveApplication.findFirst({ where: { compCode, id: entityId } });
       return row?.approveStatus ?? null;
     }
-    const row = await tx.expenseStatement.findFirst({ where: { compCode, id: entityId } });
+    if (entityType === 'EXPENSE') {
+      const row = await tx.expenseStatement.findFirst({ where: { compCode, id: entityId } });
+      return row?.approveStatus ?? null;
+    }
+    const row = await tx.doctor.findFirst({ where: { compCode, id: entityId } });
     return row?.approveStatus ?? null;
   }
 
@@ -362,9 +471,21 @@ export class ApprovalService {
       });
       return;
     }
-    await tx.expenseStatement.updateMany({
+    if (entityType === 'EXPENSE') {
+      await tx.expenseStatement.updateMany({
+        where: { compCode, id: entityId },
+        data: { ...data, version: { increment: 1 } },
+      });
+      return;
+    }
+    await tx.doctor.updateMany({
       where: { compCode, id: entityId },
-      data: { ...data, version: { increment: 1 } },
+      data: {
+        approveStatus,
+        ...(approveStatus === 'SUBMITTED' ? { submittedAt: new Date() } : {}),
+        ...(approveStatus === 'APPROVED' ? { active: true } : {}),
+        version: { increment: 1 },
+      },
     });
   }
 

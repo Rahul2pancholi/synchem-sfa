@@ -32,8 +32,8 @@ End-to-end: **Plan → Visit → Report → Order → Sync → Manager approve**
 | 6 | **Tour Programme (RTP)** | Done (web) | Mobile calendar polish; submit → approve loop UAT |
 | 7 | **Weekly Plan** | Done (web) | Same as RTP |
 | 8 | **Personal Order Booking (POB)** | Done (web API) | **P0:** UX polish, product search, line totals, mobile later |
-| 9 | **Field Staff Dashboard** | Basic | **P0:** Today's plan, pending sync, quick actions (DCR, POB) |
-| 10 | **Approvals: DCR, RTP, Weekly** | Done | Push notifications deferred |
+| 9 | **Field Staff Dashboard** | **Done** | Quick actions (DCR, POB, RTP) |
+| 10 | **Approvals: DCR, RTP, Weekly** | Done | **Push on submit/decision** — FCM when `FIREBASE_SERVER_KEY` set |
 
 **Critical E2E path to keep green:**
 
@@ -55,7 +55,7 @@ Run: `pnpm go-live:check` · mobile manual UAT
 | 4 | **DCR Summary** (`REP01`) | Done | — |
 | 5 | **Visit Summary** (`REP02`) | Done | Excel export |
 | 6 | **Missed Calls** (`REP22`) | Done | Excel export |
-| 7 | **Monthly Covered Doctor** (`REP23`) | Not started | **P1** — coverage tracking |
+| 7 | **Monthly Covered Doctor** (`REP23`) | **Done** | — |
 | 8 | **Doctor master** + DCR linkage | Done (masters) | **P0:** ensure every DCR visit ties to doctor; reporting |
 | 9 | **Product master** + POB lines | Done | Rate, division filters on POB |
 | 10 | **Manager dashboard** | Done | Sales KPI tiles (POB, coverage, missed) + approvals |
@@ -64,13 +64,13 @@ Run: `pnpm go-live:check` · mobile manual UAT
 
 ## P1 — Manager & HO (after P0 MR + sales)
 
-| Feature | Notes |
-|---------|--------|
-| Doctor Approval (`MAS11`) | New doctor onboarding |
-| Expense statement + approval | Month-end; keep after sales reports |
-| Remaining MVP reports (attendance, RTP summary, doctor report) | Batch of 3–4 |
-| Excel export on all reports | **Done** — CSV export (Excel-compatible) via `ReportExportButton` |
-| Firebase push on approval | Manager nudges |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Doctor Approval (`MAS11`) + Creation Request (`MAS10`) | **Done** | `/app/doctor-creation-request` → `/app/doctor-approval` |
+| Expense statement + approval polish | **Done** | `PageLayout`, detail drawer, manager approval drill-down |
+| Remaining MVP reports (attendance, RTP summary, doctor report) | **Done** | REP13, REP10, REP18, REP04 |
+| Excel export on all reports | **Done** | CSV export via `ReportExportButton` |
+| Firebase push on approval | **Done (MVP)** | `PushNotificationService` + FCM adapter; mobile FCM SDK still pending |
 
 ---
 
@@ -85,7 +85,7 @@ Run: `pnpm go-live:check` · mobile manual UAT
 | Leave Approval (`TRN10`) | MVP done | Manager can use later |
 | Leave Policy (`SET03`) | MVP done | Admin-only, rare changes |
 | Leave balance / encashment rules | Basic | No complex policy engine |
-| **Mobile leave** | Not started | **P3 — defer** |
+| **Mobile leave** | Not started | **P3 — defer** (explicitly out of scope) |
 | Leave UI (`PageLayout` migration) | Not done | **P3 — defer** |
 | Leave + attendance reports | Not started | **P3 — defer** |
 | Leave on manager dashboard stat | Shown | OK to keep; no new leave features |
@@ -144,7 +144,7 @@ Rules are **config YAML per tenant** (IF coverage low → suggest missed doctor 
 | 4 | Manager sales KPIs + Excel export |
 | 5 | Phase 9.5 rule-based sales suggestions | **Done** — `GET /api/v1/sales-insights/manager` + dashboard cards |
 | 6 | Phase 6 UAT + pilot 40 MRs |
-| 7+ | **Phase 9.5** rule-based sales suggestions → then **10B** semantic layer |
+| 7+ | **Phase 10C** knowledge graph → **10D** chat UI (10B semantic layer **Done**) |
 
 ---
 
