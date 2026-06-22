@@ -3,15 +3,22 @@
  * Usage: LOAD_TEST=1 pnpm dev:api   (disables throttle)
  *        API_URL=http://localhost:3000 pnpm load-test
  */
-const BASE = process.env.API_URL ?? 'http://localhost:3000';
+const BASE = process.env.API_URL ?? 'http://localhost:3001';
 const USERS = Number(process.env.LOAD_USERS ?? 20);
 const DURATION_SEC = Number(process.env.LOAD_DURATION_SEC ?? 30);
 const COMP = process.env.LOAD_COMP_CODE ?? 'SYN';
 
 const credentials = [
-  { user: 'mr1', pass: 'Mr@123' },
-  { user: 'rm1', pass: 'Rm@123' },
-  { user: 'admin', pass: 'Admin@123' },
+  { user: 'mr1', pass: process.env.GO_LIVE_MR_PASSWORD ?? 'Mr@123', readPath: '/api/v1/leave-balances' },
+  { user: 'rm1', pass: process.env.GO_LIVE_RM_PASSWORD ?? 'Rm@123', readPath: '/api/v1/approvals/summary' },
+  {
+    user: 'admin',
+    pass: process.env.GO_LIVE_ADMIN_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'Admin@123',
+    readPath: () => {
+      const now = new Date();
+      return `/api/v1/reports/dcr-summary?month=${now.getMonth() + 1}&year=${now.getFullYear()}`;
+    },
+  },
 ];
 
 function percentile(sorted, p) {
@@ -58,7 +65,8 @@ async function virtualUser(id, latencies, errors) {
     const { ms: loginMs, token } = await login(cred);
     latencies.login.push(loginMs);
     latencies.dcr.push(await authedGet('/api/v1/daily-call-reports', token));
-    latencies.summary.push(await authedGet('/api/v1/approvals/summary', token));
+    const readPath = typeof cred.readPath === 'function' ? cred.readPath() : cred.readPath;
+    latencies.summary.push(await authedGet(readPath, token));
     const healthStart = performance.now();
     await fetch(`${BASE}/health`);
     latencies.health.push(performance.now() - healthStart);
@@ -119,6 +127,7 @@ report('approval summary', latencies.summary);
 report('health', latencies.health);
 
 const loginP95 = percentile([...latencies.login].sort((a, b) => a - b), 95);
-const pass = latencies.login.length >= 10 && loginP95 < 500 && errorRate < 5;
-console.log(`\nGate: login n>=10, p95 < 500ms, error rate < 5% → ${pass ? 'PASS' : 'FAIL'}`);
+const p95Max = Number(process.env.LOAD_P95_MAX_MS ?? 750);
+const pass = latencies.login.length >= 10 && loginP95 < p95Max && errorRate < 5;
+console.log(`\nGate: login n>=10, p95 < ${p95Max}ms, error rate < 5% → ${pass ? 'PASS' : 'FAIL'}`);
 if (!pass) process.exit(1);

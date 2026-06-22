@@ -8,12 +8,15 @@ import { Public } from '../../common/decorators/public.decorator';
 import type { AppLanguage } from '@synchem-sfa/shared-i18n';
 import { AuthService } from './auth.service';
 
+const LOGIN_THROTTLE_LIMIT =
+  process.env.LOAD_TEST === '1' || process.env.APP_ENV === 'dev' ? 10_000 : 10;
+
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: LOGIN_THROTTLE_LIMIT, ttl: 60000 } })
   @Post('token')
   async token(
     @Body() body: Record<string, string>,

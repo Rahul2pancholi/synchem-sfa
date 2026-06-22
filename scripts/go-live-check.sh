@@ -2,7 +2,7 @@
 # Pre-deploy smoke: health + readiness + core API E2E flow
 set -euo pipefail
 
-BASE="${API_URL:-http://localhost:3000}"
+BASE="${API_URL:-http://localhost:3001}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "=== Go-Live Smoke Check ==="

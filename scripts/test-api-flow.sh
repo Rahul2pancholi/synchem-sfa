@@ -2,7 +2,14 @@
 # End-to-end API flow: MR submit → Manager approve (DCR, Leave, Expense)
 set -euo pipefail
 
-BASE="${API_URL:-http://localhost:3000}"
+BASE="${API_URL:-http://localhost:3001}"
+ADMIN_USER="${GO_LIVE_ADMIN_USER:-admin}"
+ADMIN_PASS="${GO_LIVE_ADMIN_PASSWORD:-${SEED_ADMIN_PASSWORD:-Admin@123}}"
+MR_USER="${GO_LIVE_MR_USER:-mr1}"
+MR_PASS="${GO_LIVE_MR_PASSWORD:-Mr@123}"
+RM_USER="${GO_LIVE_RM_USER:-rm1}"
+RM_PASS="${GO_LIVE_RM_PASSWORD:-Rm@123}"
+COMP="${GO_LIVE_COMP_CODE:-SYN}"
 PASS=0
 FAIL=0
 
@@ -88,7 +95,7 @@ ok "API healthy"
 
 # ── MR login ────────────────────────────────────────────────────────────────
 log "Login as mr1 (FS)"
-login mr1 Mr@123 SYN > /dev/null
+login "$MR_USER" "$MR_PASS" "$COMP" > /dev/null
 MR_TOKEN=$(jq -r '.access_token' /tmp/sfa-token.json)
 [[ "$MR_TOKEN" != "null" && -n "$MR_TOKEN" ]] && ok "mr1 login" || bad "mr1 login failed"
 
@@ -168,7 +175,7 @@ fi
 
 # ── RM login ────────────────────────────────────────────────────────────────
 log "Login as rm1 (Manager)"
-login rm1 Rm@123 SYN > /dev/null
+login "$RM_USER" "$RM_PASS" "$COMP" > /dev/null
 RM_TOKEN=$(jq -r '.access_token' /tmp/sfa-token.json)
 [[ "$RM_TOKEN" != "null" && -n "$RM_TOKEN" ]] && ok "rm1 login" || bad "rm1 login failed"
 
@@ -210,13 +217,13 @@ TOTAL=$(echo "$SUMMARY" | jq -r '.data.total')
 ok "Approval summary total pending: $TOTAL"
 
 log "Admin: DCR report"
-login admin Admin@123 SYN > /dev/null
+login "$ADMIN_USER" "$ADMIN_PASS" "$COMP" > /dev/null
 REPORT=$(api_get "/api/v1/reports/dcr-summary?month=${MONTH}&year=${YEAR}")
 REPORT_ROWS=$(echo "$REPORT" | jq '.data.items | length')
 ok "DCR report rows: $REPORT_ROWS"
 
 log "Leave balance after approval (mr1)"
-login mr1 Mr@123 SYN > /dev/null
+login "$MR_USER" "$MR_PASS" "$COMP" > /dev/null
 BALANCES=$(api_get "/api/v1/leave-balances")
 CL_BAL=$(echo "$BALANCES" | jq -r '.data.items[] | select(.leaveType=="CL") | .balance' | head -1)
 ok "mr1 CL balance after approve: $CL_BAL (expected 10 if started at 12, 2-day leave)"

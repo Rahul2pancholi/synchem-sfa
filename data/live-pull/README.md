@@ -31,6 +31,18 @@ export SALESTRIP_MR_PASSWORD='MR@12345'
 
 Or `.env.live-pull` (gitignored) — see `.env.live-pull.example`.
 
+## Seed local DB from pulled JSON
+
+```bash
+pnpm setup:local          # Colima + Postgres (first time)
+pnpm db:migrate
+pnpm live-pull:masters    # if raw/ missing or stale
+pnpm live-pull:normalize  # repair role-list, notifications, stale 404s
+pnpm db:seed:live         # import masters + employees into PostgreSQL
+```
+
+Prerequisite: schema migrated. `db:seed:live` creates menus + SYN company; run `db:seed` first only if you also want demo `mr1`/`rm1` users alongside live employees.
+
 ## Commands
 
 ```bash

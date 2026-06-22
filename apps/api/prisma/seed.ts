@@ -221,8 +221,10 @@ async function main() {
     where: { compCode: 'SYN', routeName: 'Route-A' },
   });
 
-  const specialist = await prisma.specialist.findFirstOrThrow({
-    where: { compCode: 'SYN', specialistName: 'General Physician' },
+  const specialist = await prisma.specialist.upsert({
+    where: { compCode_specialistName: { compCode: 'SYN', specialistName: 'General Physician' } },
+    update: {},
+    create: { compCode: 'SYN', specialistName: 'General Physician' },
   });
 
   await prisma.doctor.upsert({
@@ -275,12 +277,6 @@ async function main() {
       brandId: brand.id,
       divisionId: division.id,
     },
-  });
-
-  await prisma.specialist.upsert({
-    where: { compCode_specialistName: { compCode: 'SYN', specialistName: 'General Physician' } },
-    update: {},
-    create: { compCode: 'SYN', specialistName: 'General Physician' },
   });
 
   await prisma.designation.upsert({
