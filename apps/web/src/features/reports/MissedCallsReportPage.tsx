@@ -153,13 +153,13 @@ export function MissedCallsReportPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={8}>
-                <StatCard label={t('report.missedCallCount')} value={summary.missedCallCount} />
+                <StatCard title={t('report.missedCallCount')} value={summary.missedCallCount} />
               </Col>
               <Col xs={12} md={8}>
-                <StatCard label={t('report.uniqueDoctorsMissed')} value={summary.uniqueDoctors} />
+                <StatCard title={t('report.uniqueDoctorsMissed')} value={summary.uniqueDoctors} />
               </Col>
               <Col xs={12} md={8}>
-                <StatCard label={t('report.employeesWithMisses')} value={summary.uniqueEmployees} />
+                <StatCard title={t('report.employeesWithMisses')} value={summary.uniqueEmployees} />
               </Col>
             </Row>
           </PageSection>

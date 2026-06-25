@@ -48,8 +48,24 @@ model Company {
   leavePolicies LeavePolicy[]
   syncBatches  SyncBatch[]
   insightsChatConfig InsightsChatConfig?
+  tenantFeatures     TenantFeature[]
 
   @@map("companies")
+}
+
+model TenantFeature {
+  id         String   @id @default(uuid()) @db.Uuid
+  compCode   String   @map("comp_code") @db.VarChar(10)
+  featureKey String   @map("feature_key") @db.VarChar(50)
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [compCode], references: [compCode], onDelete: Cascade)
+
+  @@unique([compCode, featureKey])
+  @@index([compCode])
+  @@map("tenant_features")
 }
 
 model CompanySetting {
@@ -85,6 +101,35 @@ model InsightsChatConfig {
   company Company @relation(fields: [compCode], references: [compCode])
 
   @@map("insights_chat_configs")
+}
+
+model ChatSession {
+  id        String   @id @default(uuid()) @db.Uuid
+  compCode  String   @map("comp_code") @db.VarChar(10)
+  empId     String   @map("emp_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  employee Employee      @relation(fields: [empId], references: [id])
+  messages ChatMessage[]
+
+  @@index([compCode, empId, updatedAt])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  compCode     String   @map("comp_code") @db.VarChar(10)
+  role         String   @db.VarChar(20)
+  content      String   @db.Text
+  metadataJson String?  @map("metadata_json") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
 }
 
 model PlatformUser {
@@ -247,6 +292,7 @@ model Employee {
   gpsCheckIns      GpsCheckIn[]
   auditLogs        AuditLog[]
   loginEvents      LoginEvent[]
+  chatSessions     ChatSession[]
 
   @@unique([compCode, userName])
   @@index([compCode, headQuarterId])

@@ -18,6 +18,7 @@ export const PHASE0_MESSAGE_KEYS = [
   'auth.login.invalidCredentials',
   'auth.login.apiError',
   'auth.login.invalidUsernameFormat',
+  'auth.login.companySuspended',
   'auth.forgot.title',
   'auth.forgot.policy',
   'auth.forgot.userName',
@@ -85,6 +86,7 @@ const en: MessageCatalog = {
   'auth.login.invalidCredentials': 'Invalid username, password, or company code',
   'auth.login.apiError': 'Unable to connect to API. Is the server running?',
   'auth.login.invalidUsernameFormat': 'Invalid username format. Use userName,compCode',
+  'auth.login.companySuspended': 'This company account is suspended. Contact your administrator.',
   'auth.forgot.title': 'Forgot Password',
   'auth.forgot.policy':
     'Password must be 8–15 characters and include a number and special character (!@#$%^&*).',
@@ -150,6 +152,7 @@ const hi: MessageCatalog = {
   'auth.login.invalidCredentials': 'गलत यूज़र नाम, पासवर्ड या कंपनी कोड',
   'auth.login.apiError': 'API से कनेक्ट नहीं हो पा रहा। क्या सर्वर चल रहा है?',
   'auth.login.invalidUsernameFormat': 'गलत यूज़र नाम फॉर्मैट। userName,compCode उपयोग करें',
+  'auth.login.companySuspended': 'Ye company account suspend hai. Admin se contact karo.',
   'auth.forgot.title': 'पासवर्ड भूल गए',
   'auth.forgot.policy':
     'पासवर्ड 8–15 अक्षर का हो, एक अंक और विशेष अक्षर (!@#$%^&*) ज़रूरी है।',
@@ -206,6 +209,7 @@ const hinglish: MessageCatalog = {
   'auth.login.invalidCredentials': 'Galat username, password ya company code',
   'auth.login.apiError': 'API connect nahi ho pa raha. Server chal raha hai?',
   'auth.login.invalidUsernameFormat': 'Galat username format. userName,compCode use karo',
+  'auth.login.companySuspended': 'Ye company account suspend hai. Admin se contact karo.',
   'auth.forgot.title': 'Forgot Password',
   'auth.forgot.policy':
     'Password 8–15 characters ka ho, ek number aur special character (!@#$%^&*) zaroori hai.',

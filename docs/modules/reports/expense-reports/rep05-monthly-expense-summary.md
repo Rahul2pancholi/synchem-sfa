@@ -78,10 +78,10 @@ This screen stores or shows these types of information:
 
 ## Clone Checklist
 
-- [ ] Build UI screen at route `/app/report/monthlyExpenseSummary`
+- [x] Build UI screen at route `/app/report/monthlyExpenseSummary`
 - [ ] Create database tables for data listed above
-- [ ] Implement API endpoints
-- [ ] Add role permission check (menu code `REP05`)
+- [x] Implement API endpoints
+- [x] Add role permission check (menu code `REP05`)
 - [ ] Implement workflow steps exactly as above
 - [ ] Add validation rules
 - [ ] Connect notifications if this triggers approval

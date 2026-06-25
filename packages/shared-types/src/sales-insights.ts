@@ -11,6 +11,11 @@ export const SalesInsightRuleIdSchema = z.enum([
   'LOW_POB_ACHIEVEMENT',
   'TEAM_LOW_ACHIEVEMENT',
   'HIGH_VISITS_LOW_ACHIEVEMENT',
+  'FS_LOW_COVERAGE',
+  'FS_MISSED_CALLS',
+  'FS_LOW_POB',
+  'FS_PENDING_SUBMIT',
+  'FS_DCR_DRAFT',
 ]);
 export type SalesInsightRuleId = z.infer<typeof SalesInsightRuleIdSchema>;
 
@@ -23,6 +28,12 @@ export interface SalesInsightCard {
 }
 
 export interface ManagerSalesInsights {
+  month: number;
+  year: number;
+  insights: SalesInsightCard[];
+}
+
+export interface FieldStaffSalesInsights {
   month: number;
   year: number;
   insights: SalesInsightCard[];

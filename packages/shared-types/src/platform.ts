@@ -6,9 +6,20 @@ export const CreateCompanyRequestSchema = z.object({
   industryType: z.string().default('SYN'),
   timezone: z.string().default('Asia/Kolkata'),
   locale: z.string().default('en-IN'),
+  adminUserName: z.string().min(2).max(50).default('admin'),
+  adminPassword: z.string().min(8).max(72).optional(),
+  adminEmail: z.string().email().optional(),
+  adminFirstName: z.string().min(1).max(100).default('Admin'),
 });
 
 export type CreateCompanyRequest = z.infer<typeof CreateCompanyRequestSchema>;
+
+export interface TenantAdminBootstrap {
+  userName: string;
+  compCode: string;
+  loginUsername: string;
+  initialPassword: string;
+}
 
 export const PlatformTokenRequestSchema = z.object({
   email: z.string().email(),

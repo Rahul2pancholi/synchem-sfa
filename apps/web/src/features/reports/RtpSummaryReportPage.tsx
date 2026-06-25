@@ -156,19 +156,19 @@ export function RtpSummaryReportPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('report.rtpSubmitted')} value={summary.totalSubmitted} />
+                <StatCard title={t('report.rtpSubmitted')} value={summary.totalSubmitted} />
               </Col>
               <Col xs={12} md={8} lg={5}>
-                <StatCard label={t('report.rtpApproved')} value={summary.approvedCount} />
+                <StatCard title={t('report.rtpApproved')} value={summary.approvedCount} />
               </Col>
               <Col xs={12} md={8} lg={5}>
-                <StatCard label={t('report.rtpPending')} value={summary.pendingCount} />
+                <StatCard title={t('report.rtpPending')} value={summary.pendingCount} />
               </Col>
               <Col xs={12} md={8} lg={5}>
-                <StatCard label={t('report.rtpDraft')} value={summary.draftCount} />
+                <StatCard title={t('report.rtpDraft')} value={summary.draftCount} />
               </Col>
               <Col xs={12} md={8} lg={5}>
-                <StatCard label={t('report.rtpNotSubmitted')} value={summary.notSubmittedCount} />
+                <StatCard title={t('report.rtpNotSubmitted')} value={summary.notSubmittedCount} />
               </Col>
             </Row>
           </PageSection>

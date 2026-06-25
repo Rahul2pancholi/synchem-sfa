@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Query } from '@nestjs/common';
 import type { JwtPayload } from '@synchem-sfa/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -5,6 +6,7 @@ import { RequireActor } from '../../common/decorators/require-actor.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { ReportsService } from './reports.service';
 
+@ApiTags('reports')
 @Controller('api/v1/reports')
 @RequireActor('tenant')
 export class ReportsController {

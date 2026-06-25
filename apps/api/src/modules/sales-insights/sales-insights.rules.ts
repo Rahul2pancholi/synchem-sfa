@@ -1,4 +1,5 @@
 import {
+  type FieldStaffKpis,
   type ManagerSalesKpis,
   type SalesInsightCard,
   SALES_INSIGHT_THRESHOLDS,
@@ -100,6 +101,96 @@ export function evaluateSalesInsights(
         threshold: t.lowPobAchievementPct,
       },
       actionPath: '/app/report/employeeTargetAchievement',
+    });
+  }
+
+  return insights;
+}
+
+export interface FieldStaffInsightContext {
+  dcrDraftCount: number;
+  pobDraftCount: number;
+}
+
+export function evaluateFieldStaffInsights(
+  kpis: Pick<
+    FieldStaffKpis,
+    | 'coveragePct'
+    | 'missedCallCount'
+    | 'pobAchievementPct'
+    | 'amountTarget'
+    | 'plannedDoctorCalls'
+    | 'pendingSubmitCount'
+  >,
+  context: FieldStaffInsightContext,
+): SalesInsightCard[] {
+  const insights: SalesInsightCard[] = [];
+  const t = SALES_INSIGHT_THRESHOLDS;
+
+  if (kpis.plannedDoctorCalls > 0 && kpis.coveragePct < t.lowCoveragePct) {
+    insights.push({
+      ruleId: 'FS_LOW_COVERAGE',
+      severity: kpis.coveragePct < 50 ? 'critical' : 'warning',
+      messageKey: 'salesInsights.fsLowCoverage',
+      params: { coveragePct: kpis.coveragePct, threshold: t.lowCoveragePct },
+      actionPath: '/app/report/visit-summary',
+    });
+  }
+
+  if (kpis.missedCallCount >= t.missedCallsWarning) {
+    insights.push({
+      ruleId: 'FS_MISSED_CALLS',
+      severity: 'warning',
+      messageKey: 'salesInsights.fsMissedCalls',
+      params: { count: kpis.missedCallCount },
+      actionPath: '/app/report/missedCallReport',
+    });
+  } else if (kpis.missedCallCount > 0) {
+    insights.push({
+      ruleId: 'FS_MISSED_CALLS',
+      severity: 'info',
+      messageKey: 'salesInsights.fsMissedCalls',
+      params: { count: kpis.missedCallCount },
+      actionPath: '/app/report/missedCallReport',
+    });
+  }
+
+  if (kpis.amountTarget > 0 && kpis.pobAchievementPct < t.lowPobAchievementPct) {
+    insights.push({
+      ruleId: 'FS_LOW_POB',
+      severity: kpis.pobAchievementPct < 50 ? 'critical' : 'warning',
+      messageKey: 'salesInsights.fsLowPob',
+      params: { achievementPct: kpis.pobAchievementPct, threshold: t.lowPobAchievementPct },
+      actionPath: '/app/pob/add',
+    });
+  }
+
+  if (kpis.pendingSubmitCount > 0) {
+    insights.push({
+      ruleId: 'FS_PENDING_SUBMIT',
+      severity: kpis.pendingSubmitCount >= 3 ? 'warning' : 'info',
+      messageKey: 'salesInsights.fsPendingSubmit',
+      params: { count: kpis.pendingSubmitCount },
+    });
+  }
+
+  if (context.dcrDraftCount > 0) {
+    insights.push({
+      ruleId: 'FS_DCR_DRAFT',
+      severity: 'info',
+      messageKey: 'salesInsights.fsDcrDraft',
+      params: { count: context.dcrDraftCount },
+      actionPath: '/app/dcrRecord',
+    });
+  }
+
+  if (context.pobDraftCount > 0) {
+    insights.push({
+      ruleId: 'FS_PENDING_SUBMIT',
+      severity: 'info',
+      messageKey: 'salesInsights.fsPobDraft',
+      params: { count: context.pobDraftCount },
+      actionPath: '/app/pob/add',
     });
   }
 

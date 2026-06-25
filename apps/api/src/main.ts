@@ -1,7 +1,9 @@
+import './instrument'; // Sentry must be imported before everything else
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { json, urlencoded } from 'express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/config.service';
 
@@ -21,10 +23,19 @@ async function bootstrap() {
   );
   app.enableCors({ origin: config.corsOrigins, credentials: true });
 
-  if (config.sentryDsn) {
-    // Optional: install @sentry/nestjs and init here when SENTRY_DSN is set
-    app.get(Logger).warn('SENTRY_DSN is set — add @sentry/nestjs init in main.ts for full error tracking');
+  if (config.appEnv !== 'prod') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Synchem SFA API')
+      .setDescription('Pharma Sales Force Automation — REST API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
   }
+
 
   const port = config.port;
   await app.listen(port);

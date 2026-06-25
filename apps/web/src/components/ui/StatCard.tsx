@@ -35,6 +35,7 @@ export function StatCard({
   to,
   suffix,
   info,
+  health,
 }: {
   title: ReactNode;
   value: number | string;
@@ -42,9 +43,15 @@ export function StatCard({
   suffix?: ReactNode;
   /** Simple-language help shown on info icon hover / tap */
   info?: string;
+  /** Traffic-light border when KPI has a clear good/warn/bad state */
+  health?: 'success' | 'warning' | 'error';
 }) {
   const card = (
-    <Card className="stat-card" hoverable={Boolean(to)} variant="borderless">
+    <Card
+      className={health ? `stat-card stat-card--${health}` : 'stat-card'}
+      hoverable={Boolean(to)}
+      variant="borderless"
+    >
       <Statistic title={<StatTitle title={title} info={info} />} value={value} suffix={suffix} />
     </Card>
   );

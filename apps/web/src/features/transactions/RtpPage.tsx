@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Form, InputNumber, Select, Space, Spin, Table, Typography, message } from 'antd';
+import { Button, Card, DatePicker, Form, InputNumber, Select, Space, Spin, Table, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TourProgrammeSummary } from '@synchem-sfa/shared-types';
+import dayjs from 'dayjs';
 import { useI18n } from '../../i18n/I18nProvider';
 import { authHeaders, fetchApi } from '../../lib/api-client';
 import { StatusTag } from './StatusTag';
@@ -10,11 +11,21 @@ interface ListResponse {
   data: { items: TourProgrammeSummary[] };
 }
 
+const WORK_TYPE_OPTIONS = [
+  { value: 'FIELD', label: 'Field Work' },
+  { value: 'MEETING', label: 'Meeting' },
+  { value: 'HOLIDAY', label: 'Holiday' },
+  { value: 'LEAVE', label: 'Leave' },
+];
+
+function formatMonth(month: number, year: number) {
+  return dayjs(`${year}-${month}-01`).format('MMM YYYY');
+}
+
 export function RtpPage() {
   const { t, languageHeader } = useI18n();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
-  const now = new Date();
 
   const listQuery = useQuery({
     queryKey: ['tour-programmes'],
@@ -68,7 +79,7 @@ export function RtpPage() {
     {
       title: t('txn.rtp.month'),
       key: 'month',
-      render: (_, row) => `${row.planMonth}/${row.planYear}`,
+      render: (_, row) => formatMonth(row.planMonth, row.planYear),
     },
     { title: t('txn.rtp.dayOfMonth'), dataIndex: 'dayCount', key: 'dayCount' },
     { title: t('txn.common.status'), key: 'status', render: (_, row) => <StatusTag status={row.approveStatus} /> },
@@ -94,11 +105,12 @@ export function RtpPage() {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ planMonth: now.getMonth() + 1, planYear: now.getFullYear(), workType: 'FIELD' }}
+          initialValues={{ planPeriod: dayjs(), workType: 'FIELD' }}
           onFinish={(values) => {
+            const period = values.planPeriod as dayjs.Dayjs;
             createMutation.mutate({
-              planMonth: values.planMonth,
-              planYear: values.planYear,
+              planMonth: period.month() + 1,
+              planYear: period.year(),
               days: [
                 {
                   dayOfMonth: values.dayOfMonth,
@@ -109,24 +121,14 @@ export function RtpPage() {
             });
           }}
         >
-          <Form.Item name="planMonth" label={t('txn.rtp.month')} rules={[{ required: true }]}>
-            <InputNumber min={1} max={12} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="planYear" label={t('txn.rtp.year')} rules={[{ required: true }]}>
-            <InputNumber min={2020} max={2100} style={{ width: '100%' }} />
+          <Form.Item name="planPeriod" label={t('txn.rtp.month')} rules={[{ required: true }]}>
+            <DatePicker picker="month" format="MMM YYYY" style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="dayOfMonth" label={t('txn.rtp.dayOfMonth')} rules={[{ required: true }]}>
             <InputNumber min={1} max={31} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="workType" label={t('txn.rtp.workType')}>
-            <Select
-              options={[
-                { value: 'FIELD', label: 'FIELD' },
-                { value: 'MEETING', label: 'MEETING' },
-                { value: 'HOLIDAY', label: 'HOLIDAY' },
-                { value: 'LEAVE', label: 'LEAVE' },
-              ]}
-            />
+            <Select options={WORK_TYPE_OPTIONS} />
           </Form.Item>
           <Form.Item name="routeId" label={t('txn.rtp.route')}>
             <Select

@@ -7,8 +7,10 @@
 0b. **MVP screens:** [19-MVP-SCREEN-LIST.md](./19-MVP-SCREEN-LIST.md) — formal 6-month go-live checklist
 0c. **⭐ Current focus:** [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md) — MR journey + sales (leave = P3 low)
 0d. **Go-live runbook:** [23-PHASE6-GO-LIVE.md](./23-PHASE6-GO-LIVE.md) — UAT, deploy, load test, rollout
-0e. **AI chatbot (Phase 10):** [25-AI-ANALYTICS-CHATBOT-PLAN.md](./25-AI-ANALYTICS-CHATBOT-PLAN.md) — 10A–10F; config done, chat UI = 10D
+0e. **AI chatbot (Phase 10):** [25-AI-ANALYTICS-CHATBOT-PLAN.md](./25-AI-ANALYTICS-CHATBOT-PLAN.md) — **10A + 10B Done**; chat UI = 10D
 0f. **Login device analytics:** [26-LOGIN-DEVICE-ANALYTICS-PLAN.md](./26-LOGIN-DEVICE-ANALYTICS-PLAN.md) — device capture, audit, admin ADM06
+0g. **Platform super-admin + chat-first:** [27-PLATFORM-SUPERADMIN-CHAT-DASHBOARD-PLAN.md](./27-PLATFORM-SUPERADMIN-CHAT-DASHBOARD-PLAN.md) — tenant features, AI drawer, smart dashboards
+0h. **⭐ Client product simplify:** [28-CLIENT-PRODUCT-SIMPLIFY-PLAN.md](./28-CLIENT-PRODUCT-SIMPLIFY-PLAN.md) — fewer screens, hubs, launch plan
 0d. **Mobile sync:** [20-OFFLINE-SYNC-PROTOCOL.md](./20-OFFLINE-SYNC-PROTOCOL.md)
 0d. **OpenAPI v1:** [openapi/sfa-api-v1.yaml](../openapi/sfa-api-v1.yaml)
 0e. **Prisma schema v1:** [prisma/schema.prisma](../prisma/schema.prisma)
@@ -36,6 +38,7 @@
 | **[18-DEVELOPMENT-STANDARDS.md](./18-DEVELOPMENT-STANDARDS.md)** | **⭐ Strict coding rules — modularity, DRY, tests, atomicity** |
 | [19-MVP-SCREEN-LIST.md](./19-MVP-SCREEN-LIST.md) | **MVP screens — 6-month go-live checklist** |
 | [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md) | **⭐ MR journey + sales — current P0 focus (leave = P3)** |
+| [28-CLIENT-PRODUCT-SIMPLIFY-PLAN.md](./28-CLIENT-PRODUCT-SIMPLIFY-PLAN.md) | **⭐ Client product — screen hubs, role nav, launch sprints** |
 | [23-PHASE6-GO-LIVE.md](./23-PHASE6-GO-LIVE.md) | **Go-live — UAT, deploy, load test, rollout** |
 | [25-AI-ANALYTICS-CHATBOT-PLAN.md](./25-AI-ANALYTICS-CHATBOT-PLAN.md) | **Phase 10 — AI chatbot (10A–10F)** |
 | [20-OFFLINE-SYNC-PROTOCOL.md](./20-OFFLINE-SYNC-PROTOCOL.md) | **Mobile offline sync protocol** |

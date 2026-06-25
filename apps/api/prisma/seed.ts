@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { defaultTenantFeatures, TENANT_FEATURE_KEYS } from '@synchem-sfa/shared-types';
 import { SEED_MENUS } from './seed-data/menus';
 import { templatePermission } from './seed-data/role-permission-templates';
+import { seedDemoMonth } from './seed-data/demo-month';
 
 const prisma = new PrismaClient();
 
@@ -51,6 +53,12 @@ async function seedMenus() {
     menuIds.set(menu.menuCode, record.id);
   }
 
+  const activeCodes = new Set(SEED_MENUS.map((menu) => menu.menuCode));
+  await prisma.menu.updateMany({
+    where: { menuCode: { notIn: [...activeCodes] } },
+    data: { active: false },
+  });
+
   return menuIds;
 }
 
@@ -95,6 +103,18 @@ async function seedAdminPermissions(compCode: string, roleId: string) {
   await seedRolePermissions(compCode, roleId, 'AD');
 }
 
+async function seedTenantFeatures(compCode: string) {
+  const defaults = defaultTenantFeatures();
+  await prisma.tenantFeature.createMany({
+    data: TENANT_FEATURE_KEYS.map((featureKey) => ({
+      compCode,
+      featureKey,
+      enabled: defaults[featureKey],
+    })),
+    skipDuplicates: true,
+  });
+}
+
 async function main() {
   const password = process.env.SEED_ADMIN_PASSWORD ?? 'Admin@123';
   const platformPassword = process.env.SEED_PLATFORM_PASSWORD ?? 'Platform@123';
@@ -113,6 +133,8 @@ async function main() {
       locale: 'en-IN',
     },
   });
+
+  await seedTenantFeatures('SYN');
 
   const role = await prisma.role.upsert({
     where: { compCode_roleName: { compCode: 'SYN', roleName: 'ADMIN' } },
@@ -477,7 +499,23 @@ async function main() {
   await seedRolePermissions('SYN', manRole.id, 'MAN');
   await seedRolePermissions('SYN', mrRole.id, 'FS');
 
-  console.log('Seed complete: SYN tenant + admin (admin / Admin@123) + MR (mr1 / Mr@123) + RM (rm1 / Rm@123)');
+  const adminEmployee = await prisma.employee.findFirstOrThrow({
+    where: { compCode: 'SYN', userName: 'admin' },
+  });
+
+  await seedDemoMonth(prisma, {
+    compCode: 'SYN',
+    mrRoleId: mrRole.id,
+    rmEmployeeId: rmEmployee.id,
+    hqId: hq.id,
+    routeId: route.id,
+    mrHierarchyId: mrHierarchy.id,
+    mrPasswordHash,
+    brandId: brand.id,
+    divisionId: division.id,
+  }, adminEmployee.id);
+
+  console.log('Seed complete: SYN tenant + admin (admin / Admin@123) + MR (mr1..mr10 / Mr@123) + RM (rm1 / Rm@123)');
   console.log('Platform super admin: superadmin@synchem.co / Platform@123');
 }
 

@@ -5,6 +5,7 @@ export const PHASE4_MESSAGE_KEYS = [
   'approval.rtp.title',
   'approval.weekly.title',
   'approval.submitter',
+  'approval.reportingManager',
   'approval.summary',
   'approval.submittedAt',
   'approval.approve',
@@ -16,6 +17,7 @@ export const PHASE4_MESSAGE_KEYS = [
   'approval.empty',
   'approval.pendingSummary',
   'approval.totalPending',
+  'approval.noPending',
   'approval.statHelp.dcr',
   'approval.statHelp.rtp',
   'approval.statHelp.weekly',
@@ -45,6 +47,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.rtp.title': 'Tour Programme Approval',
     'approval.weekly.title': 'Weekly Plan Approval',
     'approval.submitter': 'Submitted by',
+    'approval.reportingManager': 'Reporting manager',
     'approval.summary': 'Summary',
     'approval.submittedAt': 'Submitted at',
     'approval.approve': 'Approve',
@@ -56,6 +59,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'No pending approvals',
     'approval.pendingSummary': 'Pending approvals',
     'approval.totalPending': 'Total pending',
+    'approval.noPending': 'No pending approvals — you are all caught up.',
     'approval.statHelp.dcr':
       'Daily call reports from your team that are submitted and waiting for your approval.',
     'approval.statHelp.rtp':
@@ -88,6 +92,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.rtp.title': 'टूर प्रोग्राम अनुमोदन',
     'approval.weekly.title': 'साप्ताहिक योजना अनुमोदन',
     'approval.submitter': 'जमा करने वाला',
+    'approval.reportingManager': 'रिपोर्टिंग मैनेजर',
     'approval.summary': 'सारांश',
     'approval.submittedAt': 'जमा समय',
     'approval.approve': 'अनुमोदित',
@@ -99,6 +104,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'कोई लंबित अनुमोदन नहीं',
     'approval.pendingSummary': 'लंबित अनुमोदन',
     'approval.totalPending': 'कुल लंबित',
+    'approval.noPending': 'कोई pending approval नहीं — सब clear है।',
     'approval.statHelp.dcr':
       'आपकी टीम के डेली कॉल रिपोर्ट जो जमा हो चुके हैं और आपके अनुमोदन की प्रतीक्षा में हैं।',
     'approval.statHelp.rtp':
@@ -131,6 +137,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.rtp.title': 'Tour Programme Approval',
     'approval.weekly.title': 'Weekly Plan Approval',
     'approval.submitter': 'Submitted by',
+    'approval.reportingManager': 'Reporting manager',
     'approval.summary': 'Summary',
     'approval.submittedAt': 'Submitted at',
     'approval.approve': 'Approve',
@@ -142,6 +149,7 @@ export const PHASE4_MESSAGES: Record<AppLanguage, Record<Phase4MessageKey, strin
     'approval.empty': 'Koi pending approval nahi',
     'approval.pendingSummary': 'Pending approvals',
     'approval.totalPending': 'Total pending',
+    'approval.noPending': 'Koi pending approval nahi — sab clear hai.',
     'approval.statHelp.dcr':
       'Team ke daily call reports jo submit ho chuke hain aur aapke approve ka wait kar rahe hain.',
     'approval.statHelp.rtp':

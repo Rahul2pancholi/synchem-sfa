@@ -72,6 +72,7 @@ export class PrismaEmployeeAuthRepository implements EmployeeAuthRepositoryPort 
       roleName: employee.role.roleName,
       companyName: employee.company.compName,
       industryType: employee.company.industryType,
+      companyActive: employee.company.active,
     };
   }
 }

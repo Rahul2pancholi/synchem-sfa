@@ -48,6 +48,7 @@ export function LoginPage() {
       localStorage.setItem('compName', data.compName);
       localStorage.setItem('employeeObj', data.employeeObj);
       localStorage.setItem('menuList', data.menuList ?? '[]');
+      localStorage.setItem('permissionMenuList', data.permissionMenuList ?? data.menuList ?? '[]');
       localStorage.setItem('configurationSetting', data.configurationSetting ?? '{}');
 
       const home = ROLE_DASHBOARD_ROUTES[data.roleType] ?? '/app';
@@ -71,7 +72,6 @@ export function LoginPage() {
             form={form}
             layout="vertical"
             size="large"
-            initialValues={{ userName: 'admin', password: 'Admin@123', compCode: 'SYN' }}
             onFinish={handleSubmit}
           >
             <Form.Item

@@ -1,23 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Button,
-  Card,
-  Empty,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-  Spin,
-  Table,
-  Tag,
-  Typography,
-  message,
-} from 'antd';
+import { Button, Form, Input, InputNumber, Select, Spin, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { HierarchySummary, HierarchyTreeNode } from '@synchem-sfa/shared-types';
+import { PageLayout } from '../../components/ui/PageLayout';
+import { PageSection } from '../../components/ui/PageSection';
+import { ResponsiveTable } from '../../components/ui/ResponsiveTable';
 import { useI18n } from '../../i18n/I18nProvider';
 import { authHeaders, fetchApi } from '../../lib/api-client';
+import { ReportingHierarchyTree } from './ReportingHierarchyTree';
 
 interface ListResponse {
   data: { items: HierarchySummary[] };
@@ -25,16 +15,6 @@ interface ListResponse {
 
 interface TreeResponse {
   data: { tree: HierarchyTreeNode[] };
-}
-
-function formatTree(nodes: HierarchyTreeNode[], depth = 0): string {
-  return nodes
-    .map((node) => {
-      const line = `${'  '.repeat(depth)}- ${node.hierarchyCode} (${node.hierarchyType})`;
-      const children = node.children?.length ? `\n${formatTree(node.children, depth + 1)}` : '';
-      return line + children;
-    })
-    .join('\n');
 }
 
 export function HierarchyMasterPage() {
@@ -54,7 +34,7 @@ export function HierarchyMasterPage() {
     queryKey: ['hierarchies-tree'],
     queryFn: async () => {
       const data = await fetchApi<TreeResponse>('/api/v1/hierarchies/reporting', languageHeader);
-      return formatTree(data.data.tree ?? []);
+      return data.data.tree ?? [];
     },
   });
 
@@ -119,15 +99,12 @@ export function HierarchyMasterPage() {
   ];
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      <Typography.Title level={3} style={{ margin: 0 }}>
-        {t('masters.hierarchy.title')}
-      </Typography.Title>
-
-      <Card title={t('masters.hierarchy.createTitle')}>
+    <PageLayout title={t('masters.hierarchy.title')}>
+      <PageSection title={t('masters.hierarchy.createTitle')}>
         <Form
           form={form}
           layout="vertical"
+          className="form-grid"
           initialValues={{ hierarchyType: 'MR', hierarchyLevel: 4 }}
           onFinish={(values) =>
             createMutation.mutate({
@@ -137,49 +114,46 @@ export function HierarchyMasterPage() {
             })
           }
         >
-          <Space wrap style={{ width: '100%' }}>
-            <Form.Item name="hierarchyCode" label={t('masters.hierarchy.code')} rules={[{ required: true }]}>
-              <Input style={{ width: 180 }} />
-            </Form.Item>
-            <Form.Item name="hierarchyType" label={t('masters.hierarchy.type')} rules={[{ required: true }]}>
-              <Select style={{ width: 120 }} options={['AD', 'RM', 'ZM', 'MR'].map((v) => ({ value: v, label: v }))} />
-            </Form.Item>
-            <Form.Item name="hierarchyLevel" label={t('masters.hierarchy.level')} rules={[{ required: true }]}>
-              <InputNumber min={1} max={10} />
-            </Form.Item>
-            <Form.Item name="reportingHierarchyId" label={t('masters.hierarchy.parent')}>
-              <Select
-                allowClear
-                style={{ width: 220 }}
-                placeholder={t('masters.hierarchy.noParent')}
-                options={(listQuery.data ?? [])
-                  .filter((item) => item.active)
-                  .map((item) => ({
-                    value: item.id,
-                    label: `${item.hierarchyCode} (${item.hierarchyType})`,
-                  }))}
-              />
-            </Form.Item>
-            <Form.Item label=" ">
-              <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
-                {t('common.create')}
-              </Button>
-            </Form.Item>
-          </Space>
+          <Form.Item name="hierarchyCode" label={t('masters.hierarchy.code')} rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="hierarchyType" label={t('masters.hierarchy.type')} rules={[{ required: true }]}>
+            <Select options={['AD', 'RM', 'ZM', 'MR'].map((v) => ({ value: v, label: v }))} />
+          </Form.Item>
+          <Form.Item name="hierarchyLevel" label={t('masters.hierarchy.level')} rules={[{ required: true }]}>
+            <InputNumber min={1} max={10} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="reportingHierarchyId" label={t('masters.hierarchy.parent')}>
+            <Select
+              allowClear
+              placeholder={t('masters.hierarchy.noParent')}
+              options={(listQuery.data ?? [])
+                .filter((item) => item.active)
+                .map((item) => ({
+                  value: item.id,
+                  label: `${item.hierarchyCode} (${item.hierarchyType})`,
+                }))}
+            />
+          </Form.Item>
+          <Form.Item label=" ">
+            <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+              {t('common.create')}
+            </Button>
+          </Form.Item>
         </Form>
-      </Card>
+      </PageSection>
 
-      <Card title={t('masters.hierarchy.reportingTree')}>
-        {treeQuery.isLoading ? <Spin /> : <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{treeQuery.data || t('common.loading')}</pre>}
-      </Card>
+      <PageSection title={t('masters.hierarchy.reportingTree')}>
+        {treeQuery.isLoading ? <Spin /> : <ReportingHierarchyTree tree={treeQuery.data ?? []} />}
+      </PageSection>
 
-      <Card>
+      <PageSection>
         {listQuery.isLoading ? (
           <Spin />
         ) : (
-          <Table rowKey="id" columns={columns} dataSource={listQuery.data ?? []} pagination={{ pageSize: 20 }} />
+          <ResponsiveTable rowKey="id" columns={columns} dataSource={listQuery.data ?? []} />
         )}
-      </Card>
-    </Space>
+      </PageSection>
+    </PageLayout>
   );
 }

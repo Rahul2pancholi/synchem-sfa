@@ -43,6 +43,7 @@ export interface ApprovalPendingItem {
   submittedBy: string;
   submitterName: string;
   submitterUserName: string;
+  reportingManagerName: string;
   summary: string;
   remarks: string | null;
 }

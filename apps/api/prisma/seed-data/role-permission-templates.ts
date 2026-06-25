@@ -25,7 +25,7 @@ const NONE: PermissionFlags = {
   canPrint: false,
 };
 
-/** Field staff — dashboard + transactions only. */
+/** Field staff — dashboard + core field work only (no leave/expense in daily nav). */
 const FS_VIEW_CODES = new Set([
   'DSH',
   'DSH01',
@@ -34,12 +34,28 @@ const FS_VIEW_CODES = new Set([
   'TRN03',
   'TRN24',
   'TRN04',
-  'TRN09',
-  'TRN20',
   'MAS10',
 ]);
 
-const FS_WRITE_CODES = new Set(['TRN01', 'TRN03', 'TRN24', 'TRN04', 'TRN09', 'TRN20', 'MAS10']);
+const FS_WRITE_CODES = new Set(['TRN01', 'TRN03', 'TRN24', 'TRN04', 'MAS10']);
+
+const MAN_EXCLUDED_MENU_CODES = new Set([
+  'TRN01',
+  'TRN03',
+  'TRN24',
+  'TRN04',
+  'TRN09',
+  'TRN20',
+  'MASIMP',
+  'MASBLK',
+  'MASBLK01',
+  'MASBLK02',
+  'MASBLK03',
+  'MASBLK04',
+  'MASBLK05',
+  'MASBLK06',
+  'MASBLK07',
+]);
 
 /** Manager — dashboards, masters (no delete), transactions, reports folder. */
 const MAN_VIEW_PREFIXES = ['DSH', 'MAS', 'TRN', 'REP', 'ADM', 'SET', 'APP'];
@@ -79,6 +95,10 @@ export function templatePermission(
 
   // MAN
   if (menuCode === 'ADM01' || menuCode === 'ADM04' || menuCode === 'ADM05' || menuCode === 'ADM06') {
+    return NONE;
+  }
+
+  if (MAN_EXCLUDED_MENU_CODES.has(menuCode)) {
     return NONE;
   }
 

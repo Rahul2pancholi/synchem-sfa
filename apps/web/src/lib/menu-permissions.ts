@@ -14,6 +14,16 @@ const ACTION_KEY: Record<PermissionAction, keyof LegacyMenuItem> = {
 const EMPTY_MENUS: LegacyMenuItem[] = [];
 
 export function loadMenuListFromStorage(): LegacyMenuItem[] {
+  const raw = localStorage.getItem('permissionMenuList') ?? localStorage.getItem('menuList');
+  if (!raw) return EMPTY_MENUS;
+  try {
+    return JSON.parse(raw) as LegacyMenuItem[];
+  } catch {
+    return EMPTY_MENUS;
+  }
+}
+
+export function loadNavMenuListFromStorage(): LegacyMenuItem[] {
   const raw = localStorage.getItem('menuList');
   if (!raw) return EMPTY_MENUS;
   try {
@@ -46,4 +56,8 @@ export function hasMenuPermission(menuCode: string, action: PermissionAction): b
 
 export function saveMenuListToStorage(menuListJson: string) {
   localStorage.setItem('menuList', menuListJson);
+}
+
+export function savePermissionMenuListToStorage(permissionMenuListJson: string) {
+  localStorage.setItem('permissionMenuList', permissionMenuListJson);
 }

@@ -13,15 +13,24 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
+    "@radix-ui/react-slot": "^1.3.0",
+    "@sentry/react": "^10.60.0",
     "@synchem-sfa/shared-i18n": "workspace:*",
     "@synchem-sfa/shared-types": "workspace:*",
+    "@tailwindcss/vite": "^4.3.1",
     "@tanstack/react-query": "^5.101.0",
     "antd": "^6.4.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.21",
+    "framer-motion": "^12.41.0",
     "papaparse": "^5.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "recharts": "^3.9.0",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",
@@ -32,6 +41,7 @@
     "jsdom": "^26.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^3.2.4"
   }
 }

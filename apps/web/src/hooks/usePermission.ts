@@ -12,7 +12,8 @@ let cachedRaw: string | null | undefined;
 let cachedSnapshot: LegacyMenuItem[] = EMPTY_MENUS;
 
 function readMenuSnapshot(): LegacyMenuItem[] {
-  const raw = localStorage.getItem('menuList');
+  const raw =
+    localStorage.getItem('permissionMenuList') ?? localStorage.getItem('menuList');
   if (raw === cachedRaw) {
     return cachedSnapshot;
   }

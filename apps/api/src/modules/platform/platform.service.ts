@@ -11,8 +11,12 @@ import * as bcrypt from 'bcrypt';
 import {
   apiSuccess,
   CreateCompanyRequestSchema,
+  defaultTenantFeatures,
+  TENANT_FEATURE_KEYS,
+  UpdateTenantFeaturesSchema,
   UpdateCompanyRequestSchema,
   type JwtPayload,
+  type TenantFeatureState,
 } from '@synchem-sfa/shared-types';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 import { AuditService } from '../audit/audit.service';
@@ -113,18 +117,54 @@ export class PlatformService {
     });
 
     const roleId = await this.seedTenantDefaults(compCode);
+    await this.seedTenantFeatures(compCode);
+    await this.seedTenantSettings(compCode);
+
+    const adminPassword =
+      input.adminPassword ??
+      process.env.TENANT_DEFAULT_ADMIN_PASSWORD ??
+      process.env.SEED_ADMIN_PASSWORD ??
+      'Admin@123';
+    const adminUserName = input.adminUserName.toLowerCase();
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+    await this.prisma.employee.create({
+      data: {
+        compCode,
+        userName: adminUserName,
+        passwordHash,
+        firstName: input.adminFirstName,
+        lastName: 'Admin',
+        email: input.adminEmail ?? null,
+        roleId,
+        active: true,
+        isFirstLogin: true,
+      },
+    });
+
+    const adminBootstrap = {
+      userName: adminUserName,
+      compCode,
+      loginUsername: `${adminUserName},${compCode}`,
+      initialPassword: adminPassword,
+    };
 
     await this.auditService.log({
       compCode: 'PLATFORM',
       entityType: 'company',
       entityId: roleId,
       action: 'CREATE',
-      newValues: { ...company },
+      newValues: { ...company, adminUserName },
     });
 
-    this.logger.log({ module: 'platform', action: 'createCompany', compCode: company.compCode });
+    this.logger.log({
+      module: 'platform',
+      action: 'createCompany',
+      compCode: company.compCode,
+      adminUserName,
+    });
 
-    return apiSuccess(company);
+    return apiSuccess({ ...company, adminBootstrap });
   }
 
   async updateCompany(compCode: string, body: unknown) {
@@ -155,6 +195,89 @@ export class PlatformService {
     }
 
     return apiSuccess(company);
+  }
+
+  async getCompanyFeatures(compCode: string) {
+    const existing = await this.companyRepo.findByCompCode(compCode);
+    if (!existing) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const rows = await this.prisma.tenantFeature.findMany({ where: { compCode } });
+    const features = defaultTenantFeatures();
+
+    for (const row of rows) {
+      if (TENANT_FEATURE_KEYS.includes(row.featureKey as (typeof TENANT_FEATURE_KEYS)[number])) {
+        features[row.featureKey as keyof TenantFeatureState] = row.enabled;
+      }
+    }
+
+    return apiSuccess({ compCode, features });
+  }
+
+  async updateCompanyFeatures(compCode: string, body: unknown) {
+    const parsed = UpdateTenantFeaturesSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new ConflictException(parsed.error.message);
+    }
+
+    const existing = await this.companyRepo.findByCompCode(compCode);
+    if (!existing) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const entries = Object.entries(parsed.data.features) as [string, boolean][];
+
+    await this.prisma.$transaction(
+      entries.map(([featureKey, enabled]) =>
+        this.prisma.tenantFeature.upsert({
+          where: { compCode_featureKey: { compCode, featureKey } },
+          create: { compCode, featureKey, enabled },
+          update: { enabled },
+        }),
+      ),
+    );
+
+    await this.auditService.log({
+      compCode: 'PLATFORM',
+      entityType: 'tenant_features',
+      entityId: compCode,
+      action: 'UPDATE',
+      newValues: parsed.data.features,
+    });
+
+    return this.getCompanyFeatures(compCode);
+  }
+
+  private async seedTenantFeatures(compCode: string) {
+    const defaults = defaultTenantFeatures();
+    await this.prisma.tenantFeature.createMany({
+      data: TENANT_FEATURE_KEYS.map((featureKey) => ({
+        compCode,
+        featureKey,
+        enabled: defaults[featureKey],
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  private async seedTenantSettings(compCode: string) {
+    for (const [settingKey, settingValue] of [
+      ['SET001', '1'],
+      ['SET002', '1'],
+      ['SET010', 'Asia/Kolkata'],
+    ] as const) {
+      await this.prisma.companySetting.upsert({
+        where: { compCode_settingKey: { compCode, settingKey } },
+        update: { settingValue },
+        create: {
+          compCode,
+          settingKey,
+          settingValue,
+          dataType: 'string',
+        },
+      });
+    }
   }
 
   private async seedTenantDefaults(compCode: string): Promise<string> {

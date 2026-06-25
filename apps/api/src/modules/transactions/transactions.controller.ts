@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import type { JwtPayload } from '@synchem-sfa/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -5,6 +6,7 @@ import { RequireActor } from '../../common/decorators/require-actor.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { TransactionsService } from './transactions.service';
 
+@ApiTags('transactions')
 @Controller('api/v1')
 @RequireActor('tenant')
 export class TransactionsController {

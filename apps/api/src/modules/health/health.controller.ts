@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get } from '@nestjs/common';
 import { AppConfigService } from '../../config/config.service';
 import { RedisService } from '../../infrastructure/cache/redis.module';
@@ -5,6 +6,7 @@ import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 import { apiSuccess } from '@synchem-sfa/shared-types';
 import { Public } from '../../common/decorators/public.decorator';
 
+@ApiTags('health')
 @Controller()
 export class HealthController {
   constructor(

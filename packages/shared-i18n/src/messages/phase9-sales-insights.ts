@@ -10,6 +10,14 @@ export const PHASE9_SALES_INSIGHTS_KEYS = [
   'salesInsights.lowPobAchievement',
   'salesInsights.teamLowAchievement',
   'salesInsights.highVisitsLowAchievement',
+  'salesInsights.fsLowCoverage',
+  'salesInsights.fsMissedCalls',
+  'salesInsights.fsLowPob',
+  'salesInsights.fsPendingSubmit',
+  'salesInsights.fsDcrDraft',
+  'salesInsights.fsPobDraft',
+  'salesInsights.fsTitle',
+  'salesInsights.fsEmpty',
 ] as const;
 
 export type Phase9SalesInsightsKey = (typeof PHASE9_SALES_INSIGHTS_KEYS)[number];
@@ -31,6 +39,16 @@ const en: Catalog = {
     '{count} MR(s) are below {threshold}% POB achievement — coach on product focus.',
   'salesInsights.highVisitsLowAchievement':
     'High visits ({visits}) but low POB ({achievementPct}%) — improve conversion on calls.',
+  'salesInsights.fsTitle': 'What to improve',
+  'salesInsights.fsEmpty': 'Great — no urgent fixes this month.',
+  'salesInsights.fsLowCoverage':
+    'Your doctor coverage is {coveragePct}% (target {threshold}%+) — complete planned visits.',
+  'salesInsights.fsMissedCalls': '{count} missed doctor call(s) — catch up on weekly plan.',
+  'salesInsights.fsLowPob':
+    'POB achievement is {achievementPct}% (target {threshold}%+) — focus on orders today.',
+  'salesInsights.fsPendingSubmit': '{count} item(s) waiting to submit — clear drafts soon.',
+  'salesInsights.fsDcrDraft': '{count} DCR draft(s) — submit for approval.',
+  'salesInsights.fsPobDraft': '{count} order draft(s) — submit POB.',
 };
 
 const hinglish: Catalog = {
@@ -48,6 +66,16 @@ const hinglish: Catalog = {
     '{count} MR {threshold}% se kam POB achievement par hain — product focus coaching.',
   'salesInsights.highVisitsLowAchievement':
     'Visits zyada ({visits}) par POB kam ({achievementPct}%) — conversion improve karo.',
+  'salesInsights.fsTitle': 'Kya improve karna hai',
+  'salesInsights.fsEmpty': 'Badhiya — is mahine koi urgent fix nahi.',
+  'salesInsights.fsLowCoverage':
+    'Aapki doctor coverage {coveragePct}% hai (target {threshold}%+) — planned visits complete karo.',
+  'salesInsights.fsMissedCalls': '{count} missed doctor call — weekly plan catch up karo.',
+  'salesInsights.fsLowPob':
+    'POB achievement {achievementPct}% hai (target {threshold}%+) — aaj orders par focus karo.',
+  'salesInsights.fsPendingSubmit': '{count} item submit pending — drafts jaldi clear karo.',
+  'salesInsights.fsDcrDraft': '{count} DCR draft — approval ke liye submit karo.',
+  'salesInsights.fsPobDraft': '{count} order draft — POB submit karo.',
 };
 
 const hi: Catalog = { ...hinglish };

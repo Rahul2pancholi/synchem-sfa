@@ -5,7 +5,7 @@ import type { ColumnsType } from 'antd/es/table';
 import type { RoleDetailSummary, RolePermissionRow } from '@synchem-sfa/shared-types';
 import { useI18n } from '../../i18n/I18nProvider';
 import { authHeaders, fetchApi } from '../../lib/api-client';
-import { saveMenuListToStorage } from '../../lib/menu-permissions';
+import { saveMenuListToStorage, savePermissionMenuListToStorage } from '../../lib/menu-permissions';
 import { notifyMenuListUpdated } from '../../hooks/usePermission';
 
 interface RoleListResponse {
@@ -90,11 +90,14 @@ export function RoleSettingPage() {
       message.success(t('access.permission.saveSuccess'));
       await queryClient.invalidateQueries({ queryKey: ['role-permissions', roleId] });
 
-      const menuRes = await fetchApi<{ data: { menuList: string } }>(
+      const menuRes = await fetchApi<{ data: { menuList: string; permissionMenuList?: string } }>(
         '/api/v1/menus/me',
         languageHeader,
       );
       saveMenuListToStorage(menuRes.data.menuList);
+      if (menuRes.data.permissionMenuList) {
+        savePermissionMenuListToStorage(menuRes.data.permissionMenuList);
+      }
       notifyMenuListUpdated();
     },
     onError: () => message.error(t('access.permission.saveFailed')),

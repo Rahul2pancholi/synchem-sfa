@@ -45,4 +45,16 @@ export class PlatformController {
   updateCompany(@Param('compCode') compCode: string, @Body() body: Record<string, unknown>) {
     return this.platformService.updateCompany(compCode, body);
   }
+
+  @Get('companies/:compCode/features')
+  @RequireActor('platform')
+  getCompanyFeatures(@Param('compCode') compCode: string) {
+    return this.platformService.getCompanyFeatures(compCode);
+  }
+
+  @Patch('companies/:compCode/features')
+  @RequireActor('platform')
+  updateCompanyFeatures(@Param('compCode') compCode: string, @Body() body: Record<string, unknown>) {
+    return this.platformService.updateCompanyFeatures(compCode, body);
+  }
 }

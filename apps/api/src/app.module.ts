@@ -23,6 +23,7 @@ import { MonthlyCycleModule } from './modules/monthly-cycle/monthly-cycle.module
 import { ReportsModule } from './modules/reports/reports.module';
 import { SalesInsightsModule } from './modules/sales-insights/sales-insights.module';
 import { InsightsConfigModule } from './modules/insights-config/insights-config.module';
+import { InsightsChatModule } from './modules/insights-chat/insights-chat.module';
 import { SecurityModule } from './modules/security/security.module';
 
 @Module({
@@ -74,6 +75,7 @@ import { SecurityModule } from './modules/security/security.module';
     ReportsModule,
     SalesInsightsModule,
     InsightsConfigModule,
+    InsightsChatModule,
     SecurityModule,
   ],
   providers: [

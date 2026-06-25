@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Form, InputNumber, Select, Space, Spin, Switch, Table, Typography, message } from 'antd';
+import { Button, Card, Form, Input, InputNumber, Space, Spin, Switch, Table, Typography, message } from 'antd';
 import type { LeavePolicySummary } from '@synchem-sfa/shared-types';
 import { useI18n } from '../../i18n/I18nProvider';
 import { fetchApi } from '../../lib/api-client';
@@ -48,14 +48,13 @@ export function LeavePolicyPage() {
           initialValues={{ active: true, carryForwardLimit: 0 }}
           onFinish={(values) => saveMutation.mutate(values)}
         >
-          <Form.Item name="leaveType" label={t('monthly.leave.type')} rules={[{ required: true }]}>
-            <Select
-              options={[
-                { value: 'CL', label: 'CL' },
-                { value: 'SL', label: 'SL' },
-                { value: 'PL', label: 'PL' },
-              ]}
-            />
+          <Form.Item
+            name="leaveType"
+            label={t('monthly.leave.type')}
+            rules={[{ required: true }, { max: 10, message: 'Max 10 characters' }]}
+            extra="e.g. CL, SL, PL, EL"
+          >
+            <Input placeholder="Enter leave type code" style={{ textTransform: 'uppercase' }} />
           </Form.Item>
           <Form.Item name="annualQuota" label={t('monthly.policy.quota')} rules={[{ required: true }]}>
             <InputNumber min={0} max={365} style={{ width: '100%' }} />

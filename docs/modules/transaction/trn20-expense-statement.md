@@ -72,14 +72,14 @@ app/expenseStatement
 
 ## Clone Checklist
 
-- [ ] Build UI screen at route `app/expenseStatement`
-- [ ] Create database tables for data listed above
-- [ ] Implement API endpoints
-- [ ] Add role permission check (menu code `TRN20`)
-- [ ] Implement workflow steps exactly as above
-- [ ] Add validation rules
-- [ ] Connect notifications if this triggers approval
-- [ ] Test with real example scenario
+- [x] Build UI screen at route `app/expenseStatement`
+- [x] Create database tables for data listed above
+- [x] Implement API endpoints
+- [x] Add role permission check (menu code `TRN20`)
+- [x] Implement workflow steps exactly as above (create + submit; auto-gen from DCR deferred)
+- [x] Add validation rules
+- [x] Connect notifications on submit/approve/reject
+- [ ] Test with real example scenario (UAT)
 
 ---
 *Part of Synchem Salestrip 100% clone documentation.*

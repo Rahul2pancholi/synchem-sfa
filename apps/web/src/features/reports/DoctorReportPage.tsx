@@ -197,16 +197,16 @@ export function DoctorReportPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalDoctors')} value={summary.totalDoctors} />
+                <StatCard title={t('report.totalDoctors')} value={summary.totalDoctors} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.visitedInPeriod')} value={summary.visitedInPeriod} />
+                <StatCard title={t('report.visitedInPeriod')} value={summary.visitedInPeriod} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalVisits')} value={summary.totalVisits} />
+                <StatCard title={t('report.totalVisits')} value={summary.totalVisits} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.neverVisited')} value={summary.neverVisited} />
+                <StatCard title={t('report.neverVisited')} value={summary.neverVisited} />
               </Col>
             </Row>
           </PageSection>

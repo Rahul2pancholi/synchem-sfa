@@ -78,10 +78,10 @@ This screen stores or shows these types of information:
 
 ## Clone Checklist
 
-- [ ] Build UI screen at route `/app/report/missedCallReport`
+- [x] Build UI screen at route `/app/report/missedCallReport`
 - [ ] Create database tables for data listed above
-- [ ] Implement API endpoints
-- [ ] Add role permission check (menu code `REP22`)
+- [x] Implement API endpoints
+- [x] Add role permission check (menu code `REP22`)
 - [ ] Implement workflow steps exactly as above
 - [ ] Add validation rules
 - [ ] Connect notifications if this triggers approval

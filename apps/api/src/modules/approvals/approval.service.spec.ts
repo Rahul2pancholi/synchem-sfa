@@ -49,6 +49,42 @@ describe('ApprovalService', () => {
     expect(result.data.items).toEqual([]);
   });
 
+  it('includes reporting manager name on pending items', async () => {
+    prisma.approvalQueueItem.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'queue-1',
+        entityType: 'DCR',
+        entityId: 'dcr-1',
+        status: 'PENDING',
+        submittedBy: 'mr-id',
+        submittedAt: new Date('2026-06-25T10:00:00Z'),
+        remarks: null,
+      },
+    ]);
+    prisma.employee.findMany = jest
+      .fn()
+      .mockResolvedValueOnce([
+        {
+          id: 'mr-id',
+          firstName: 'Rahul',
+          lastName: 'Sharma',
+          userName: 'mr1',
+          reportingManagerId: 'rm-id',
+        },
+      ])
+      .mockResolvedValueOnce([
+        { id: 'rm-id', firstName: 'Rajesh', lastName: 'Kumar' },
+      ]);
+    prisma.dailyCallReport.findFirst = jest.fn().mockResolvedValue({
+      workDate: new Date('2026-06-24'),
+    });
+
+    const result = await service.listPending('SYN', adminUser, 'DCR');
+
+    expect(result.data.items[0]?.submitterName).toBe('Rahul Sharma');
+    expect(result.data.items[0]?.reportingManagerName).toBe('Rajesh Kumar');
+  });
+
   it('blocks field staff from approval summary', async () => {
     const fsUser: JwtPayload = { ...adminUser, roleType: 'FS', empId: 'mr-id' };
     await expect(service.getSummary('SYN', fsUser)).rejects.toThrow(ForbiddenException);

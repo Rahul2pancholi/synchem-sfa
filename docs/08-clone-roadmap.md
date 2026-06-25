@@ -91,7 +91,7 @@ Priority P0 masters — see [modules/master-setup/](./modules/master-setup/)
 - [x] Auto-sync on foreground
 - [x] Mobile RTP read view
 - [x] Expo push token registration (API)
-- [ ] Firebase push delivery (approval pending)
+- [x] Firebase push delivery (approval pending) — **MVP Done** (API + FCM adapter; mobile SDK pending)
 - [ ] Load test: 100 concurrent syncs
 
 **Deliverable:** MR submits DCR offline from mobile — **critical for 500 users**. ✅ (MVP + polish)
@@ -105,9 +105,10 @@ Minimum approval queues for go-live:
 - [x] Weekly Plan Approval
 - [x] Leave Approval *(basic — **P3 low**; no further leave work until MR journey + sales P0 done)*
 - [x] Expense Approval
-- [ ] Doctor / Retailer Approval
-- [x] Manager Dashboard (pending counts)
-- [ ] Push notifications
+- [x] Doctor Approval (`MAS10` + `MAS11`)
+- [ ] Retailer Approval
+- [x] Manager Dashboard (pending counts + sales KPIs)
+- [x] Push notifications — **MVP Done** (FCM when `FIREBASE_SERVER_KEY` set)
 
 > **Current product focus:** [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md) — MR field journey + sales reports **before** leave/HR polish.
 
@@ -117,14 +118,15 @@ Minimum approval queues for go-live:
 
 | Module | Priority | Status |
 |--------|----------|--------|
-| **MR journey txn** (DCR, RTP, Weekly, POB) + mobile sync | **P0** | Mostly done — polish & UAT |
-| **Sales reports** (POB, sales summary, target, visits) | **P0** | 1/6 key reports done |
-| Expense statement + approval | P1 | Done (MVP) |
+| **MR journey txn** (DCR, RTP, Weekly, POB) + mobile sync | **P0** | **Done** — UAT |
+| **Sales reports** (POB, sales summary, target, visits) | **P0** | **Done** — 12 MVP reports |
+| Expense statement + approval | P1 | **Done** (polished UI + detail views) |
+| Doctor creation + approval (`MAS10` / `MAS11`) | P1 | **Done** |
 | Leave application + policy + approval | **P3 (Low)** | MVP API done — **defer** mobile, UI polish, advanced rules |
 | Stock statement (basic) | Deferred | |
 | Gift/Sample (basic) | Deferred | |
-| Key reports (3 of 12) | P0/P1 | 3 done; sales-focused reports next |
-| Full report suite + Excel | P1 | Deferred |
+| Key reports (12 of 12 MVP) | P0/P1 | **Done** |
+| Full report suite + Excel | P1 | **Done** — CSV export on MVP reports |
 
 **Deliverable:** MR can complete daily field work + managers see sales/coverage KPIs. Leave/expense = minimal only.
 
@@ -197,7 +199,7 @@ flowchart LR
 | Sub-phase | When | Deliverable | Status |
 |-----------|------|-------------|--------|
 | **10A** | Month 6–7 (parallel, low effort) | `insights-service` scaffold; `ADM05` admin (API key, model, prompts); encrypted config; menu refresh | **Done** |
-| **10B** | Month 8 | Semantic layer — 8–12 metrics (POB, coverage, missed calls) → template SQL | Not started |
+| **10B** | Month 8 | Semantic layer — 8–12 metrics (POB, coverage, missed calls) → template SQL | **Done** |
 | **10C** | Month 8–9 | Knowledge graph v0 — Postgres views (hierarchy, route, last visit) | Not started |
 | **10D** | Month 9–10 | Chat modal (Admin + Manager); API proxy; SQL validator; read-only DB; real answers | Not started |
 | **10E** | Month 10+ | Manager mobile chat (optional); audit log; rate limits | Not started |
@@ -211,8 +213,8 @@ flowchart LR
 | Manager (MAN) | No | Yes — team POB, coverage, visits |
 | MR (FS) | No | Later (10E) — own data only |
 
-**Depends on:** Phase 8 sales reports stable (feeds 10B metrics).  
-**Runs parallel with:** Phase 7 approvals, Phase 9 communication — but **10B+ starts after** sales P0 reports ship.
+**Depends on:** Phase 8 sales reports stable (feeds 10B metrics) — **Done**.  
+**Runs parallel with:** Phase 7 approvals, Phase 9 communication — **Next: 10C–10D** after go-live UAT.
 
 ### Phase 11 — Admin Workflow & Rules Builder (Month 7–9, SaaS differentiator)
 

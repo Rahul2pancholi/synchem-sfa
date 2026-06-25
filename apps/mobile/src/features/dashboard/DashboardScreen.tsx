@@ -12,6 +12,7 @@ import { useMobilePermission } from '../../hooks/useMobilePermission';
 import { clearSession } from '../../lib/auth-store';
 import { useSessionStore } from '../../store/session-store';
 import type { RootStackParamList } from '../../navigation/types';
+import { ChatAssistantModal } from '../chat/ChatAssistantModal';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
@@ -22,6 +23,7 @@ export function DashboardScreen({ navigation }: Props) {
   const setMpinVerified = useSessionStore((state) => state.setMpinVerified);
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useAutoSync(session?.accessToken, language);
   const { allowed: canDcr } = useMobilePermission('TRN03', 'view');
@@ -117,6 +119,19 @@ export function DashboardScreen({ navigation }: Props) {
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>{t('mobile.dashboard.logout')}</Text>
       </Pressable>
+
+      <Pressable style={styles.chatFab} onPress={() => setChatOpen(true)}>
+        <Text style={styles.chatFabText}>{t('chat.title')}</Text>
+      </Pressable>
+
+      {session?.accessToken ? (
+        <ChatAssistantModal
+          visible={chatOpen}
+          accessToken={session.accessToken}
+          roleType={null}
+          onClose={() => setChatOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -154,4 +169,22 @@ const styles = StyleSheet.create({
   secondaryText: { color: '#102a43', fontWeight: '600' },
   logoutButton: { marginTop: 12, alignItems: 'center' },
   logoutText: { color: '#ba1b1b', fontWeight: '600' },
+  chatFab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 24,
+    backgroundColor: '#0891b2',
+    borderRadius: 28,
+    minWidth: 56,
+    height: 56,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  chatFabText: { color: '#fff', fontWeight: '700' },
 });

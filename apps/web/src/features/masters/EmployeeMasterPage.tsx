@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
   Form,
   Input,
+  Modal,
+  Popconfirm,
   Select,
   Space,
   Spin,
@@ -29,8 +31,10 @@ interface RoleListResponse {
 
 export function EmployeeMasterPage() {
   const { t, languageHeader } = useI18n();
-  const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
   const queryClient = useQueryClient();
+  const [editingEmployee, setEditingEmployee] = useState<EmployeeSummary | null>(null);
 
   const employeesQuery = useQuery({
     queryKey: ['employees'],
@@ -59,10 +63,27 @@ export function EmployeeMasterPage() {
       }),
     onSuccess: async () => {
       message.success(t('common.create'));
-      form.resetFields();
+      createForm.resetFields();
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
     },
     onError: () => message.error(t('masters.employee.createFailed')),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+      fetch(`/api/v1/employees/${id}`, {
+        method: 'PATCH',
+        headers: authHeaders(languageHeader),
+        body: JSON.stringify(body),
+      }).then((res) => {
+        if (!res.ok) throw new Error(t('masters.employee.updateFailed'));
+      }),
+    onSuccess: async () => {
+      message.success(t('common.save'));
+      setEditingEmployee(null);
+      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+    },
+    onError: () => message.error(t('masters.employee.updateFailed')),
   });
 
   const deleteMutation = useMutation({
@@ -76,6 +97,30 @@ export function EmployeeMasterPage() {
     },
     onError: () => message.error(t('masters.employee.deleteFailed')),
   });
+
+  const roles = rolesQuery.data ?? [];
+  const managers = (employeesQuery.data ?? []).filter((e) => e.active);
+
+  useEffect(() => {
+    if (roles.length > 0 && !createForm.getFieldValue('roleId')) {
+      createForm.setFieldValue('roleId', roles[0].id);
+    }
+  }, [roles, createForm]);
+
+  useEffect(() => {
+    if (editingEmployee) {
+      editForm.setFieldsValue({
+        firstName: editingEmployee.firstName,
+        lastName: editingEmployee.lastName ?? '',
+        email: editingEmployee.email ?? '',
+        mobileNo: editingEmployee.mobileNo ?? '',
+        employeeCode: editingEmployee.employeeCode ?? '',
+        roleId: editingEmployee.roleId,
+        reportingManagerId: editingEmployee.reportingManagerId ?? undefined,
+        password: '',
+      });
+    }
+  }, [editingEmployee, editForm]);
 
   const columns: ColumnsType<EmployeeSummary> = [
     { title: t('masters.employee.userName'), dataIndex: 'userName', key: 'userName' },
@@ -103,23 +148,28 @@ export function EmployeeMasterPage() {
       key: 'actions',
       render: (_, row) =>
         row.active && row.userName !== 'admin' ? (
-          <PermissionGate menuCode="MAS07" action="delete">
-            <Button danger size="small" onClick={() => deleteMutation.mutate(row.id)}>
-              {t('common.delete')}
-            </Button>
-          </PermissionGate>
+          <Space size="small">
+            <PermissionGate menuCode="MAS07" action="edit">
+              <Button size="small" onClick={() => setEditingEmployee(row)}>
+                {t('common.edit')}
+              </Button>
+            </PermissionGate>
+            <PermissionGate menuCode="MAS07" action="delete">
+              <Popconfirm
+                title={t('masters.employee.deleteConfirm')}
+                onConfirm={() => deleteMutation.mutate(row.id)}
+                okText={t('common.yes')}
+                cancelText={t('common.no')}
+              >
+                <Button danger size="small" loading={deleteMutation.isPending}>
+                  {t('common.delete')}
+                </Button>
+              </Popconfirm>
+            </PermissionGate>
+          </Space>
         ) : null,
     },
   ];
-
-  const roles = rolesQuery.data ?? [];
-  const managers = (employeesQuery.data ?? []).filter((e) => e.active);
-
-  useEffect(() => {
-    if (roles.length > 0 && !form.getFieldValue('roleId')) {
-      form.setFieldValue('roleId', roles[0].id);
-    }
-  }, [roles, form]);
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -130,7 +180,7 @@ export function EmployeeMasterPage() {
       <PermissionGate menuCode="MAS07" action="add">
         <Card title={t('masters.employee.createTitle')}>
           <Form
-            form={form}
+            form={createForm}
             layout="vertical"
             initialValues={{ roleId: roles[0]?.id }}
             onFinish={(values) =>
@@ -190,6 +240,75 @@ export function EmployeeMasterPage() {
           <Table rowKey="id" columns={columns} dataSource={employeesQuery.data ?? []} pagination={{ pageSize: 20 }} />
         )}
       </Card>
+
+      <Modal
+        title={t('masters.employee.editTitle')}
+        open={editingEmployee !== null}
+        onCancel={() => setEditingEmployee(null)}
+        footer={null}
+        width={700}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(values) => {
+            if (!editingEmployee) return;
+            const body: Record<string, unknown> = {
+              firstName: values.firstName,
+              lastName: values.lastName || null,
+              email: values.email || null,
+              mobileNo: values.mobileNo || null,
+              employeeCode: values.employeeCode || null,
+              roleId: values.roleId,
+              reportingManagerId: values.reportingManagerId || null,
+            };
+            if (values.password) body.password = values.password;
+            updateMutation.mutate({ id: editingEmployee.id, body });
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <Form.Item name="firstName" label={t('masters.employee.firstName')} rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="lastName" label={t('masters.employee.lastName')}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="employeeCode" label={t('masters.employee.employeeCode')}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="email" label={t('masters.employee.email')}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="mobileNo" label={t('masters.employee.mobile')}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="roleId" label={t('masters.employee.role')} rules={[{ required: true }]}>
+              <Select options={roles.map((r) => ({ value: r.id, label: `${r.roleName} (${r.roleType})` }))} />
+            </Form.Item>
+            <Form.Item name="reportingManagerId" label={t('masters.employee.reportingManager')}>
+              <Select
+                allowClear
+                placeholder={t('masters.employee.none')}
+                options={managers
+                  .filter((m) => m.id !== editingEmployee?.id)
+                  .map((m) => ({
+                    value: m.id,
+                    label: `${m.firstName} ${m.lastName ?? ''} (${m.userName})`,
+                  }))}
+              />
+            </Form.Item>
+            <Form.Item name="password" label={t('masters.employee.newPassword')} extra={t('masters.employee.passwordHint')}>
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+          </div>
+          <Space>
+            <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
+              {t('common.save')}
+            </Button>
+            <Button onClick={() => setEditingEmployee(null)}>{t('common.cancel')}</Button>
+          </Space>
+        </Form>
+      </Modal>
     </Space>
   );
 }

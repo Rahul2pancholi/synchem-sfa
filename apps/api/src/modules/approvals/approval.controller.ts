@@ -1,9 +1,11 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, Post, Query, Body } from '@nestjs/common';
 import type { ApprovalEntityType, JwtPayload } from '@synchem-sfa/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequireActor } from '../../common/decorators/require-actor.decorator';
 import { ApprovalService } from './approval.service';
 
+@ApiTags('approvals')
 @Controller('api/v1/approvals')
 @RequireActor('tenant')
 export class ApprovalController {

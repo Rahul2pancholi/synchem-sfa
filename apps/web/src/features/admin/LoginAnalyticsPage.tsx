@@ -66,23 +66,23 @@ export function LoginAnalyticsPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('security.loginAnalytics.totalLogins')} value={summary.totalLogins} />
+                <StatCard title={t('security.loginAnalytics.totalLogins')} value={summary.totalLogins} />
               </Col>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('security.loginAnalytics.failedLogins')} value={summary.failedLogins} />
+                <StatCard title={t('security.loginAnalytics.failedLogins')} value={summary.failedLogins} />
               </Col>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('security.loginAnalytics.uniqueUsers')} value={summary.uniqueUsers} />
+                <StatCard title={t('security.loginAnalytics.uniqueUsers')} value={summary.uniqueUsers} />
               </Col>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('security.loginAnalytics.uniqueDevices')} value={summary.uniqueDevices} />
+                <StatCard title={t('security.loginAnalytics.uniqueDevices')} value={summary.uniqueDevices} />
               </Col>
               <Col xs={12} md={8} lg={4}>
-                <StatCard label={t('security.loginAnalytics.activeSessions')} value={summary.activeSessions} />
+                <StatCard title={t('security.loginAnalytics.activeSessions')} value={summary.activeSessions} />
               </Col>
               <Col xs={12} md={8} lg={4}>
                 <StatCard
-                  label={t('security.loginAnalytics.multiDeviceUsers')}
+                  title={t('security.loginAnalytics.multiDeviceUsers')}
                   value={summary.multiDeviceUsers}
                 />
               </Col>

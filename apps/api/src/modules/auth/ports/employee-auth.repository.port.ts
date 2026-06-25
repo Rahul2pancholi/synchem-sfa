@@ -12,6 +12,7 @@ export interface AuthEmployeeRecord {
   roleName: string;
   companyName: string;
   industryType: string;
+  companyActive: boolean;
 }
 
 export interface EmployeeAuthRepositoryPort {

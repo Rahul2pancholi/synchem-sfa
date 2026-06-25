@@ -15,4 +15,9 @@ export class SalesInsightsController {
   managerSuggestions(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
     return this.salesInsights.managerSuggestions(user.compCode!, query);
   }
+
+  @Get('field-staff')
+  fieldStaffSuggestions(@CurrentUser() user: JwtPayload, @Query() query: unknown) {
+    return this.salesInsights.fieldStaffSuggestions(user.compCode!, user.empId!, query);
+  }
 }

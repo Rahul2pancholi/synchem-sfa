@@ -210,7 +210,7 @@ cp apps/api/.env.uat.example apps/api/.env.uat && pnpm docker:uat
 | Sub-phase | Status | Notes |
 |-----------|--------|-------|
 | **10A** Admin config + `insights-service` scaffold | **Done** | `ADM05`, encrypted API keys |
-| **10B** Semantic layer | **Done** | 8 metrics + SQL validator in `insights-service` |
+| **10B** Semantic layer | **Done** | 8 metrics + tests in `insights-service` |
 | **10C** Knowledge graph | Pending | Month 8–9 |
 | **10D** Chat UI + real answers | Pending | Admin + Manager dashboards |
 | **10E–10F** Hardening + field AI | Pending | Month 10+ |
@@ -229,9 +229,11 @@ Do **not** start 10C until MVP go-live UAT is complete.
 | Mobile leave | **P3** | Not started — deferred |
 | Expense Statement API + web (`TRN20`) | P1 | Done |
 | Expense Approval queue (`TRN21`) | P1 | Done |
-| Key reports: DCR Summary (`REP01`), Expense (`REP05`), Employee POB (`REP12`) | **P0** | Done — **next:** sales reports |
-| Stock statement, Gift/Sample | — | Deferred |
-| Full 12-report suite + Excel export | P1 | Deferred |
+| Key reports: DCR Summary (`REP01`), Expense (`REP05`), Employee POB (`REP12`) | **P0** | **Done** |
+| Full 12-report MVP suite + Excel export | P1 | **Done** |
+| Doctor Approval (`MAS10` / `MAS11`) | P1 | **Done** |
+| Expense polish (detail views, `PageLayout`) | P1 | **Done** |
+| Phase 10B semantic layer | P2 | **Done** |
 
 **Test focus:** DCR → sync → POB (not leave).
 

@@ -91,13 +91,38 @@ export class ApprovalService {
     const submitterIds = [...new Set(rows.map((row) => row.submittedBy))];
     const employees = await this.prisma.employee.findMany({
       where: { compCode, id: { in: submitterIds } },
-      select: { id: true, firstName: true, lastName: true, userName: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        userName: true,
+        reportingManagerId: true,
+      },
     });
     const employeeById = new Map(employees.map((e) => [e.id, e]));
+
+    const managerIds = [
+      ...new Set(
+        employees
+          .map((e) => e.reportingManagerId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const managers =
+      managerIds.length > 0
+        ? await this.prisma.employee.findMany({
+            where: { compCode, id: { in: managerIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
+    const managerById = new Map(managers.map((m) => [m.id, m]));
 
     const items: ApprovalPendingItem[] = [];
     for (const row of rows) {
       const submitter = employeeById.get(row.submittedBy);
+      const manager = submitter?.reportingManagerId
+        ? managerById.get(submitter.reportingManagerId)
+        : undefined;
       items.push({
         id: row.id,
         entityType: row.entityType as ApprovalEntityType,
@@ -109,6 +134,9 @@ export class ApprovalService {
           ? `${submitter.firstName} ${submitter.lastName ?? ''}`.trim()
           : 'Unknown',
         submitterUserName: submitter?.userName ?? '',
+        reportingManagerName: manager
+          ? `${manager.firstName} ${manager.lastName ?? ''}`.trim()
+          : '',
         summary: await this.buildSummary(compCode, row.entityType as ApprovalEntityType, row.entityId),
         remarks: row.remarks,
       });

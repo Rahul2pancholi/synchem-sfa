@@ -7,7 +7,7 @@ import {
 } from '@synchem-sfa/shared-types';
 import { PrismaService } from '../../infrastructure/persistence/prisma.module';
 import { ReportsService } from '../reports/reports.service';
-import { evaluateSalesInsights } from './sales-insights.rules';
+import { evaluateFieldStaffInsights, evaluateSalesInsights } from './sales-insights.rules';
 
 @Injectable()
 export class SalesInsightsService {
@@ -124,6 +124,39 @@ export class SalesInsightsService {
 
     const team = await this.teamCoverageAndAchievement(compCode, kpis.month, kpis.year);
     const insights = evaluateSalesInsights(kpis, team);
+
+    return apiSuccess({
+      month: kpis.month,
+      year: kpis.year,
+      insights,
+    });
+  }
+
+  async fieldStaffSuggestions(compCode: string, empId: string, query: unknown) {
+    const parsed = SalesInsightsFilterSchema.safeParse(query ?? {});
+    const filterQuery = parsed.success ? parsed.data : {};
+
+    const kpiResponse = await this.reports.fieldStaffKpis(compCode, empId, filterQuery);
+    const kpis = kpiResponse.data;
+
+    const [dcrDraftCount, pobDraftCount] = await Promise.all([
+      this.prisma.dailyCallReport.count({
+        where: {
+          compCode,
+          empId,
+          approveStatus: { in: ['DRAFT', 'REJECTED'] },
+        },
+      }),
+      this.prisma.personalOrderBooking.count({
+        where: {
+          compCode,
+          empId,
+          approveStatus: { in: ['DRAFT', 'REJECTED'] },
+        },
+      }),
+    ]);
+
+    const insights = evaluateFieldStaffInsights(kpis, { dcrDraftCount, pobDraftCount });
 
     return apiSuccess({
       month: kpis.month,

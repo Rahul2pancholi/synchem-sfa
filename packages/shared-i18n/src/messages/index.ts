@@ -23,6 +23,36 @@ import {
   PHASE9_SALES_INSIGHTS_KEYS,
   type Phase9SalesInsightsKey,
 } from './phase9-sales-insights';
+import {
+  PHASE_PLATFORM_MESSAGES,
+  PHASE_PLATFORM_KEYS,
+  type PhasePlatformKey,
+} from './phase-platform';
+import {
+  PHASE_WEEK2_MESSAGES,
+  PHASE_WEEK2_KEYS,
+  type PhaseWeek2Key,
+} from './phase-week2';
+import {
+  PHASE_WEEK3_MESSAGES,
+  PHASE_WEEK3_KEYS,
+  type PhaseWeek3Key,
+} from './phase-week3';
+import {
+  PHASE_SIMPLIFY_MESSAGES,
+  PHASE_SIMPLIFY_KEYS,
+  type PhaseSimplifyKey,
+} from './phase-simplify';
+import {
+  PHASE_CHAT_HUMAN_MESSAGES,
+  PHASE_CHAT_HUMAN_KEYS,
+  type PhaseChatHumanKey,
+} from './phase-chat-human';
+import {
+  PHASE_CHAT_ACTIONS_MESSAGES,
+  PHASE_CHAT_ACTIONS_KEYS,
+  type PhaseChatActionsKey,
+} from './phase-chat-actions';
 
 export const MESSAGE_KEYS = [
   ...PHASE0_MESSAGE_KEYS,
@@ -37,6 +67,12 @@ export const MESSAGE_KEYS = [
   ...PHASE6_SECURITY_MESSAGE_KEYS,
   ...PHASE_SPRINT1_DASHBOARD_KEYS,
   ...PHASE9_SALES_INSIGHTS_KEYS,
+  ...PHASE_PLATFORM_KEYS,
+  ...PHASE_WEEK2_KEYS,
+  ...PHASE_WEEK3_KEYS,
+  ...PHASE_SIMPLIFY_KEYS,
+  ...PHASE_CHAT_HUMAN_KEYS,
+  ...PHASE_CHAT_ACTIONS_KEYS,
 ] as const;
 
 export type MessageKey =
@@ -51,7 +87,13 @@ export type MessageKey =
   | Phase6InsightsMessageKey
   | Phase6SecurityMessageKey
   | PhaseSprint1DashboardKey
-  | Phase9SalesInsightsKey;
+  | Phase9SalesInsightsKey
+  | PhasePlatformKey
+  | PhaseWeek2Key
+  | PhaseWeek3Key
+  | PhaseSimplifyKey
+  | PhaseChatHumanKey
+  | PhaseChatActionsKey;
 
 const hinglishCatalog: Record<MessageKey, string> = {
   ...PHASE0_MESSAGES.hinglish,
@@ -66,6 +108,12 @@ const hinglishCatalog: Record<MessageKey, string> = {
   ...PHASE6_SECURITY_MESSAGES.hinglish,
   ...PHASE_SPRINT1_DASHBOARD_MESSAGES.hinglish,
   ...PHASE9_SALES_INSIGHTS_MESSAGES.hinglish,
+  ...PHASE_PLATFORM_MESSAGES.hinglish,
+  ...PHASE_WEEK2_MESSAGES.hinglish,
+  ...PHASE_WEEK3_MESSAGES.hinglish,
+  ...PHASE_SIMPLIFY_MESSAGES.hinglish,
+  ...PHASE_CHAT_HUMAN_MESSAGES.hinglish,
+  ...PHASE_CHAT_ACTIONS_MESSAGES.hinglish,
 };
 
 export const MESSAGES: Record<AppLanguage, Record<MessageKey, string>> = {
@@ -82,6 +130,12 @@ export const MESSAGES: Record<AppLanguage, Record<MessageKey, string>> = {
     ...PHASE6_SECURITY_MESSAGES.en,
     ...PHASE_SPRINT1_DASHBOARD_MESSAGES.en,
     ...PHASE9_SALES_INSIGHTS_MESSAGES.en,
+    ...PHASE_PLATFORM_MESSAGES.en,
+    ...PHASE_WEEK2_MESSAGES.en,
+    ...PHASE_WEEK3_MESSAGES.en,
+    ...PHASE_SIMPLIFY_MESSAGES.en,
+    ...PHASE_CHAT_HUMAN_MESSAGES.en,
+    ...PHASE_CHAT_ACTIONS_MESSAGES.en,
   },
   /** Mixed Roman Hindi for field users — not literary Devanagari. */
   hi: hinglishCatalog,
@@ -101,4 +155,10 @@ export {
   PHASE6_SECURITY_MESSAGE_KEYS,
   PHASE_SPRINT1_DASHBOARD_KEYS,
   PHASE9_SALES_INSIGHTS_KEYS,
+  PHASE_PLATFORM_KEYS,
+  PHASE_WEEK2_KEYS,
+  PHASE_WEEK3_KEYS,
+  PHASE_SIMPLIFY_KEYS,
+  PHASE_CHAT_HUMAN_KEYS,
+  PHASE_CHAT_ACTIONS_KEYS,
 };

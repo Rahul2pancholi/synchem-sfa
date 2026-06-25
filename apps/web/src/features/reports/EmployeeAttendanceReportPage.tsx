@@ -158,16 +158,16 @@ export function EmployeeAttendanceReportPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalEmployees')} value={summary.totalEmployees} />
+                <StatCard title={t('report.totalEmployees')} value={summary.totalEmployees} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalFieldDays')} value={summary.totalFieldDays} />
+                <StatCard title={t('report.totalFieldDays')} value={summary.totalFieldDays} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalLeaveDays')} value={summary.totalLeaveDays} />
+                <StatCard title={t('report.totalLeaveDays')} value={summary.totalLeaveDays} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.holidaysInMonth')} value={summary.holidaysInMonth} />
+                <StatCard title={t('report.holidaysInMonth')} value={summary.holidaysInMonth} />
               </Col>
             </Row>
           </PageSection>

@@ -2,12 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, 'initial/**']
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  ci:
+    name: Typecheck · Lint · Test · Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +28,63 @@ jobs:
 
       - run: pnpm install --frozen-lockfile=false
 
+      # Shared packages first
       - run: pnpm --filter @synchem-sfa/shared-i18n build
       - run: pnpm --filter @synchem-sfa/shared-i18n test
-
       - run: pnpm --filter @synchem-sfa/shared-types build
 
+      # Typecheck all apps
+      - run: pnpm typecheck
+
+      # API
       - run: pnpm --filter @synchem-sfa/api exec prisma generate
-
       - run: pnpm --filter @synchem-sfa/api test
-      - run: pnpm --filter @synchem-sfa/api test:e2e
-
       - run: pnpm --filter @synchem-sfa/api build
 
-      - run: pnpm --filter @synchem-sfa/web build
+      # Web
       - run: pnpm --filter @synchem-sfa/web test
+      - run: pnpm --filter @synchem-sfa/web build
+
+      - name: Upload web dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 7
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Download web dist
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - run: pnpm test:e2e --project=chromium
+        env:
+          BASE_URL: http://localhost:4173
+
+      - name: Upload E2E report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: tests/e2e/report
+          retention-days: 7

@@ -4,6 +4,10 @@ const path = require('node:path');
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 
+/**
+ * pnpm keeps react-native deps (e.g. invariant) as siblings under
+ * .pnpm/react-native@…/node_modules/. Hierarchical lookup must stay enabled.
+ */
 /** @type {import('@react-native/metro-config').MetroConfig} */
 const config = {
   watchFolders: [workspaceRoot],
@@ -12,7 +16,6 @@ const config = {
       path.resolve(projectRoot, 'node_modules'),
       path.resolve(workspaceRoot, 'node_modules'),
     ],
-    disableHierarchicalLookup: true,
   },
 };
 

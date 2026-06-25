@@ -267,14 +267,17 @@ Tune `ThrottlerModule` in `app.module.ts` if load test hits 429 — increase lim
 
 | Item | Risk | Decision |
 |------|------|----------|
-| **Sales reports** (summary, target, visits, missed calls) | **High** | **P0 — build next** |
-| POB / FS dashboard polish | Medium | **P0** |
-| 9 of 12 MVP reports | Medium | Sales-related first |
+| **Sales reports** (12 MVP reports) | — | **Done ✅** |
+| POB / FS dashboard polish | — | **Done ✅** |
+| Doctor Approval (`MAS10` / `MAS11`) | — | **Done ✅** |
+| Expense polish + approval detail | — | **Done ✅** |
+| Phase 10B semantic layer | — | **Done ✅** |
 | **Leave** (mobile, UI polish, advanced policy) | Low | **P3 — defer** (API MVP exists) |
-| Doctor Approval screen | Low | P1 after sales |
-| Excel export on reports | Medium | P1 |
-| Firebase push | Low | Defer |
+| Excel export on MVP reports | — | **Done ✅** (CSV) |
+| Firebase push (server) | Low | **Done ✅ MVP** — set `FIREBASE_SERVER_KEY`; mobile FCM SDK pending |
+| Mobile push inbox (M8) | Low | Defer |
 | Company Info / DCR Setting | Low | Defer if defaults OK |
+| Phase 6 UAT + load test | **High** | **Next** |
 
 ---
 

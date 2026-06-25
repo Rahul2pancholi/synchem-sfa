@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 * {
   box-sizing: border-box;
 }
@@ -20,6 +22,20 @@
     --sfa-page-pad: 24px;
     --sfa-section-gap: 24px;
   }
+}
+
+[data-theme="dark"] {
+  --sfa-primary: #22d3ee;
+  --sfa-bg: #0f172a;
+  --sfa-surface: #1e293b;
+  --sfa-text: #f1f5f9;
+  --sfa-text-muted: #94a3b8;
+  --sfa-border: #334155;
+  --sfa-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] body {
+  color-scheme: dark;
 }
 
 body {
@@ -342,6 +358,37 @@ a {
 
 .stat-card .ant-statistic-content {
   font-size: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.stat-card--success {
+  border-top: 3px solid #52c41a !important;
+}
+.stat-card--success .ant-statistic-content {
+  color: #389e0d;
+}
+
+.stat-card--warning {
+  border-top: 3px solid #faad14 !important;
+}
+.stat-card--warning .ant-statistic-content {
+  color: #d48806;
+}
+
+.stat-card--error {
+  border-top: 3px solid #ff4d4f !important;
+}
+.stat-card--error .ant-statistic-content {
+  color: #cf1322;
+}
+
+/* ─── Dashboard table row health colors ─────────────────────────────────── */
+
+.row-error > td {
+  background: #fff1f0 !important;
+}
+
+.row-warning > td {
+  background: #fffbe6 !important;
 }
 
 /* ─── Auth pages ────────────────────────────────────────────────────────── */

@@ -1593,4 +1593,65 @@ export class ReportsService {
 
     return apiSuccess(payload);
   }
+
+  private formatDdMmYyyy(date: Date) {
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const y = date.getUTCFullYear();
+    return `${d}-${m}-${y}`;
+  }
+
+  private todayUtcRange() {
+    const today = new Date();
+    const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const end = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1));
+    return { start, end };
+  }
+
+  async fieldStaffDcrDrafts(compCode: string, empId: string, todayOnly: boolean) {
+    const { start, end } = this.todayUtcRange();
+    const rows = await this.prisma.dailyCallReport.findMany({
+      where: {
+        compCode,
+        empId,
+        approveStatus: { in: ['DRAFT', 'REJECTED'] },
+        ...(todayOnly ? { workDate: { gte: start, lt: end } } : {}),
+      },
+      orderBy: { workDate: 'desc' },
+      take: 5,
+      include: { _count: { select: { doctorVisits: true } } },
+    });
+
+    return apiSuccess({
+      items: rows.map((row) => ({
+        id: row.id,
+        workDate: this.formatDdMmYyyy(row.workDate),
+        approveStatus: row.approveStatus,
+        doctorCount: row._count.doctorVisits,
+      })),
+    });
+  }
+
+  async fieldStaffPobDrafts(compCode: string, empId: string, todayOnly: boolean) {
+    const { start, end } = this.todayUtcRange();
+    const rows = await this.prisma.personalOrderBooking.findMany({
+      where: {
+        compCode,
+        empId,
+        approveStatus: { in: ['DRAFT', 'REJECTED'] },
+        ...(todayOnly ? { orderDate: { gte: start, lt: end } } : {}),
+      },
+      orderBy: { orderDate: 'desc' },
+      take: 5,
+    });
+
+    return apiSuccess({
+      items: rows.map((row) => ({
+        id: row.id,
+        orderDate: this.formatDdMmYyyy(row.orderDate),
+        approveStatus: row.approveStatus,
+        amount: Math.round(Number(row.totalAmount)),
+      })),
+    });
+  }
 }

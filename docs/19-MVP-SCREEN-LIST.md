@@ -24,9 +24,11 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 | **Web total** | **~52** | **146 menu** | **~36%** |
 
 **Out of MVP (Month 7+):** Mail, e-detailing, **analytics chat UI (Phase 10D)**, GPS map, infiltration, focused activity, input/sales plan, manager DCR, remaining 48 reports, 9 approval types.  
-**Phase 10A in MVP-adjacent:** Admin chatbot **config** only (`ADM05`) — not the chat itself.
+**Phase 10A + 10B in repo:** Admin chatbot **config** (`ADM05`) + semantic layer v0 — **Done**. Chat UI = **10D** (pending).
 
-**Current build focus (P0):** MR journey (mobile DCR, sync, RTP, POB) + sales reports — see [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md).  
+**Build status (June 2026):** MVP web screens below marked **Done ✅** where implemented in repo. **Next:** Phase 6 UAT (`docs/23-PHASE6-GO-LIVE.md`).
+
+**Current build focus:** Phase 6 UAT + pilot — see [24-MR-JOURNEY-SALES-PRIORITIES.md](./24-MR-JOURNEY-SALES-PRIORITIES.md).  
 **Low priority (P3):** Leave mobile, leave UI polish, advanced leave policy — minimal API already exists.
 
 ---
@@ -48,9 +50,9 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 
 | # | Screen | Code | Route | Role |
 |---|--------|------|-------|------|
-| 5 | Field Staff Dashboard | DSH01 | `/app/fieldStaff/dashboard` | FS |
-| 6 | Manager Dashboard | DSH02 | `/app/manager/dashboard` | MAN |
-| 7 | Management Dashboard | DSH03 | `/app/management/dashboard` | AD |
+| 5 | Field Staff Dashboard | DSH01 | `/app/fieldStaff/dashboard` | FS | **Done ✅** |
+| 6 | Manager Dashboard | DSH02 | `/app/manager/dashboard` | MAN | **Done ✅** |
+| 7 | Management Dashboard | DSH03 | `/app/management/dashboard` | AD | **Done ✅** |
 
 **APIs:** `dashboard/fieldstaff/`, `manager-dashboard/pending-count`, `dashboard/pending-submittion`, `dashboard/targetVsAchievement/`
 
@@ -115,10 +117,11 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 |---|--------|------|-------|----------|
 | 33 | Tour Programme (RTP) | TRN01 | `/app/monthlyRTP` | Web |
 | 34 | Weekly Plan | TRN24 | `/app/weeklyPlan` | Web |
-| 35 | Daily Call Report | TRN03 | `/app/dcrRecord` | Web + **Mobile** | **P0** |
-| 36 | Personal Order Booking | TRN04 | `/app/pob/add` | Web | **P0** — sales |
-| 37 | Leave Application | TRN09 | `/app/leaveApplication` | Web | **P3 (Low)** — MVP only, defer polish |
-| 38 | Expense Statement | TRN20 | `app/expenseStatement` | Web | P1 |
+| 35 | Daily Call Report | TRN03 | `/app/dcrRecord` | Web + **Mobile** | **Done ✅** |
+| 36 | Personal Order Booking | TRN04 | `/app/pob/add` | Web | **Done ✅** |
+| 37 | Leave Application | TRN09 | `/app/leaveApplication` | Web | **P3** — MVP only |
+| 38 | Expense Statement | TRN20 | `/app/expenseStatement` | Web | **Done ✅** |
+| — | Doctor Creation Request | MAS10 | `/app/doctor-creation-request` | Web | **Done ✅** |
 
 **Deferred:** Gift/sample, stock statement, infiltration, manager RTP, pool distribution, unlock/revise flows (except unlock DCR approval if needed).
 
@@ -128,12 +131,12 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 
 | # | Screen | Code | Route |
 |---|--------|------|-------|
-| 39 | DCR Approval | APP01 | `/app/dcrRecord/approval/admin` |
-| 40 | Tour Programme Approval | TRN02 | `/app/monthlyRTP/approval` |
-| 41 | Weekly Plan Approval | APP04 | `/app/pendingWeeklyPlan` |
-| 42 | Leave Approval | TRN10 | `/app/leave/approval` | **P3 (Low)** — basic only |
-| 43 | Expense Approval | TRN21 | `/app/expenseStatement/approval` |
-| 44 | Doctor Approval | MAS11 | `/app/doctor-approval` |
+| 39 | DCR Approval | APP01 | `/app/dcrRecord/approval/admin` | **Done ✅** |
+| 40 | Tour Programme Approval | TRN02 | `/app/monthlyRTP/approval` | **Done ✅** |
+| 41 | Weekly Plan Approval | APP04 | `/app/pendingWeeklyPlan` | **Done ✅** |
+| 42 | Leave Approval | TRN10 | `/app/leave/approval` | **P3** — MVP only |
+| 43 | Expense Approval | TRN21 | `/app/expenseStatement/approval` | **Done ✅** |
+| 44 | Doctor Approval | MAS11 | `/app/doctor-approval` | **Done ✅** |
 
 **Deferred:** Retailer approval (P1 if retailer creation in MVP), unlock DCR, gift/sample, infiltration, delete requests, focused activity, manager day allocation.
 
@@ -143,18 +146,18 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 
 | # | Screen | Code | Route |
 |---|--------|------|-------|
-| 45 | DCR Summary | REP01 | `/app/report/dcr-summary` |
-| 46 | Visit Summary | REP02 | `/app/report/visit-summary` |
-| 47 | Missed Calls | REP22 | `/app/report/missedCallReport` |
-| 48 | Monthly Covered Doctor | REP23 | `/app/report/monthlyCoveredDoctor` |
-| 49 | Tour Programme Summary | REP10 | `/app/report/rtp-summary` |
-| 50 | Employee Analysis | REP04 | `/app/report/employee-analysis` |
-| 51 | Employee Attendance | REP13 | `/app/report/employee-attendance` |
-| 52 | Monthly Target Achievement | REP20 | `/app/report/monthlyTargetAchievement` |
-| 53 | Employee POB | REP12 | `/app/report/employee-pob` |
-| 54 | Sales Summary | REP41712 | `/app/report/salesSummary` |
-| 55 | Monthly Expense Summary | REP05 | `/app/report/monthlyExpenseSummary` |
-| 56 | Doctor Report | REP18 | `/app/report/doctors` |
+| 45 | DCR Summary | REP01 | `/app/report/dcr-summary` | **Done ✅** |
+| 46 | Visit Summary | REP02 | `/app/report/visit-summary` | **Done ✅** |
+| 47 | Missed Calls | REP22 | `/app/report/missedCallReport` | **Done ✅** |
+| 48 | Monthly Covered Doctor | REP23 | `/app/report/monthlyCoveredDoctor` | **Done ✅** |
+| 49 | Tour Programme Summary | REP10 | `/app/report/rtp-summary` | **Done ✅** |
+| 50 | Employee Analysis | REP04 | `/app/report/employee-analysis` | **Done ✅** |
+| 51 | Employee Attendance | REP13 | `/app/report/employee-attendance` | **Done ✅** |
+| 52 | Monthly Target Achievement | REP20 | `/app/report/employeeTargetAchievement` | **Done ✅** |
+| 53 | Employee POB | REP12 | `/app/report/employee-pob` | **Done ✅** |
+| 54 | Sales Summary | REP41712 | `/app/report/salesSummary` | **Done ✅** |
+| 55 | Monthly Expense Summary | REP05 | `/app/report/monthlyExpenseSummary` | **Done ✅** |
+| 56 | Doctor Report | REP18 | `/app/report/doctors` | **Done ✅** |
 
 **All reports:** filters + grid + Excel export minimum.
 
@@ -164,28 +167,27 @@ Full platform = 152 screens. **MVP = ~52 web screens + 8 mobile screens.**
 
 | # | Screen | Code | Route |
 |---|--------|------|-------|
-| 57 | Role Master | ADM01 | `/app/roleMaster` | Web | **Phase 1.5** |
-| 58 | Role Setting (permissions) | ADM04 | `/app/roleSetting` | Web | **Phase 1.5** |
-| 59 | AI Chatbot Settings | ADM05 | `/app/insightsChatConfig` | Web | **Phase 10A** ✅ |
-| — | Analytics chat UI (modal) | — | Manager/Admin dashboard | Web | **Phase 10D** (post-MVP) |
-| 59 | Company Info | SET02 | `/app/companyInfo` |
-| 60 | DCR Setting | SET01 | `/app/dcrSetting` |
-| 61 | Leave Policy | SET03 | `/app/leavePolicy` | **P3 (Low)** |
+| 57 | Role Master | ADM01 | `/app/roleMaster` | **Done ✅** |
+| 58 | Role Setting (permissions) | ADM04 | `/app/roleSetting` | **Done ✅** |
+| 59 | AI Chatbot Settings | ADM05 | `/app/insightsChatConfig` | **Done ✅** (10A) |
+| 60 | Login & Device Analytics | ADM06 | `/app/security/loginAnalytics` | **Done ✅** |
+| — | Analytics chat UI (modal) | — | Manager/Admin dashboard | **10D** pending |
+| 61 | Leave Policy | SET03 | `/app/leavePolicy` | **P3** — MVP only |
 
 ---
 
 ## Mobile app screens (Month 3–4)
 
-| # | Screen | Priority | Offline? |
-|---|--------|----------|----------|
-| M1 | Login (EMPLOYEE + compCode) | P0 | No |
-| M2 | MPIN / biometric unlock | P0 | No |
-| M3 | Field Staff Dashboard | P0 | Cached |
-| M4 | DCR create / edit / submit | P0 | **Yes** |
-| M5 | RTP calendar view | P0 | Cached |
-| M6 | Doctor list (beat) | P0 | Cached |
-| M7 | GPS check-in / check-out | P0 | Queue offline |
-| M8 | Push notification inbox | P1 | No |
+| # | Screen | Priority | Offline? | Status |
+|---|--------|----------|----------|--------|
+| M1 | Login (EMPLOYEE + compCode) | P0 | No | **Done ✅** |
+| M2 | MPIN / biometric unlock | P0 | No | **Done ✅** |
+| M3 | Field Staff Dashboard | P0 | Cached | **Done ✅** |
+| M4 | DCR create / edit / submit | P0 | **Yes** | **Done ✅** |
+| M5 | RTP calendar view | P0 | Cached | **Done ✅** |
+| M6 | Doctor list (beat) | P0 | Cached | Partial |
+| M7 | GPS check-in / check-out | P0 | Queue offline | **Done ✅** |
+| M8 | Push notification inbox | P1 | No | Pending |
 
 **Deferred mobile:** POB offline, **leave (P3)**, expense, manager approvals, e-detailing.
 

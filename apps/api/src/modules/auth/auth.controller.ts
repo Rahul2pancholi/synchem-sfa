@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Post, Req, UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
@@ -11,6 +12,7 @@ import { AuthService } from './auth.service';
 const LOGIN_THROTTLE_LIMIT =
   process.env.LOAD_TEST === '1' || process.env.APP_ENV === 'dev' ? 10_000 : 10;
 
+@ApiTags('auth')
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

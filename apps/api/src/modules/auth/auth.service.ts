@@ -51,6 +51,7 @@ export interface TokenResult {
   compCode: string;
   compName: string;
   menuList: string;
+  permissionMenuList: string;
   employeeObj: string;
   configurationSetting: string;
   isFirstLogin: string;
@@ -122,6 +123,17 @@ export class AuthService {
       throw new UnauthorizedException(this.msg('auth.login.invalidCredentials', language));
     }
 
+    if (!employee.companyActive) {
+      this.logger.warn({ compCode, userName, module: 'auth', action: 'loginCompanySuspended' });
+      await this.loginTracking.recordFailure({
+        compCode,
+        userName,
+        empId: employee.id,
+        device: deviceContext,
+      });
+      throw new UnauthorizedException(this.msg('auth.login.companySuspended', language));
+    }
+
     const passwordValid = await bcrypt.compare(password, employee.passwordHash);
     if (!passwordValid) {
       this.logger.warn({ compCode, userName, module: 'auth', action: 'loginFailed' });
@@ -168,6 +180,10 @@ export class AuthService {
     );
 
     if (!employee) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    if (!employee.companyActive) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
@@ -292,6 +308,10 @@ export class AuthService {
       employee.compCode,
       employee.roleId,
     );
+    const permissionMenuList = await this.menusService.getPermissionMenuListJson(
+      employee.compCode,
+      employee.roleId,
+    );
     const settings = await this.settingsRepo.getSettingsMap(employee.compCode);
 
     const employeeObj = {
@@ -318,6 +338,7 @@ export class AuthService {
         compCode: employee.compCode,
         compName: employee.companyName,
         menuList,
+        permissionMenuList,
         employeeObj: JSON.stringify(employeeObj),
         configurationSetting: JSON.stringify(settings),
         isFirstLogin: 'false',

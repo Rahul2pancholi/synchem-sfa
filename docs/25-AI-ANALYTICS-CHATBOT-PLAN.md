@@ -14,7 +14,7 @@
 | Sub-phase | Name | Status |
 |-----------|------|--------|
 | **10A** | Scaffold + admin config | **Done** |
-| **10B** | Semantic layer (metrics → SQL templates) | Pending |
+| **10B** | Semantic layer (metrics → SQL templates) | **Done** |
 | **10C** | Knowledge graph v0 | Pending |
 | **10D** | Chat UI + NL query pipeline | Pending |
 | **10E** | Hardening (audit, mobile, MR scope) | Pending |
@@ -180,11 +180,11 @@ From [17-FINAL-BUILD-PLAN.md](./17-FINAL-BUILD-PLAN.md) §9 — may live in main
 | Milestone | Start insights work? |
 |-----------|---------------------|
 | MR journey P0 incomplete | **No** — only 10A (done) |
-| MVP go-live done, sales reports live | **Yes** — start **10B** semantic layer |
+| MVP go-live done, sales reports live | **Yes** — **10B Done**; start **10C** |
 | Stable `compCode` RLS everywhere | **Required before 10D** |
 | Read replica available | **Required before prod 10D** |
 
-**Recommendation:** **10A done.** Next coding = **10B** after `docs/24-MR-JOURNEY-SALES-PRIORITIES.md` sales P0 + go-live.
+**Recommendation:** **10A + 10B done.** Next coding = **10C** knowledge graph, then **10D** chat UI after go-live UAT.
 
 ---
 
@@ -278,6 +278,6 @@ apps/insights-service/
 |----------|--------|
 | Approach sahi hai? | **Haan** — with **template SQL**, not raw LLM SQL |
 | Alag service? | **Haan** — `insights-service`, extractable later |
-| Abhi full build? | **Nahi** — 10A done; **9.5 rules** then **10B–10D** after all sales reports |
-| Kab start 10B? | **After** Missed Calls + manager KPIs + optional 9.5 rules |
+| Abhi full build? | **Nahi** — 10A + **10B done**; next **10C–10D** after UAT |
+| Kab start 10C? | **Now** (after P1 batch); **10D** after go-live UAT |
 | Kya naya karein? | Optional help-bot (RAG) separate from analytics agent |

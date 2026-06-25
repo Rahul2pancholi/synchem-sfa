@@ -1,12 +1,14 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { PageTransition } from '../../components/ui/page-transition';
 import { useEffect, useMemo, useState } from 'react';
 import { Avatar, Button, Drawer, Grid, Layout, Menu, Tag, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
-import { loadMenuListFromStorage } from '../../lib/menu-permissions';
+import { loadNavMenuListFromStorage } from '../../lib/menu-permissions';
 import { refreshMenusFromApi } from '../../lib/refresh-menus';
+import { useTheme } from '../../app/ThemeProvider';
 
 const { Header, Sider, Content } = Layout;
 
@@ -133,15 +135,16 @@ function employeeInitials(employee: { firstName?: string; lastName?: string } | 
 
 export function DashboardShell() {
   const { t, languageHeader } = useI18n();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [menus, setMenus] = useState<LegacyMenuItem[]>(() => loadMenuListFromStorage());
+  const [menus, setMenus] = useState<LegacyMenuItem[]>(() => loadNavMenuListFromStorage());
 
   useEffect(() => {
     void refreshMenusFromApi(languageHeader).then((ok) => {
-      if (ok) setMenus(loadMenuListFromStorage());
+      if (ok) setMenus(loadNavMenuListFromStorage());
     });
   }, [languageHeader]);
 
@@ -214,6 +217,14 @@ export function DashboardShell() {
             </div>
           </div>
           <div className="app-header__actions">
+            <Button
+              type="text"
+              className="app-header__logout"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </Button>
             <LanguageSwitcher compact={isMobile} />
             <Button
               type="text"
@@ -228,7 +239,9 @@ export function DashboardShell() {
         </Header>
 
         <Content className="app-content">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </Content>
       </Layout>
 

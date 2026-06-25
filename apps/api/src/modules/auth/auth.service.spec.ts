@@ -45,7 +45,10 @@ describe('AuthService', () => {
         },
         {
           provide: MenusService,
-          useValue: { getLegacyMenuListJson: jest.fn().mockResolvedValue('[]') },
+          useValue: {
+            getLegacyMenuListJson: jest.fn().mockResolvedValue('[]'),
+            getPermissionMenuListJson: jest.fn().mockResolvedValue('[]'),
+          },
         },
         {
           provide: AuditService,
@@ -93,6 +96,7 @@ describe('AuthService', () => {
       roleName: 'ADMIN',
       companyName: 'Synchem',
       industryType: 'SYN',
+      companyActive: true,
     });
 
     const result = await service.login('admin,SYN', 'Admin@123');
@@ -100,5 +104,25 @@ describe('AuthService', () => {
     expect(result.refresh_token).toBeDefined();
     expect(result.compCode).toBe('SYN');
     expect(result.menuList).toBe('[]');
+  });
+
+  it('rejects login when company is suspended', async () => {
+    const hash = await bcrypt.hash('Admin@123', 10);
+    repo.findByUserNameAndCompCode.mockResolvedValue({
+      id: 'emp-1',
+      compCode: 'SYN',
+      userName: 'admin',
+      passwordHash: hash,
+      firstName: 'Admin',
+      lastName: 'User',
+      roleId: 'role-1',
+      roleType: 'AD',
+      roleName: 'ADMIN',
+      companyName: 'Synchem',
+      industryType: 'SYN',
+      companyActive: false,
+    });
+
+    await expect(service.login('admin,SYN', 'Admin@123', 'en')).rejects.toThrow(UnauthorizedException);
   });
 });

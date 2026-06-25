@@ -47,7 +47,6 @@ export function PlatformLoginPage() {
           <Form
             form={form}
             layout="vertical"
-            initialValues={{ email: 'superadmin@synchem.co', password: 'Platform@123' }}
             onFinish={handleSubmit}
           >
             <Form.Item name="email" label={t('platform.login.email')} rules={[{ required: true, type: 'email' }]}>

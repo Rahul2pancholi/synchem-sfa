@@ -31,7 +31,7 @@ End-to-end: **Plan → Visit → Report → Order → Sync → Manager approve**
 | 5 | **Web DCR** (create, submit) | Done | UI → `PageLayout`; link doctors visited |
 | 6 | **Tour Programme (RTP)** | Done (web) | Mobile calendar polish; submit → approve loop UAT |
 | 7 | **Weekly Plan** | Done (web) | Same as RTP |
-| 8 | **Personal Order Booking (POB)** | Done (web API) | **P0:** UX polish, product search, line totals, mobile later |
+| 8 | **Personal Order Booking (POB)** | **Done** | Mobile POB later |
 | 9 | **Field Staff Dashboard** | **Done** | Quick actions (DCR, POB, RTP) |
 | 10 | **Approvals: DCR, RTP, Weekly** | Done | **Push on submit/decision** — FCM when `FIREBASE_SERVER_KEY` set |
 
@@ -101,12 +101,12 @@ Run: `pnpm go-live:check` · mobile manual UAT
 | Sub-phase | What | Status | When |
 |-----------|------|--------|------|
 | **10A** | Admin config (`ADM05`), `insights-service` scaffold | **Done** | Now |
-| **10B** | Semantic layer (metrics from sales reports) | Pending | After sales P0 reports |
+| **10B** | Semantic layer (metrics from sales reports) | **Done** | 8 metrics + SQL validator in `insights-service` |
 | **10C** | Knowledge graph views | Pending | Month 8–9 |
 | **10D** | Chat UI (Admin + Manager) + real answers | Pending | Month 9–10 |
 | **10E–10F** | MR chat, field AI (voice, OCR) | Pending | Month 10+ |
 
-**Do not start 10B+** until Sales Summary, Target vs Achievement, Visit Summary, **Missed Calls** APIs exist (same SQL feeds reports + chatbot).
+Sales P0 report APIs + **10B** semantic layer are **Done**. Next: **10C** knowledge graph → **10D** chat UI.
 
 ### Sales suggestions (rule engine) — Phase 9.5
 
@@ -130,21 +130,22 @@ Rules are **config YAML per tenant** (IF coverage low → suggest missed doctor 
 - Infiltration, focused activity, input/sales plan
 - Full 60-report parity
 - Workflow builder (Phase 11)
-- **Chatbot 10B–10D** (see P2 above — after sales P0)
+- **Chatbot 10C–10D** (10A + 10B **Done** — see P2 above)
 
 ---
 
 ## Suggested sprint order (next 4–6 weeks)
 
-| Sprint | Focus |
-|--------|--------|
-| 1 | POB web polish + Field Staff dashboard quick actions |
-| 2 | Sales Summary + Target vs Achievement reports (API + web) |
-| 3 | Visit Summary + Missed Calls reports |
-| 4 | Manager sales KPIs + Excel export |
+| Sprint | Focus | Status |
+|--------|--------|--------|
+| 1 | POB web polish + Field Staff dashboard quick actions | **Done** |
+| 2 | Sales Summary + Target vs Achievement reports (API + web) | **Done** |
+| 3 | Visit Summary + Missed Calls reports | **Done** |
+| 4 | Manager sales KPIs + Excel export | **Done** |
 | 5 | Phase 9.5 rule-based sales suggestions | **Done** — `GET /api/v1/sales-insights/manager` + dashboard cards |
-| 6 | Phase 6 UAT + pilot 40 MRs |
-| 7+ | **Phase 10C** knowledge graph → **10D** chat UI (10B semantic layer **Done**) |
+| 6 | P1 batch — MAS10/MAS11, expense polish, push MVP, 10B | **Done** |
+| 7 | Phase 6 UAT + pilot 40 MRs | **Next** |
+| 8+ | **Phase 10C** knowledge graph → **10D** chat UI | Pending |
 
 ---
 
@@ -153,4 +154,4 @@ Rules are **config YAML per tenant** (IF coverage low → suggest missed doctor 
 When completing a P0 item, update this file and [DEVELOPMENT.md](../DEVELOPMENT.md) checklist.  
 Do **not** pull leave work into sprint unless client explicitly reprioritizes.
 
-*Version 1.0 — June 2026*
+*Version 1.1 — June 2026 (P1 batch + 10B marked done)*

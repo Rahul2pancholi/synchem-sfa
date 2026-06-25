@@ -17,6 +17,15 @@ interface BalanceResponse {
   data: { items: LeaveBalanceSummary[] };
 }
 
+interface LeavePolicySummary {
+  leaveType: string;
+  annualQuota: number;
+}
+
+interface PolicyResponse {
+  data: { items: LeavePolicySummary[] };
+}
+
 export function LeaveApplicationPage() {
   const { t, languageHeader } = useI18n();
   const [form] = Form.useForm();
@@ -34,6 +43,14 @@ export function LeaveApplicationPage() {
     queryKey: ['leave-balances'],
     queryFn: async () => {
       const res = await fetchApi<BalanceResponse>('/api/v1/leave-balances', languageHeader);
+      return res.data.items;
+    },
+  });
+
+  const policiesQuery = useQuery({
+    queryKey: ['leave-policies'],
+    queryFn: async () => {
+      const res = await fetchApi<PolicyResponse>('/api/v1/leave-policies', languageHeader);
       return res.data.items;
     },
   });
@@ -119,11 +136,8 @@ export function LeaveApplicationPage() {
           <div className="form-grid">
             <Form.Item name="leaveType" label={t('monthly.leave.type')} rules={[{ required: true }]}>
               <Select
-                options={[
-                  { value: 'CL', label: 'CL' },
-                  { value: 'SL', label: 'SL' },
-                  { value: 'PL', label: 'PL' },
-                ]}
+                loading={policiesQuery.isLoading}
+                options={(policiesQuery.data ?? []).map((p) => ({ value: p.leaveType, label: p.leaveType }))}
               />
             </Form.Item>
             <Form.Item name="fromDate" label={t('monthly.leave.fromDate')} rules={[{ required: true }]}>

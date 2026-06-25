@@ -67,9 +67,9 @@ export type VerifyOtpRequest = z.infer<typeof VerifyOtpRequestSchema>;
 export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;
 
 export const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
-  AD: '/app/management/dashboard',
-  MAN: '/app/manager/dashboard',
-  FS: '/app/fieldStaff/dashboard',
+  AD: '/app/home',
+  MAN: '/app/home',
+  FS: '/app/home',
 };
 
 export const PASSWORD_POLICY_MESSAGE =

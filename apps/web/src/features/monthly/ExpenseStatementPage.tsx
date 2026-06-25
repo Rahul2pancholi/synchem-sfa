@@ -1,6 +1,7 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Descriptions, Form, Input, InputNumber, Modal, Select, Spin, message } from 'antd';
+import { Button, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Select, Spin, message } from 'antd';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import type { ExpenseStatementSummary } from '@synchem-sfa/shared-types';
 import { useState } from 'react';
@@ -39,7 +40,6 @@ export function ExpenseStatementPage() {
   const { t, languageHeader } = useI18n();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
-  const now = new Date();
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const listQuery = useQuery({
@@ -100,8 +100,11 @@ export function ExpenseStatementPage() {
   });
 
   const columns: ColumnsType<ExpenseStatementSummary> = [
-    { title: t('monthly.expense.month'), dataIndex: 'claimMonth', key: 'claimMonth' },
-    { title: t('monthly.expense.year'), dataIndex: 'claimYear', key: 'claimYear' },
+    {
+      title: t('monthly.expense.month'),
+      key: 'claimMonth',
+      render: (_, row) => dayjs(`${row.claimYear}-${row.claimMonth}-01`).format('MMM YYYY'),
+    },
     {
       title: t('monthly.expense.total'),
       dataIndex: 'totalAmount',
@@ -133,27 +136,19 @@ export function ExpenseStatementPage() {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{
-            claimMonth: now.getMonth() + 1,
-            claimYear: now.getFullYear(),
-            lines: [{ description: t('monthly.expense.fixedAllowance'), amount: 9000 }],
-          }}
+          initialValues={{ claimPeriod: dayjs(), lines: [{}] }}
           onFinish={(values) => {
+            const period = values.claimPeriod as dayjs.Dayjs;
             createMutation.mutate({
-              claimMonth: values.claimMonth,
-              claimYear: values.claimYear,
+              claimMonth: period.month() + 1,
+              claimYear: period.year(),
               lines: values.lines,
             });
           }}
         >
-          <div className="form-grid">
-            <Form.Item name="claimMonth" label={t('monthly.expense.month')} rules={[{ required: true }]}>
-              <InputNumber min={1} max={12} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="claimYear" label={t('monthly.expense.year')} rules={[{ required: true }]}>
-              <InputNumber min={2020} max={2100} style={{ width: '100%' }} />
-            </Form.Item>
-          </div>
+          <Form.Item name="claimPeriod" label={t('monthly.expense.month')} rules={[{ required: true }]}>
+            <DatePicker picker="month" format="MMM YYYY" style={{ width: '100%' }} />
+          </Form.Item>
 
           <Form.List name="lines">
             {(fields, { add, remove }) => (

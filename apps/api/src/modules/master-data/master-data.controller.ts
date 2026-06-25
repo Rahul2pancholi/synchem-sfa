@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -12,6 +13,7 @@ import { RequireActor } from '../../common/decorators/require-actor.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { MasterDataService } from './master-data.service';
 
+@ApiTags('master-data')
 @Controller('api/v1')
 @RequireActor('tenant')
 export class MasterDataController {

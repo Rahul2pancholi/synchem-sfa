@@ -6,6 +6,7 @@ import {
   Form,
   Input,
   Layout,
+  Modal,
   Space,
   Spin,
   Table,
@@ -13,6 +14,7 @@ import {
   Typography,
   message,
 } from 'antd';
+import type { TenantAdminBootstrap } from '@synchem-sfa/shared-types';
 import type { ColumnsType } from 'antd/es/table';
 import { LanguageSwitcher } from '../../i18n/LanguageSwitcher';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -87,8 +89,29 @@ export function PlatformTenantsPage() {
         return;
       }
 
+      const payload = await res.json();
+      const bootstrap = payload.data?.adminBootstrap as TenantAdminBootstrap | undefined;
+
       form.resetFields();
       message.success(t('common.create'));
+
+      if (bootstrap) {
+        Modal.success({
+          title: t('platform.tenants.adminCreatedTitle'),
+          content: (
+            <Space direction="vertical">
+              <Typography.Text>{t('platform.tenants.adminCreatedHint')}</Typography.Text>
+              <Typography.Text>
+                <strong>{t('platform.tenants.adminLogin')}:</strong> {bootstrap.loginUsername}
+              </Typography.Text>
+              <Typography.Text>
+                <strong>{t('platform.tenants.adminPassword')}:</strong> {bootstrap.initialPassword}
+              </Typography.Text>
+            </Space>
+          ),
+        });
+      }
+
       await loadCompanies();
     } finally {
       setCreating(false);
@@ -103,7 +126,6 @@ export function PlatformTenantsPage() {
   const columns: ColumnsType<Company> = [
     { title: t('platform.tenants.code'), dataIndex: 'compCode', key: 'compCode' },
     { title: t('platform.tenants.name'), dataIndex: 'compName', key: 'compName' },
-    { title: t('platform.tenants.timezone'), dataIndex: 'timezone', key: 'timezone' },
     {
       title: t('platform.tenants.status'),
       key: 'active',
@@ -111,6 +133,13 @@ export function PlatformTenantsPage() {
         <Tag color={row.active ? 'success' : 'default'}>
           {row.active ? t('platform.tenants.active') : t('platform.tenants.inactive')}
         </Tag>
+      ),
+    },
+    {
+      title: '',
+      key: 'actions',
+      render: (_, row) => (
+        <Link to={`/platform/tenants/${row.compCode}`}>{t('platform.tenants.manage')}</Link>
       ),
     },
   ];

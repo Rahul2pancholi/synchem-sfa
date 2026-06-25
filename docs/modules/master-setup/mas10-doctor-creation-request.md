@@ -66,14 +66,14 @@ This screen stores or shows these types of information:
 
 ## Clone Checklist
 
-- [ ] Build UI screen at route `/app/doctor-creation-request`
-- [ ] Create database tables for data listed above
-- [ ] Implement API endpoints
-- [ ] Add role permission check (menu code `MAS10`)
-- [ ] Implement workflow steps exactly as above
-- [ ] Add validation rules
-- [ ] Connect notifications if this triggers approval
-- [ ] Test with real example scenario
+- [x] Build UI screen at route `/app/doctor-creation-request`
+- [x] Extend `doctors` table (`submitted_by`, `submitted_at`)
+- [x] Implement API endpoints (`/api/v1/doctor-requests`)
+- [x] Add role permission check (menu code `MAS10`)
+- [x] Implement workflow steps exactly as above
+- [x] Add validation rules
+- [x] Connect notifications on submit/approve/reject
+- [ ] Test with real example scenario (UAT)
 
 ---
 *Part of Synchem Salestrip 100% clone documentation.*

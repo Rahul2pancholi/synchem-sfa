@@ -163,16 +163,16 @@ export function MonthlyCoveredDoctorReportPage() {
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.coveredDoctors')} value={summary.coveredDoctors} />
+                <StatCard title={t('report.coveredDoctors')} value={summary.coveredDoctors} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.plannedDoctors')} value={summary.plannedDoctors} />
+                <StatCard title={t('report.plannedDoctors')} value={summary.plannedDoctors} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.coveragePct')} value={`${summary.coveragePct}%`} />
+                <StatCard title={t('report.coveragePct')} value={`${summary.coveragePct}%`} />
               </Col>
               <Col xs={12} md={6}>
-                <StatCard label={t('report.totalVisits')} value={summary.totalVisits} />
+                <StatCard title={t('report.totalVisits')} value={summary.totalVisits} />
               </Col>
             </Row>
           </PageSection>
